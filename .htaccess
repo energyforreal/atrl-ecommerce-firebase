@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Handle API requests
+RewriteRule ^api/(.*)$ api/$1 [L]
+
+# Serve static files from static-site directory
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ static-site/$1 [L]

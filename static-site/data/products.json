@@ -1,0 +1,94 @@
+[
+  {
+    "id": 1,
+    "title": "100W 8-Port GaN Charger",
+    "price": 10,
+    "featured": true,
+    "image": "../assets/product_images/1.jpeg",
+    "description": "Fast charging for up to 8 devices in one sleek, compact charger — perfect for work, travel, and everyday life.",
+    "category": "Electronics",
+    "specifications": {
+      "powerOutput": "100W Total Output",
+      "ports": "4 USB-C + 4 USB-A Ports",
+      "technology": "GaN Technology",
+      "input": "Universal AC Input (100–240V)",
+      "certifications": "CE, FCC, RoHS Certifications",
+      "safety": "6-Layer Safety Protection"
+    },
+    "features": [
+      "🔋 100W Power Output – Charge laptops, tablets, and phones simultaneously",
+      "⚡ GaN Technology – Compact, efficient, cool-running",
+      "🌍 Universal AC Input (100–240V) with CE, FCC, RoHS Certifications",
+      "🛡️ 6-Layer Safety Protection – No overheating, overcharging, or shorts",
+      "⚙️ 100W Total Output – Power everything from your phone to your MacBook",
+      "🔌 4 USB-C + 4 USB-A Ports – Flexibility to charge all your gadgets – old or new"
+    ],
+    "safetyFeatures": [
+      "🔌 Overcurrent Protection",
+      "⚡ Overvoltage Protection", 
+      "🌡️ Overtemperature Shutdown",
+      "💥 Short Circuit Protection",
+      "🔥 Flame Retardant Shell",
+      "🔄 Auto Power Regulation"
+    ],
+    "useCases": [
+      "🏢 At the Office – Reduce clutter & charge your laptop, phone & earbuds",
+      "✈️ Travel-Friendly – Compact with EU cable & global voltage support",
+      "👨‍👩‍👧‍👦 Family Use – Charge up to 8 devices with peace of mind"
+    ],
+    "images": [
+      "../assets/product_images/1.jpeg",
+      "../assets/product_images/2.jpeg", 
+      "../assets/product_images/3.jpeg",
+      "../assets/product_images/4.jpeg",
+      "../assets/product_images/5.jpeg",
+      "../assets/product_images/6.jpeg",
+      "../assets/product_images/7.jpeg",
+      "../assets/product_images/8.jpeg"
+    ],
+    "marketingImages": [
+      "../assets/marketing_images/1.jpg",
+      "../assets/marketing_images/2.jpg",
+      "../assets/marketing_images/3.jpg", 
+      "../assets/marketing_images/4.jpg",
+      "../assets/marketing_images/5.jpg",
+      "../assets/marketing_images/6.jpg"
+    ],
+    "videos": [
+      "../assets/marketing_videos/1.mp4",
+      "../assets/marketing_videos/2.mp4",
+      "../assets/marketing_videos/3.mp4",
+      "../assets/marketing_videos/4.mp4", 
+      "../assets/marketing_videos/5.mp4"
+    ],
+    "testimonials": [
+      {
+        "text": "Very compact and powerful! Charges my MacBook and phone at the same time. Perfect for travel.",
+        "author": "Deepak Sharma",
+        "location": "Mumbai, Maharashtra"
+      },
+      {
+        "text": "We're a family of 4 and this charger handles everything — from tablets to phones. Worth every rupee!",
+        "author": "Priya Nair", 
+        "location": "Kochi, Kerala"
+      },
+      {
+        "text": "I use this at my co-working space and it's a lifesaver. The GaN tech is really impressive.",
+        "author": "Arjun Verma",
+        "location": "Bangalore, Karnataka"
+      }
+    ],
+    "shipping": {
+      "free": true,
+      "deliveryTime": "2-5 working days across India",
+      "description": "🚚 Enjoy FREE shipping! Sign up in the form below to claim your Coupon code 🎫"
+    },
+    "guarantees": [
+      "✅ Secure Checkout - Guaranteed safe transactions with full fraud protection",
+      "🔒 256-bit SSL Encryption - Your personal & payment info is fully encrypted", 
+      "🚚 Fast & Reliable Shipping - Orders delivered in 2–5 working days across India",
+      "💳 Multiple Payment Methods - Pay securely via UPI, cards, wallets, or net banking"
+    ]
+  }
+]
+  

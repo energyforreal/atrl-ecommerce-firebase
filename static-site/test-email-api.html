@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        button { padding: 10px 20px; margin: 10px 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .loading { display: none; color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Email API Test</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Test Information</h3>
+        <p>This page tests the order confirmation email API endpoint.</p>
+        <p><strong>API Endpoint:</strong> <code>/api/send_order_email.php</code></p>
+        <p><strong>Test Email:</strong> <code>attralsolar@gmail.com</code></p>
+    </div>
+
+    <div class="test-section">
+        <h3>🎯 Test 1: Order Success Email API Test</h3>
+        <p>Test the email API with exact order data from order-success.html logs.</p>
+        <p><strong>Order ID:</strong> order_RPIFJ6HE8WPZz8</p>
+        <p><strong>Customer:</strong> attralsolar@gmail.com</p>
+        <button onclick="testEmailAPI()">Test Order Success Email API</button>
+        <div class="loading" id="loading1">⏳ Testing...</div>
+        <div id="result1"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔧 Test 2: PHPMailer Direct Test</h3>
+        <p>Test PHPMailer directly with Brevo SMTP.</p>
+        <button onclick="testPHPMailer()">Test PHPMailer</button>
+        <div class="loading" id="loading2">⏳ Testing...</div>
+        <div id="result2"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Test 3: Server Status Check</h3>
+        <p>Check if the local server is running and accessible.</p>
+        <button onclick="checkServerStatus()">Check Server</button>
+        <div class="loading" id="loading3">⏳ Checking...</div>
+        <div id="result3"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        function showResult(elementId, success, message, data = null) {
+            const element = document.getElementById(elementId);
+            const loading = document.getElementById(elementId.replace('result', 'loading'));
+            
+            loading.style.display = 'none';
+            element.className = 'test-section ' + (success ? 'success' : 'error');
+            element.innerHTML = '<h4>' + (success ? '✅ Success' : '❌ Error') + '</h4>' +
+                              '<p>' + message + '</p>' +
+                              (data ? '<pre>' + JSON.stringify(data, null, 2) + '</pre>' : '');
+        }
+
+        function showLoading(elementId) {
+            const loading = document.getElementById(elementId.replace('result', 'loading'));
+            loading.style.display = 'block';
+        }
+
+        async function testEmailAPI() {
+            showLoading('result1');
+            
+            // Use exact data from order-success.html logs
+            const testData = {
+                orderId: 'order_RPIFJ6HE8WPZz8',
+                orderData: {
+                    customer: {
+                        firstName: 'Test',
+                        lastName: 'User',
+                        email: 'attralsolar@gmail.com',
+                        phone: '+91 9876543210'
+                    },
+                    shipping: {
+                        address: '123 Test Street',
+                        city: 'Vellore',
+                        state: 'Tamil Nadu',
+                        pincode: '632009',
+                        country: 'India'
+                    },
+                    product: {
+                        title: 'ATTRAL GaN Charger',
+                        price: 10,
+                        quantity: 1
+                    },
+                    pricing: {
+                        subtotal: 10,
+                        shipping: 0,
+                        discount: 0,
+                        total: 10,
+                        currency: 'INR'
+                    },
+                    coupons: [],
+                    orderType: 'cart',
+                    timestamp: '2025-10-04T06:15:23.944Z',
+                    razorpay_order_id: 'order_RPIFJ6HE8WPZz8',
+                    razorpay_payment_id: 'pay_RPIFYEOM0e0yiD',
+                    razorpay_signature: '61f9c803cec64bd4dc367d318be414dd5467000546ac40cb065c3ea30a9e52d9',
+                    status: 'confirmed'
+                }
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/send_order_email.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('result1', true, 'Email API test successful!', result);
+                } else {
+                    showResult('result1', false, 'Email API test failed: ' + (result.error || 'Unknown error'), result);
+                }
+            } catch (error) {
+                showResult('result1', false, 'Network error: ' + error.message);
+            }
+        }
+
+        async function testPHPMailer() {
+            showLoading('result2');
+            
+            const testData = {
+                email: 'attralsolar@gmail.com'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/test_phpmailer.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('result2', true, 'PHPMailer test successful!', result);
+                } else {
+                    showResult('result2', false, 'PHPMailer test failed: ' + (result.error || 'Unknown error'), result);
+                }
+            } catch (error) {
+                showResult('result2', false, 'Network error: ' + error.message);
+            }
+        }
+
+        async function checkServerStatus() {
+            showLoading('result3');
+            
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const result = await response.json();
+                
+                if (result.status === 'ok') {
+                    showResult('result3', true, 'Server is running and accessible!', result);
+                } else {
+                    showResult('result3', false, 'Server responded but status is not ok', result);
+                }
+            } catch (error) {
+                showResult('result3', false, 'Server is not accessible: ' + error.message);
+            }
+        }
+
+        // Auto-check server status on page load
+        window.addEventListener('load', function() {
+            setTimeout(checkServerStatus, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Orders | ATTRAL Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .admin-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .admin-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 35px;
+      border-radius: 20px;
+      margin-bottom: 35px;
+      box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+      pointer-events: none;
+    }
+    
+    .admin-header h1 {
+      margin: 0 0 10px 0;
+      font-size: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .admin-header p {
+      margin: 0;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .orders-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .orders-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 25px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .orders-header h2 {
+      margin: 0;
+      color: #1f2937;
+      font-size: 1.5rem;
+    }
+    
+    .refresh-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .refresh-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    
+    .orders-table th {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      color: #374151;
+      font-weight: 600;
+      padding: 16px 12px;
+      text-align: left;
+      border-bottom: 2px solid #e5e7eb;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .orders-table td {
+      padding: 16px 12px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: top;
+      font-size: 0.9rem;
+    }
+    
+    .orders-table tr:hover {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .order-id {
+      font-family: monospace;
+      font-weight: 600;
+      color: #1f2937;
+      font-size: 0.9rem;
+    }
+    
+    .customer-name {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    
+    .customer-details {
+      font-size: 0.8rem;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+    
+    .order-amount {
+      font-weight: 700;
+      color: #059669;
+      font-size: 1rem;
+    }
+    
+    .order-date {
+      color: #6b7280;
+      font-size: 0.85rem;
+    }
+    
+    .order-time {
+      color: #9ca3af;
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+    
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .status-confirmed { background: #e3f2fd; color: #1976d2; }
+    .status-shipped { background: #e8f5e8; color: #2e7d32; }
+    .status-delivered { background: #f3e5f5; color: #7b1fa2; }
+    .status-cancelled { background: #ffebee; color: #c62828; }
+    .status-pending { background: #fff3e0; color: #f57c00; }
+    .status-yettodispatch { background: #fef3c7; color: #d97706; }
+    .status-readytodispatch { background: #dbeafe; color: #2563eb; }
+    
+    .address-cell {
+      max-width: 200px;
+      word-wrap: break-word;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+    
+    .payment-method {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    
+    .expand-details {
+      background: #f3f4f6;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #374151;
+      transition: all 0.2s ease;
+    }
+    
+    .expand-details:hover {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+    
+    .order-details-expanded {
+      background: #f9fafb;
+      border-left: 4px solid #667eea;
+      padding: 16px;
+      margin-top: 8px;
+      border-radius: 0 8px 8px 0;
+      display: none;
+    }
+    
+    .order-details-expanded.show {
+      display: block;
+    }
+    
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+    
+    .detail-item {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      border-left: 3px solid #667eea;
+    }
+    
+    .detail-item.customer { border-left-color: #10b981; }
+    .detail-item.payment { border-left-color: #f59e0b; }
+    .detail-item.shipping { border-left-color: #8b5cf6; }
+    
+    .detail-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    
+    .detail-value {
+      color: #1f2937;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #6b7280;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: #6b7280;
+    }
+    
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+    
+    .error {
+      background: #ffebee;
+      color: #c62828;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    @media (max-width: 768px) {
+      .orders-table {
+        font-size: 0.8rem;
+      }
+      
+      .orders-table th,
+      .orders-table td {
+        padding: 12px 8px;
+      }
+      
+      .order-id {
+        font-size: 0.8rem;
+      }
+      
+      .customer-name {
+        font-size: 0.85rem;
+      }
+      
+      .customer-details {
+        font-size: 0.75rem;
+      }
+      
+      .order-amount {
+        font-size: 0.9rem;
+      }
+      
+      .address-cell {
+        max-width: 150px;
+        font-size: 0.8rem;
+      }
+      
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="admin-header">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h1>📋 Admin Orders</h1>
+          <p>View detailed information for all orders</p>
+        </div>
+        <div>
+          <a href="dashboard-original.html" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">← Back to Dashboard</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="orders-container">
+      <div class="orders-header">
+        <h2>All Orders</h2>
+        <button class="refresh-btn" onclick="loadOrders()">🔄 Refresh</button>
+      </div>
+      
+      <div id="ordersList">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <span>Loading orders...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/firebase.js"></script>
+  <script>
+    let allOrders = [];
+    
+    async function waitForFirebase() {
+      let attempts = 0;
+      const maxAttempts = 50;
+      
+      while (attempts < maxAttempts) {
+        if (window.AttralFirebase && window.AttralFirebase.db) {
+          console.log('✅ Firebase is ready for orders');
+          return;
+        }
+        attempts++;
+        console.log(`⏳ Waiting for Firebase... attempt ${attempts}/${maxAttempts}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      throw new Error('Firebase failed to load');
+    }
+    
+    async function loadOrders() {
+      try {
+        await waitForFirebase();
+        console.log('📦 Loading orders from Firestore...');
+        
+        const ordersSnapshot = await window.AttralFirebase.db
+          .collection('orders')
+          .orderBy('createdAt', 'desc')
+          .get();
+
+        allOrders = [];
+        ordersSnapshot.forEach(doc => {
+          const orderData = doc.data();
+          allOrders.push({
+            id: doc.id,
+            ...orderData,
+            createdAt: orderData.createdAt ? orderData.createdAt.toDate() : new Date()
+          });
+        });
+
+        console.log('✅ Orders loaded:', allOrders.length);
+        renderOrders();
+      } catch (error) {
+        console.error('❌ Error loading orders:', error);
+        showError('Failed to load orders: ' + error.message);
+      }
+    }
+    
+    function renderOrders() {
+      const container = document.getElementById('ordersList');
+      
+      if (allOrders.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
+            <h3>No orders found</h3>
+            <p>No orders have been placed yet.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = `
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Address</th>
+              <th>Date & Time</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${allOrders.map(order => {
+              const customer = order.customer || {};
+              const shippingAddress = order.shippingAddress || order.address || order.shipping || {};
+              const payment = order.payment || {};
+              const notes = order.notes || {};
+              
+              // Get order status
+              const getOrderStatus = (order) => {
+                if (order.fulfillmentStatus) return order.fulfillmentStatus;
+                if (order.status) return order.status;
+                return 'pending';
+              };
+              
+              const orderStatus = getOrderStatus(order);
+              const statusClass = `status-${orderStatus.replace('-', '')}`;
+              
+              // Format customer name (prioritize notes section)
+              const customerName = notes.firstName ? 
+                `${notes.firstName} ${notes.lastName || ''}`.trim() : 
+                (customer.name || customer.firstName || order.customerName || 'Unknown');
+              
+              // Format customer email (prioritize notes section)
+              const customerEmail = notes.email || customer.email || order.customerEmail || 'No email';
+              
+              // Format customer phone (prioritize notes section)
+              const customerPhone = notes.phone || customer.phone || customer.mobile || order.customerPhone || 'No phone';
+              
+              // Format address
+              const addressParts = [];
+              if (shippingAddress.street || shippingAddress.addressLine1) {
+                addressParts.push(shippingAddress.street || shippingAddress.addressLine1);
+              }
+              if (shippingAddress.city) {
+                addressParts.push(shippingAddress.city);
+              }
+              if (shippingAddress.state) {
+                addressParts.push(shippingAddress.state);
+              }
+              if (shippingAddress.pincode || shippingAddress.zipCode) {
+                addressParts.push(shippingAddress.pincode || shippingAddress.zipCode);
+              }
+              const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : 'No address available';
+              
+              // Get detailed address from notes section
+              const notesAddress = notes.address || '';
+              const notesCity = notes.city || '';
+              const notesState = notes.state || '';
+              const notesPincode = notes.pincode || '';
+              const notesCountry = notes.country || '';
+              
+              // Build detailed address from notes
+              const notesAddressParts = [];
+              if (notesAddress) notesAddressParts.push(notesAddress);
+              if (notesCity) notesAddressParts.push(notesCity);
+              if (notesState) notesAddressParts.push(notesState);
+              if (notesPincode) notesAddressParts.push(notesPincode);
+              if (notesCountry) notesAddressParts.push(notesCountry);
+              
+              const detailedAddress = notesAddressParts.length > 0 ? notesAddressParts.join(', ') : fullAddress;
+              const displayAddress = detailedAddress.length > 60 ? detailedAddress.substring(0, 60) + '...' : detailedAddress;
+              
+              // Format payment method
+              const paymentMethod = payment.method || order.paymentMethod || 'Unknown';
+              
+              // Format amount
+              const orderAmount = order.totalAmount || order.amount || order.pricing?.total || 0;
+              
+              return `
+                <tr>
+                  <td>
+                    <div class="order-id">${order.orderCode || order.orderId || order.id}</div>
+                  </td>
+                  <td>
+                    <div class="customer-name">${customerName}</div>
+                    <div class="customer-details">📧 ${customerEmail}<br>📱 ${customerPhone}</div>
+                  </td>
+                  <td>
+                    <div class="order-amount">₹${orderAmount.toLocaleString()}</div>
+                    <div class="payment-method">💳 ${paymentMethod}</div>
+                  </td>
+                  <td>
+                    <span class="status-badge ${statusClass}">${orderStatus.toUpperCase()}</span>
+                  </td>
+                  <td class="address-cell" title="${detailedAddress}">
+                    ${displayAddress}
+                  </td>
+                  <td>
+                    <div class="order-date">${order.createdAt.toLocaleDateString('en-IN')}</div>
+                    <div class="order-time">${order.createdAt.toLocaleTimeString('en-IN')}</div>
+                  </td>
+                  <td>
+                    <button class="expand-details" onclick="toggleOrderDetails('${order.id}')">
+                      📋 Details
+                    </button>
+                  </td>
+                </tr>
+                <tr id="details-${order.id}" class="order-details-expanded">
+                  <td colspan="7">
+                    <div class="details-grid">
+                      <div class="detail-item customer">
+                        <div class="detail-label">Customer Information</div>
+                        <div class="detail-value">
+                          <strong>${customerName}</strong><br>
+                          📧 ${customerEmail}<br>
+                          📱 ${customerPhone}
+                        </div>
+                      </div>
+                      
+                      <div class="detail-item payment">
+                        <div class="detail-label">Payment Information</div>
+                        <div class="detail-value">
+                          <strong>₹${orderAmount.toLocaleString()}</strong><br>
+                          💳 ${paymentMethod}<br>
+                          Status: ${order.paymentStatus || 'Paid'}
+                        </div>
+                      </div>
+                      
+                      <div class="detail-item shipping">
+                        <div class="detail-label">Shipping Address</div>
+                        <div class="detail-value">${detailedAddress}</div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+    
+    function showError(message) {
+      const container = document.getElementById('ordersList');
+      container.innerHTML = `<div class="error">${message}</div>`;
+    }
+    
+    function toggleOrderDetails(orderId) {
+      const detailsRow = document.getElementById(`details-${orderId}`);
+      const button = event.target;
+      
+      if (detailsRow.classList.contains('show')) {
+        detailsRow.classList.remove('show');
+        button.textContent = '📋 Details';
+        button.style.background = '#f3f4f6';
+      } else {
+        detailsRow.classList.add('show');
+        button.textContent = '✕ Close';
+        button.style.background = '#e5e7eb';
+      }
+    }
+    
+    // Initialize orders when page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log('🚀 Initializing Admin Orders with Firebase...');
+      await loadOrders();
+    });
+  </script>
+</body>
+</html>

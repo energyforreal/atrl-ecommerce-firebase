@@ -1,0 +1,20 @@
+{
+    "name": "attral/ecommerce-api",
+    "description": "ATTRAL E-commerce API with Razorpay and Firestore integration",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "kreait/firebase-php": "^6.0",
+        "google/cloud-firestore": "^1.0",
+        "google/cloud-core": "^1.0",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Attral\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

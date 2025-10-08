@@ -1,0 +1,45 @@
+node_modules
+
+# Sensitive credentials and API keys
+**/firebase-service-account.json
+**/*service-account*.json
+**/config.php
+**/api/config.php
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# API keys and secrets
+**/api-keys.json
+**/secrets.json
+
+# SSL certificates and keys
+*.pem
+*.key
+*.crt
+server-cert.pem
+server-key.pem
+
+# Database files
+*.db
+*.sqlite
+
+# Log files
+logs/
+*.log
+
+# Invoices (may contain customer data)
+invoices/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

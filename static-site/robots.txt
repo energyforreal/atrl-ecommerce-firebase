@@ -1,0 +1,36 @@
+# ATTRAL Testing Environment - Block All Crawlers
+User-agent: *
+Disallow: /
+
+# Block specific search engines
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: Slurp
+Disallow: /
+
+User-agent: DuckDuckBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+User-agent: facebookexternalhit
+Disallow: /
+
+User-agent: Twitterbot
+Disallow: /
+
+User-agent: LinkedInBot
+Disallow: /
+
+# Block all crawling
+Crawl-delay: 86400
+
+# No sitemap provided for testing environment

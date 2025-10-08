@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coupon Management | ATTRAL Store</title>
+  <meta name="description" content="Manage discount coupons for ATTRAL Store." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .admin-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .admin-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .admin-header h1 {
+      color: #1f2937;
+      margin-bottom: 1rem;
+    }
+
+    .admin-tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 1rem 2rem;
+      cursor: pointer;
+      font-weight: 600;
+      color: #6b7280;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .coupon-form {
+      background: #f8fafc;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 0.75rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .coupons-list {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .coupon-item {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 2fr 1fr 1fr auto;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      align-items: center;
+      min-height: 60px;
+      transition: background-color 0.2s ease;
+    }
+
+    .coupon-item:hover {
+      background-color: #f9fafb;
+    }
+
+    .coupon-item:last-child {
+      border-bottom: none;
+    }
+
+    .coupon-item.header-row {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #374151;
+      border-bottom: 2px solid #e5e7eb;
+      padding: 1rem 1.5rem;
+    }
+
+    .coupon-item.header-row:hover {
+      background: #f8fafc;
+    }
+
+    .coupon-code {
+      font-weight: 700;
+      color: #667eea;
+      font-size: 1.1rem;
+    }
+
+    .coupon-name {
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .coupon-type {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .coupon-type.percentage {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .coupon-type.fixed {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .coupon-type.shipping {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .coupon-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .coupon-status.active {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .coupon-status.inactive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .coupon-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-edit, .btn-delete {
+      padding: 0.5rem 0.75rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin: 0 0.25rem;
+    }
+
+    .btn-edit {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .btn-edit:hover {
+      background: #bfdbfe;
+      transform: translateY(-1px);
+    }
+
+    .btn-delete {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .btn-delete:hover {
+      background: #fecaca;
+      transform: translateY(-1px);
+    }
+
+    .affiliate-email {
+      color: #6b7280;
+      font-size: 0.875rem;
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .coupon-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      .coupon-item.header-row {
+        display: none; /* Hide header on mobile */
+      }
+
+      .coupon-item:not(.header-row)::before {
+        content: "Affiliate Code: ";
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .coupon-item .coupon-code::after {
+        content: "\A Name: " attr(data-name);
+        white-space: pre-line;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .coupon-actions {
+        justify-content: center;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .btn-edit, .btn-delete {
+        margin: 0.25rem;
+      }
+
+      /* Admin navigation responsive */
+      .container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-container {
+        padding: 0 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Admin Navigation Bar -->
+  <div style="background: #1f2937; color: white; padding: 1rem 0; margin-bottom: 2rem;">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" />
+        <h1 style="margin: 0; font-size: 1.5rem; font-weight: 700;">🎫 Coupon Management</h1>
+      </div>
+      <div>
+        <a href="dashboard-original.html" style="background: #667eea; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+          ← Back to Admin Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <main class="admin-container">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="total-coupons">0</div>
+        <div class="stat-label">Total Coupons</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="active-coupons">0</div>
+        <div class="stat-label">Active Coupons</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="total-discounts">₹0</div>
+        <div class="stat-label">Total Discounts Given</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="coupon-usage">0</div>
+        <div class="stat-label">Times Used</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="tab-btn active" data-tab="create">Create Coupon</button>
+      <button class="tab-btn" data-tab="affiliate">Affiliate Coupons</button>
+      <button class="tab-btn" data-tab="manage">Manage Coupons</button>
+      <button class="tab-btn" data-tab="analytics">Analytics</button>
+    </div>
+
+    <!-- Create Coupon Tab -->
+    <div id="create-tab" class="tab-content active">
+      <div class="coupon-form">
+        <h2 style="margin-bottom: 1.5rem; color: #1f2937;">Create New Coupon</h2>
+        <form id="create-coupon-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="coupon-code">Coupon Code *</label>
+              <input type="text" id="coupon-code" name="code" required placeholder="e.g., WELCOME10" />
+            </div>
+            <div class="form-group">
+              <label for="coupon-name">Coupon Name *</label>
+              <input type="text" id="coupon-name" name="name" required placeholder="e.g., Welcome Discount" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="coupon-type">Discount Type *</label>
+              <select id="coupon-type" name="type" required>
+                <option value="">Select Type</option>
+                <option value="percentage">Percentage (%)</option>
+                <option value="fixed">Fixed Amount (₹)</option>
+                <option value="shipping">Free Shipping</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="coupon-value">Discount Value *</label>
+              <input type="number" id="coupon-value" name="value" required placeholder="e.g., 10 or 50" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="min-amount">Minimum Order Amount</label>
+              <input type="number" id="min-amount" name="minAmount" placeholder="e.g., 500" />
+            </div>
+            <div class="form-group">
+              <label for="max-discount">Maximum Discount (for percentage)</label>
+              <input type="number" id="max-discount" name="maxDiscount" placeholder="e.g., 500" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="valid-until">Valid Until</label>
+              <input type="date" id="valid-until" name="validUntil" />
+            </div>
+            <div class="form-group">
+              <label for="usage-limit">Usage Limit (optional)</label>
+              <input type="number" id="usage-limit" name="usageLimit" placeholder="e.g., 100" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3" placeholder="Describe the coupon offer..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary">Create Coupon</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Affiliate Coupons Tab -->
+    <div id="affiliate-tab" class="tab-content">
+      <div style="background: #f8fafc; border: 2px solid #e5e7eb; border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
+        <h2 style="margin-bottom: 1.5rem; color: #1f2937;">🤝 Affiliate Coupon Management</h2>
+        <p style="color: #6b7280; margin-bottom: 1.5rem;">
+          Automatically create 5% discount coupons for all affiliate codes. These coupons will be applied when customers use affiliate referral links.
+        </p>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <button id="load-affiliates-btn" class="btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+            🔄 Load Affiliate Codes
+          </button>
+          <button id="create-affiliate-coupons-btn" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706);" disabled>
+            🎫 Create 5% Coupons
+          </button>
+          <span id="affiliate-status" style="color: #6b7280; font-weight: 500;"></span>
+        </div>
+      </div>
+      
+      <div class="coupons-list">
+        <div class="coupon-item header-row">
+          <div>Affiliate Code</div>
+          <div>Affiliate Name</div>
+          <div>Affiliate Email</div>
+          <div>Coupon Status</div>
+          <div>Usage</div>
+          <div>Actions</div>
+        </div>
+        <div id="affiliate-coupons-content">
+          <!-- Affiliate coupons will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Manage Coupons Tab -->
+    <div id="manage-tab" class="tab-content">
+      <div class="coupons-list">
+        <div class="coupon-item" style="background: #f8fafc; font-weight: 600; color: #374151;">
+          <div>Code</div>
+          <div>Name</div>
+          <div>Type</div>
+          <div>Status</div>
+          <div>Usage</div>
+          <div>Actions</div>
+        </div>
+        <div id="coupons-list-content">
+          <!-- Coupons will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analytics-tab" class="tab-content">
+      <div style="text-align: center; padding: 3rem; color: #6b7280;">
+        <h3>📊 Analytics Coming Soon</h3>
+        <p>Detailed coupon usage analytics and reports will be available here.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About ATTRAL</h4>
+          <p>Smart Power. Smarter Living. We provide next-gen consumer electronics to power your lifestyle with cutting-edge GaN technology.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <p><a href="index.html">Home</a></p>
+          <p><a href="shop.html">Shop</a></p>
+          <p><a href="about.html">About Us</a></p>
+          <p><a href="contact.html">Contact</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <p><a href="account.html">My Account</a></p>
+          <p><a href="cart.html">Shopping Cart</a></p>
+          <p><a href="affiliates.html">Affiliate Program</a></p>
+          <p><a href="blog.html" target="_blank" rel="noopener">Blog</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Contact Info</h4>
+          <p>📧 info@attral.in</p>
+          <p>📱 +91 8903479870</p>
+          <p>📍 Phase 2 Sathuvachari<br>Vellore - 632009<br>Tamil Nadu, India</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="year"></span> ATTRAL. All rights reserved.</p>
+        <nav>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/dropdown.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    
+    // Initialize cart count
+    if (window.Attral) {
+      window.Attral.initHeaderCartCount();
+    }
+
+    // Coupon data - Now integrated with Firebase Firestore
+    let coupons = [];
+    let couponsLoaded = false;
+    
+    // Affiliate data
+    let affiliates = [];
+    let affiliateCoupons = [];
+
+    // Load coupons from Firebase Firestore
+    async function loadCouponsFromFirebase() {
+      try {
+        console.log('🔄 Loading coupons from Firebase...');
+        
+        // Wait for Firebase to be ready
+        await waitForFirebase();
+        
+        if (!window.AttralFirebase || !window.AttralFirebase.db) {
+          console.log('❌ Firebase not available, using local storage');
+          loadCouponsFromLocalStorage();
+          return;
+        }
+
+        // Fetch all coupons from Firestore
+        const couponsSnapshot = await window.AttralFirebase.db
+          .collection('coupons')
+          .orderBy('createdAt', 'desc')
+          .get();
+
+        console.log('📊 Loaded coupons from Firebase:', couponsSnapshot.size);
+
+        // Clear existing array
+        coupons = [];
+
+        // Build coupons array from Firestore data
+        couponsSnapshot.forEach(doc => {
+          const couponData = doc.data();
+          const coupon = {
+            id: doc.id,
+            code: couponData.code,
+            name: couponData.name,
+            type: couponData.type,
+            value: couponData.value,
+            minAmount: couponData.minAmount || 0,
+            maxDiscount: couponData.maxDiscount || null,
+            isActive: couponData.isActive,
+            validUntil: couponData.validUntil ? couponData.validUntil.toDate() : new Date('2025-12-31'),
+            usageLimit: couponData.usageLimit || null,
+            usageCount: couponData.usageCount || 0,
+            description: couponData.description || '',
+            createdAt: couponData.createdAt ? couponData.createdAt.toDate() : new Date()
+          };
+          
+          coupons.push(coupon);
+        });
+
+        couponsLoaded = true;
+        console.log('✅ Coupons loaded successfully:', coupons.length);
+
+        // Update UI
+        updateStats();
+        if (document.getElementById('manage-tab').classList.contains('active')) {
+          loadCoupons();
+        }
+
+      } catch (error) {
+        console.error('❌ Error loading coupons from Firebase:', error);
+        loadCouponsFromLocalStorage();
+      }
+    }
+
+    // Load coupons from localStorage as fallback
+    function loadCouponsFromLocalStorage() {
+      console.log('🔄 Loading coupons from localStorage...');
+      const savedCoupons = localStorage.getItem('attral_coupons');
+      if (savedCoupons) {
+        try {
+          coupons = JSON.parse(savedCoupons);
+          couponsLoaded = true;
+          console.log('✅ Coupons loaded from localStorage:', coupons.length);
+        } catch (error) {
+          console.error('❌ Error parsing localStorage coupons:', error);
+          coupons = [];
+          couponsLoaded = true;
+        }
+      } else {
+        coupons = [];
+        couponsLoaded = true;
+      }
+      updateStats();
+    }
+
+    // Save coupons to localStorage as backup
+    function saveCouponsToLocalStorage() {
+      try {
+        localStorage.setItem('attral_coupons', JSON.stringify(coupons));
+        console.log('💾 Coupons saved to localStorage');
+      } catch (error) {
+        console.error('❌ Error saving coupons to localStorage:', error);
+      }
+    }
+
+    // Wait for Firebase to be ready
+    async function waitForFirebase() {
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+      
+      while (attempts < maxAttempts) {
+        if (window.AttralFirebase && window.AttralFirebase.db) {
+          console.log('✅ Firebase is ready');
+          return;
+        }
+        attempts++;
+        console.log(`⏳ Waiting for Firebase... attempt ${attempts}/${maxAttempts}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      throw new Error('Firebase failed to load');
+    }
+
+    // Tab functionality
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetTab = button.getAttribute('data-tab');
+        
+        // Remove active class from all buttons and contents
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        
+        // Add active class to clicked button and corresponding content
+        button.classList.add('active');
+        document.getElementById(targetTab + '-tab').classList.add('active');
+        
+        // Load content based on tab
+        if (targetTab === 'manage') {
+          loadCoupons();
+        } else if (targetTab === 'affiliate') {
+          loadAffiliateCoupons();
+        } else if (targetTab === 'analytics') {
+          updateStats();
+        }
+      });
+    });
+
+    // Load coupons list
+    function loadCoupons() {
+      const container = document.getElementById('coupons-list-content');
+      container.innerHTML = '';
+      
+      if (coupons.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'coupon-item';
+        emptyDiv.style.cssText = `
+          text-align: center;
+          padding: 3rem;
+          color: #6b7280;
+          font-style: italic;
+          background: #f9fafb;
+        `;
+        emptyDiv.innerHTML = `
+          <div style="grid-column: 1 / -1;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #374151;">No coupons created yet</h3>
+            <p style="margin: 0;">Create your first coupon using the "Create Coupon" tab above.</p>
+          </div>
+        `;
+        container.appendChild(emptyDiv);
+        return;
+      }
+      
+      coupons.forEach(coupon => {
+        const couponDiv = document.createElement('div');
+        couponDiv.className = 'coupon-item';
+        
+        const payoutUsage = coupon.payoutUsage || 0;
+        const usageText = coupon.usageLimit ? 
+          `${coupon.usageCount}/${coupon.usageLimit} (cycle: ${payoutUsage})` : 
+          `${coupon.usageCount} (cycle: ${payoutUsage})`;
+        
+        couponDiv.innerHTML = `
+          <div class="coupon-code">${coupon.code}</div>
+          <div class="coupon-name">${coupon.name}</div>
+          <div class="coupon-type ${coupon.type}">${coupon.type}</div>
+          <div class="coupon-status ${coupon.isActive ? 'active' : 'inactive'}">
+            ${coupon.isActive ? 'Active' : 'Inactive'}
+          </div>
+          <div>${usageText}</div>
+          <div class="coupon-actions">
+            <button class="btn-edit" onclick="editCoupon('${coupon.id}')">Edit</button>
+            <button class="btn-edit" onclick="resetPayoutUsage('${coupon.code}')">Reset Cycle</button>
+            <button class="btn-delete" onclick="deleteCoupon('${coupon.id}')">Delete</button>
+          </div>
+        `;
+        
+        container.appendChild(couponDiv);
+      });
+    }
+
+    // Update statistics
+    function updateStats() {
+      const totalCoupons = coupons.length;
+      const activeCoupons = coupons.filter(c => c.isActive).length;
+      const totalUsage = coupons.reduce((sum, c) => sum + (c.usageCount || 0), 0);
+      const totalCycle = coupons.reduce((sum, c) => sum + (c.payoutUsage || 0), 0);
+      
+      document.getElementById('total-coupons').textContent = totalCoupons;
+      document.getElementById('active-coupons').textContent = activeCoupons;
+      document.getElementById('coupon-usage').textContent = totalUsage;
+      
+      // Calculate total discounts (simplified)
+      const totalDiscounts = coupons.reduce((sum, c) => {
+        const usageCount = c.usageCount || 0;
+        if (c.type === 'percentage') {
+          return sum + (usageCount * (c.maxDiscount || 0));
+        } else if (c.type === 'fixed') {
+          return sum + (usageCount * (c.value || 0));
+        } else if (c.type === 'shipping') {
+          return sum + (usageCount * 399); // Assuming ₹399 shipping
+        }
+        return sum;
+      }, 0);
+      
+      document.getElementById('total-discounts').textContent = `₹${totalDiscounts.toLocaleString()}`;
+    }
+
+    // Create coupon form handler
+    document.getElementById('create-coupon-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const newCoupon = {
+        code: formData.get('code').toUpperCase(),
+        name: formData.get('name'),
+        type: formData.get('type'),
+        value: parseInt(formData.get('value')),
+        minAmount: parseInt(formData.get('minAmount')) || 0,
+        maxDiscount: parseInt(formData.get('maxDiscount')) || null,
+        isActive: true,
+        validUntil: formData.get('validUntil') ? new Date(formData.get('validUntil')) : new Date('2025-12-31'),
+        usageLimit: formData.get('usageLimit') ? parseInt(formData.get('usageLimit')) : null,
+        usageCount: 0,
+        description: formData.get('description') || '',
+        createdAt: new Date()
+      };
+      
+      // Check if coupon code already exists
+      if (coupons.find(c => c.code === newCoupon.code)) {
+        alert('Coupon code already exists!');
+        return;
+      }
+      
+      try {
+        // Save to Firebase if available
+        if (window.AttralFirebase && window.AttralFirebase.db) {
+          console.log('💾 Saving coupon to Firebase...');
+          const docRef = await window.AttralFirebase.db.collection('coupons').add(newCoupon);
+          newCoupon.id = docRef.id;
+          console.log('✅ Coupon saved to Firebase with ID:', docRef.id);
+        } else {
+          // Fallback to localStorage
+          newCoupon.id = Date.now().toString();
+          console.log('💾 Saving coupon to localStorage...');
+        }
+        
+        // Add to local array
+        coupons.push(newCoupon);
+        
+        // Save to localStorage as backup
+        saveCouponsToLocalStorage();
+        
+        e.target.reset();
+        updateStats();
+        
+        alert('Coupon created successfully!');
+        
+        // Switch to manage tab
+        document.querySelector('[data-tab="manage"]').click();
+        
+      } catch (error) {
+        console.error('❌ Error creating coupon:', error);
+        alert('Error creating coupon. Please try again.');
+      }
+    });
+
+    // Edit coupon function
+    function editCoupon(id) {
+      const coupon = coupons.find(c => c.id === id);
+      if (coupon) {
+        showEditCouponModal(coupon);
+      }
+    }
+
+    // Show edit coupon modal
+    function showEditCouponModal(coupon) {
+      const modal = document.createElement('div');
+      modal.className = 'coupon-modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Edit Coupon: ${coupon.name}</h3>
+            <button class="close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="edit-coupon-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-coupon-code">Coupon Code *</label>
+                  <input type="text" id="edit-coupon-code" value="${coupon.code}" required />
+                </div>
+                <div class="form-group">
+                  <label for="edit-coupon-name">Coupon Name *</label>
+                  <input type="text" id="edit-coupon-name" value="${coupon.name}" required />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-coupon-type">Discount Type *</label>
+                  <select id="edit-coupon-type" required>
+                    <option value="percentage" ${coupon.type === 'percentage' ? 'selected' : ''}>Percentage (%)</option>
+                    <option value="fixed" ${coupon.type === 'fixed' ? 'selected' : ''}>Fixed Amount (₹)</option>
+                    <option value="shipping" ${coupon.type === 'shipping' ? 'selected' : ''}>Free Shipping</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="edit-coupon-value">Discount Value *</label>
+                  <input type="number" id="edit-coupon-value" value="${coupon.value}" required />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-min-amount">Minimum Order Amount</label>
+                  <input type="number" id="edit-min-amount" value="${coupon.minAmount || 0}" />
+                </div>
+                <div class="form-group">
+                  <label for="edit-max-discount">Maximum Discount (for percentage)</label>
+                  <input type="number" id="edit-max-discount" value="${coupon.maxDiscount || ''}" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-valid-until">Valid Until</label>
+                  <input type="date" id="edit-valid-until" value="${coupon.validUntil ? coupon.validUntil.toISOString().split('T')[0] : ''}" />
+                </div>
+                <div class="form-group">
+                  <label for="edit-usage-limit">Usage Limit</label>
+                  <input type="number" id="edit-usage-limit" value="${coupon.usageLimit || ''}" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="edit-description">Description</label>
+                <textarea id="edit-description" rows="3">${coupon.description || ''}</textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="edit-is-active" ${coupon.isActive ? 'checked' : ''} />
+                  <span>Active</span>
+                </label>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+            <button class="btn-save" onclick="saveEditedCoupon('${coupon.id}')">Save Changes</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Add modal styles if not already added
+      if (!document.getElementById('coupon-modal-styles')) {
+        const style = document.createElement('style');
+        style.id = 'coupon-modal-styles';
+        style.textContent = `
+          .coupon-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+          }
+          
+          .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+          }
+          
+          .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          
+          .modal-header h3 {
+            margin: 0;
+            color: #1f2937;
+          }
+          
+          .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 4px;
+          }
+          
+          .modal-body {
+            padding: 24px;
+          }
+          
+          .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding: 24px;
+            border-top: 1px solid #e5e7eb;
+          }
+          
+          .btn-cancel, .btn-save {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+          }
+          
+          .btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+          }
+          
+          .btn-cancel:hover {
+            background: #e5e7eb;
+          }
+          
+          .btn-save {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+          }
+          
+          .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          }
+          
+          .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #374151;
+          }
+          
+          .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      // Setup close handlers
+      modal.querySelector('.close-modal').onclick = closeEditModal;
+      modal.onclick = (e) => {
+        if (e.target === modal) closeEditModal();
+      };
+    }
+
+    // Close edit modal
+    function closeEditModal() {
+      const modal = document.querySelector('.coupon-modal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    // Save edited coupon
+    async function saveEditedCoupon(couponId) {
+      try {
+        const coupon = coupons.find(c => c.id === couponId);
+        if (!coupon) {
+          alert('Coupon not found');
+          return;
+        }
+
+        // Collect form data
+        const updatedCoupon = {
+          ...coupon,
+          code: document.getElementById('edit-coupon-code').value.trim().toUpperCase(),
+          name: document.getElementById('edit-coupon-name').value.trim(),
+          type: document.getElementById('edit-coupon-type').value,
+          value: parseInt(document.getElementById('edit-coupon-value').value),
+          minAmount: parseInt(document.getElementById('edit-min-amount').value) || 0,
+          maxDiscount: parseInt(document.getElementById('edit-max-discount').value) || null,
+          validUntil: document.getElementById('edit-valid-until').value ? new Date(document.getElementById('edit-valid-until').value) : new Date('2025-12-31'),
+          usageLimit: document.getElementById('edit-usage-limit').value ? parseInt(document.getElementById('edit-usage-limit').value) : null,
+          description: document.getElementById('edit-description').value.trim(),
+          isActive: document.getElementById('edit-is-active').checked,
+          updatedAt: new Date()
+        };
+
+        // Validate required fields
+        if (!updatedCoupon.code || !updatedCoupon.name || !updatedCoupon.type || !updatedCoupon.value) {
+          alert('Please fill in all required fields');
+          return;
+        }
+
+        // Check if code already exists (excluding current coupon)
+        const existingCoupon = coupons.find(c => c.code === updatedCoupon.code && c.id !== couponId);
+        if (existingCoupon) {
+          alert('Coupon code already exists!');
+          return;
+        }
+
+        // Update in Firebase if available
+        if (window.AttralFirebase && window.AttralFirebase.db) {
+          console.log('💾 Updating coupon in Firebase...');
+          await window.AttralFirebase.db.collection('coupons').doc(couponId).update(updatedCoupon);
+          console.log('✅ Coupon updated in Firebase');
+        }
+
+        // Update local array
+        const couponIndex = coupons.findIndex(c => c.id === couponId);
+        if (couponIndex !== -1) {
+          coupons[couponIndex] = updatedCoupon;
+        }
+
+        // Save to localStorage as backup
+        saveCouponsToLocalStorage();
+
+        // Update UI
+        loadCoupons();
+        updateStats();
+        
+        // Close modal
+        closeEditModal();
+        
+        alert('Coupon updated successfully!');
+
+      } catch (error) {
+        console.error('❌ Error updating coupon:', error);
+        alert('Error updating coupon. Please try again.');
+      }
+    }
+
+    // Delete coupon function
+    async function deleteCoupon(id) {
+      const coupon = coupons.find(c => c.id === id);
+      if (coupon) {
+        if (confirm(`Are you sure you want to delete coupon "${coupon.name}"?`)) {
+          try {
+            // Delete from Firebase if available
+            if (window.AttralFirebase && window.AttralFirebase.db) {
+              console.log('🗑️ Deleting coupon from Firebase...');
+              await window.AttralFirebase.db.collection('coupons').doc(id).delete();
+              console.log('✅ Coupon deleted from Firebase');
+            }
+            
+            // Remove from local array
+            coupons = coupons.filter(c => c.id !== id);
+            
+            // Update localStorage
+            saveCouponsToLocalStorage();
+            
+            loadCoupons();
+            updateStats();
+            alert('Coupon deleted successfully!');
+            
+            // If no coupons left, show empty state
+            if (coupons.length === 0) {
+              console.log('All coupons deleted. Showing empty state.');
+            }
+            
+          } catch (error) {
+            console.error('❌ Error deleting coupon:', error);
+            alert('Error deleting coupon. Please try again.');
+          }
+        }
+      }
+    }
+
+    // Load affiliates from Firebase
+    async function loadAffiliatesFromFirebase() {
+      try {
+        console.log('🤝 Loading affiliates from Firebase...');
+        
+        // Wait for Firebase to be ready
+        await waitForFirebase();
+        
+        if (!window.AttralFirebase || !window.AttralFirebase.db) {
+          console.log('❌ Firebase not available for affiliates');
+          document.getElementById('affiliate-status').textContent = 'Firebase not available';
+          return;
+        }
+
+        // Fetch all affiliates from Firestore
+        const affiliatesSnapshot = await window.AttralFirebase.db
+          .collection('affiliates')
+          .orderBy('createdAt', 'desc')
+          .get();
+
+        console.log('📊 Loaded affiliates from Firebase:', affiliatesSnapshot.size);
+
+        // Clear existing array
+        affiliates = [];
+
+        // Build affiliates array from Firestore data
+        affiliatesSnapshot.forEach(doc => {
+          const affiliateData = doc.data();
+          if (affiliateData.code) { // Only include affiliates with codes
+            const affiliate = {
+              id: doc.id,
+              uid: affiliateData.uid || doc.id,
+              name: affiliateData.displayName || affiliateData.name || affiliateData.email || 'Unknown',
+              email: affiliateData.email || 'No email provided',
+              code: affiliateData.code,
+              status: affiliateData.status || 'active',
+              createdAt: affiliateData.createdAt ? affiliateData.createdAt.toDate() : new Date()
+            };
+            
+            affiliates.push(affiliate);
+          }
+        });
+
+        console.log('✅ Affiliates loaded successfully:', affiliates.length);
+        document.getElementById('affiliate-status').textContent = `Found ${affiliates.length} affiliate codes`;
+        document.getElementById('create-affiliate-coupons-btn').disabled = false;
+
+        // Load affiliate coupons
+        loadAffiliateCoupons();
+
+      } catch (error) {
+        console.error('❌ Error loading affiliates from Firebase:', error);
+        document.getElementById('affiliate-status').textContent = 'Error loading affiliates';
+      }
+    }
+
+    // Load affiliate coupons
+    function loadAffiliateCoupons() {
+      const container = document.getElementById('affiliate-coupons-content');
+      container.innerHTML = '';
+      
+      if (affiliates.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'coupon-item';
+        emptyDiv.style.cssText = `
+          text-align: center;
+          padding: 3rem;
+          color: #6b7280;
+          font-style: italic;
+          background: #f9fafb;
+        `;
+        emptyDiv.innerHTML = `
+          <div style="grid-column: 1 / -1;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #374151;">No affiliate codes found</h3>
+            <p style="margin: 0;">Click "Load Affiliate Codes" to fetch affiliate codes from Firebase.</p>
+          </div>
+        `;
+        container.appendChild(emptyDiv);
+        return;
+      }
+      
+      affiliates.forEach(affiliate => {
+        // Check if coupon already exists for this affiliate
+        const existingCoupon = coupons.find(c => c.code === affiliate.code);
+        
+        const couponDiv = document.createElement('div');
+        couponDiv.className = 'coupon-item';
+        
+        const statusHtml = existingCoupon ? 
+          `<div class="coupon-status ${existingCoupon.isActive ? 'active' : 'inactive'}">
+            ${existingCoupon.isActive ? 'Active' : 'Inactive'}
+          </div>` :
+          `<div style="color: #f59e0b; font-weight: 600;">Not Created</div>`;
+        
+        const payoutUsage = existingCoupon ? (existingCoupon.payoutUsage || 0) : 0;
+        const usageText = existingCoupon ? 
+          (existingCoupon.usageLimit ? 
+            `${existingCoupon.usageCount}/${existingCoupon.usageLimit} (cycle: ${payoutUsage})` : 
+            `${existingCoupon.usageCount} (cycle: ${payoutUsage})`) : 
+          '0 (cycle: 0)';
+        
+        const actionsHtml = existingCoupon ? 
+          `<div class="coupon-actions">
+            <button class="btn-edit" onclick="editCoupon('${existingCoupon.id}')">Edit</button>
+            <button class="btn-edit" onclick="resetPayoutUsage('${affiliate.code}')">Reset Cycle</button>
+            <button class="btn-delete" onclick="deleteCoupon('${existingCoupon.id}')">Delete</button>
+          </div>` :
+          `<div class="coupon-actions">
+            <button class="btn-primary" onclick="createAffiliateCoupon('${affiliate.code}', '${affiliate.name}')" style="padding: 0.5rem; font-size: 0.875rem;">Create 5% Coupon</button>
+          </div>`;
+        
+        couponDiv.innerHTML = `
+          <div class="coupon-code">${affiliate.code}</div>
+          <div class="coupon-name">${affiliate.name}</div>
+          <div class="affiliate-email">${affiliate.email}</div>
+          ${statusHtml}
+          <div style="text-align: center; font-weight: 600; color: #374151;">${usageText}</div>
+          ${actionsHtml}
+        `;
+        
+        container.appendChild(couponDiv);
+      });
+    }
+
+    // Create affiliate coupon
+    async function createAffiliateCoupon(code, name) {
+      try {
+        const newCoupon = {
+          code: code,
+          name: `${name} - 5% Affiliate Discount`,
+          type: 'percentage',
+          value: 5,
+          minAmount: 0,
+          maxDiscount: null,
+          isActive: true,
+          validUntil: new Date('2025-12-31'),
+          usageLimit: null,
+          usageCount: 0,
+          description: `5% discount for affiliate ${name} (${code})`,
+          createdAt: new Date(),
+          isAffiliateCoupon: true,
+          affiliateCode: code
+        };
+        
+        // Check if coupon code already exists
+        if (coupons.find(c => c.code === newCoupon.code)) {
+          alert('Coupon code already exists!');
+          return;
+        }
+        
+        // Save to Firebase if available
+        if (window.AttralFirebase && window.AttralFirebase.db) {
+          console.log('💾 Saving affiliate coupon to Firebase...');
+          const docRef = await window.AttralFirebase.db.collection('coupons').add(newCoupon);
+          newCoupon.id = docRef.id;
+          console.log('✅ Affiliate coupon saved to Firebase with ID:', docRef.id);
+        } else {
+          // Fallback to localStorage
+          newCoupon.id = Date.now().toString();
+          console.log('💾 Saving affiliate coupon to localStorage...');
+        }
+        
+        // Add to local array
+        coupons.push(newCoupon);
+        
+        // Save to localStorage as backup
+        saveCouponsToLocalStorage();
+        
+        updateStats();
+        loadAffiliateCoupons();
+        
+        alert(`5% discount coupon created for affiliate ${name}!`);
+        
+      } catch (error) {
+        console.error('❌ Error creating affiliate coupon:', error);
+        alert('Error creating affiliate coupon. Please try again.');
+      }
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load coupons from Firebase
+      loadCouponsFromFirebase();
+      
+      // Setup affiliate button handlers
+      document.getElementById('load-affiliates-btn').addEventListener('click', loadAffiliatesFromFirebase);
+    });
+
+    // Initialize stats
+    updateStats();
+
+  // Reset payout (cycle) usage counter by coupon code
+  async function resetPayoutUsage(code){
+    try {
+      if (!code) return;
+      if (!confirm(`Reset cycle usage for coupon ${code}?`)) return;
+      if (window.AttralFirebase && window.AttralFirebase.db) {
+        const db = window.AttralFirebase.db;
+        const snap = await db.collection('coupons').where('code','==', code).limit(1).get();
+        if (!snap.empty) {
+          await snap.docs[0].ref.set({ payoutUsage: 0, updatedAt: (window.firebase && window.firebase.firestore ? window.firebase.firestore.FieldValue.serverTimestamp() : new Date()) }, { merge: true });
+          // Refresh local
+          loadCouponsFromFirebase();
+          alert('Cycle usage reset');
+        } else {
+          alert('Coupon not found');
+        }
+      } else {
+        alert('Firebase not available');
+      }
+    } catch (e) {
+      console.error('Reset payout usage failed', e);
+      alert('Failed to reset');
+    }
+  }
+  </script>
+</body>
+</html>

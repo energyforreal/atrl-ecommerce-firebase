@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Details | ATTRAL</title>
+  <meta name="description" content="Complete your order with secure checkout." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/product.css" />
+  
+  <style>
+    .order-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .order-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .order-header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+    
+    .order-header p {
+      color: #6b7280;
+      font-size: 1.125rem;
+    }
+    
+    .order-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+    
+    .order-section {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+    }
+    
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #667eea;
+    }
+    
+    .product-summary {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background: #f8fafc;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+    
+    .product-image {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    
+    .product-details h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+    
+    .product-price {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #ff6b35;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    .checkout-summary {
+      background: linear-gradient(135deg, #f8fafc, #ffffff);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding: 0.5rem 0;
+    }
+    
+    .summary-row.total {
+      border-top: 2px solid #e5e7eb;
+      padding-top: 1rem;
+      margin-top: 1rem;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #1f2937;
+    }
+    
+    .btn-checkout {
+      width: 100%;
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.125rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 2rem;
+    }
+    
+    .btn-checkout:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+    }
+    
+    .btn-checkout:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    /* Edit User Button */
+    .edit-user-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-left: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .edit-user-btn:hover {
+      background: #5a67d8;
+      transform: translateY(-1px);
+    }
+    
+    /* Disabled form fields */
+    .form-input:disabled {
+      background-color: #f8fafc !important;
+      opacity: 0.8;
+      cursor: not-allowed;
+    }
+    
+    .form-input:disabled:hover {
+      border-color: #e5e7eb !important;
+    }
+
+    /* Coupon Section Styles */
+    .coupon-section {
+      background: #f8fafc;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .coupon-input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .coupon-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .coupon-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-apply-coupon {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .btn-apply-coupon:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-apply-coupon:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .coupon-message {
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .coupon-message.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .coupon-message.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    .coupon-message.info {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #93c5fd;
+    }
+
+    .applied-coupon {
+      background: #f0fdf4;
+      border: 2px solid #10b981;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .coupon-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .coupon-name {
+      font-weight: 600;
+      color: #065f46;
+    }
+
+    .coupon-discount {
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    .remove-coupon-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .remove-coupon-btn:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
+    /* Free shipping indicator */
+    .free-shipping {
+      color: #10b981 !important;
+      font-weight: 600;
+    }
+
+    .shipping-charge {
+      color: #374151;
+    }
+    
+    /* Notification styles */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      font-weight: 600;
+      animation: slideInRight 0.3s ease-out;
+      max-width: 400px;
+    }
+    
+    .notification.success {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      color: white;
+    }
+    
+    .notification.info {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    
+    .notification.error {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+    }
+    
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ffffff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .error-message {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+    
+    .success-message {
+      color: #10b981;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+    
+    .shipping-info {
+      background: linear-gradient(135deg, #e7faf0, #d1fae5);
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid #10b981;
+      margin-bottom: 1.5rem;
+    }
+    
+    .shipping-info p {
+      margin: 0;
+      color: #065f46;
+      font-weight: 600;
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @media (max-width: 768px) {
+      .order-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      
+      .order-container {
+        padding: 1rem;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .product-summary {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" /></a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="account.html">My Account</a>
+        <a href="affiliates.html">Affiliate Central</a>
+        <a href="contact.html">Contact Us</a>
+        <div class="dropdown">
+          <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false" aria-label="More menu">More ▾</a>
+          <div class="dropdown-menu" role="menu" aria-labelledby="dropdown-toggle">
+            <a href="about.html" role="menuitem">About Us</a>
+            <a href="blog.html" target="_blank" rel="noopener" role="menuitem">Blog</a>
+            <a href="privacy.html" role="menuitem">Privacy</a>
+            <a href="terms.html" role="menuitem">Terms</a>
+          </div>
+        </div>
+        <a href="cart.html" class="cart-link">Cart <span id="cart-count" class="badge">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="order-container">
+      <div class="order-header">
+        <h1>Complete Your Order</h1>
+        <p>Secure checkout with Razorpay - Your payment information is encrypted and secure</p>
+      </div>
+
+      <div class="order-content">
+        <!-- Order Details -->
+        <div class="order-section">
+          <h2 class="section-title">Order Details</h2>
+          
+          <!-- Product Summary -->
+          <div class="product-summary" id="product-summary">
+            <img id="product-image" class="product-image" src="" alt="Product" />
+            <div class="product-details">
+              <h3 id="product-title">Product Name</h3>
+              <div class="product-price" id="product-price">₹0</div>
+            </div>
+          </div>
+
+          <!-- Cart Items (for cart checkout) -->
+          <div id="cart-items" style="display: none;">
+            <h3 style="margin-bottom: 1rem; color: #1f2937;">Order Items</h3>
+            <div id="cart-items-list"></div>
+          </div>
+
+          <!-- Shipping Info -->
+          <div class="shipping-info">
+            <p>🚚 Flat shipping rate ₹399 across India • Free shipping available with valid coupon codes • 2-5 day delivery</p>
+          </div>
+
+          <!-- Customer Information Form -->
+          <form id="customer-form">
+            <h3 style="margin-bottom: 1rem; color: #1f2937;">
+              Customer Information
+              <span id="auto-populated-indicator" style="display: none; font-size: 0.875rem; color: #10b981; font-weight: 500; margin-left: 0.5rem;">
+                ✓ Auto-populated
+              </span>
+            </h3>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="firstName">First Name *</label>
+                <input type="text" id="firstName" name="firstName" class="form-input" required />
+                <div id="firstName-error" class="error-message"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lastName">Last Name *</label>
+                <input type="text" id="lastName" name="lastName" class="form-input" required />
+                <div id="lastName-error" class="error-message"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address *</label>
+              <input type="email" id="email" name="email" class="form-input" required />
+              <div id="email-error" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="phone">Phone Number *</label>
+              <input type="tel" id="phone" name="phone" class="form-input" required />
+              <div id="phone-error" class="error-message"></div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0; color: #1f2937;">Shipping Address</h3>
+            
+            <div class="form-group">
+              <label class="form-label" for="address">Address *</label>
+              <textarea id="address" name="address" class="form-input" rows="3" required></textarea>
+              <div id="address-error" class="error-message"></div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="city">City *</label>
+                <input type="text" id="city" name="city" class="form-input" required />
+                <div id="city-error" class="error-message"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="state">State *</label>
+                <input type="text" id="state" name="state" class="form-input" required />
+                <div id="state-error" class="error-message"></div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="pincode">PIN Code *</label>
+                <input type="text" id="pincode" name="pincode" class="form-input" required />
+                <div id="pincode-error" class="error-message"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="country">Country</label>
+                <input type="text" id="country" name="country" class="form-input" value="India" readonly />
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Checkout Summary -->
+        <div class="order-section">
+          <h2 class="section-title">Order Summary</h2>
+          
+          <!-- Free Shipping Information -->
+          <div class="free-shipping-info" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 2px solid #0ea5e9; border-radius: 16px; padding: 24px; margin-bottom: 24px; position: relative; overflow: hidden; box-shadow: 0 8px 32px rgba(14, 165, 233, 0.15);">
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #0ea5e9, #0284c7, #0ea5e9); background-size: 200% 100%; animation: shimmer 2s ease-in-out infinite;"></div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="font-size: 2rem;">🚚</div>
+              <div style="flex: 1;">
+                <h3 style="margin-bottom: 8px; color: #0c4a6e; font-size: 1.25rem; font-weight: 700;">Want Free Shipping?</h3>
+                <p style="margin-bottom: 16px; color: #0c4a6e; font-size: 0.9rem; font-weight: 500;">Get your exclusive free shipping coupon code by signing up to our newsletter on our home page!</p>
+                <a href="index.html#newsletter" style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(14, 165, 233, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(14, 165, 233, 0.3)'">
+                  <span>📧</span>
+                  <span>Get Free Shipping Code</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coupon Section -->
+          <div class="coupon-section">
+            <h3 style="margin-bottom: 1rem; color: #1f2937;">💳 Apply Coupon <span style="font-size: 0.8rem; color: #6b7280;">(Max 2 coupons)</span></h3>
+            <div class="coupon-input-group">
+              <input type="text" id="coupon-code" placeholder="Enter coupon code" class="coupon-input" />
+              <button id="apply-coupon-btn" class="btn-apply-coupon" onclick="applyCoupon()">
+                Apply
+              </button>
+            </div>
+            <div id="coupon-message" class="coupon-message"></div>
+            <div id="applied-coupons" class="applied-coupons">
+              <!-- Applied coupons will be displayed here -->
+            </div>
+          </div>
+
+          <div class="checkout-summary">
+            <div class="summary-row">
+              <span>Product Price:</span>
+              <span id="subtotal">₹0</span>
+            </div>
+            <div class="summary-row" id="shipping-row">
+              <span>Shipping:</span>
+              <span id="shipping-amount">₹399</span>
+            </div>
+            <div class="summary-row" id="discount-row" style="display: none;">
+              <span>Discount:</span>
+              <span id="discount-amount" style="color: #10b981;">-₹0</span>
+            </div>
+            <div class="summary-row">
+              <span>Taxes:</span>
+              <span>Included</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total Amount:</span>
+              <span id="total-amount">₹0</span>
+            </div>
+          </div>
+
+          <button id="checkout-btn" class="btn-checkout" onclick="initiatePayment()">
+            <span id="checkout-text">💳 Pay with Razorpay</span>
+            <div id="checkout-spinner" class="loading-spinner" style="display: none;"></div>
+          </button>
+          
+
+          <div id="payment-message" style="margin-top: 1rem;"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About ATTRAL</h4>
+          <p>Smart Power. Smarter Living. We provide next-gen consumer electronics to power your lifestyle with cutting-edge GaN technology.</p>
+          <div class="social-links">
+            <a href="https://facebook.com/attral" target="_blank" rel="noopener" title="Follow us on Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://instagram.com/attral" target="_blank" rel="noopener" title="Follow us on Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.83-9.281H7.83c-.49 0-.89.4-.89.89v7.83c0 .49.4.89.89.89h8.449c.49 0 .89-.4.89-.89v-7.83c0-.49-.4-.89-.89-.89z"/>
+              </svg>
+            </a>
+            <a href="https://twitter.com/attral" target="_blank" rel="noopener" title="Follow us on Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </a>
+            <a href="https://linkedin.com/company/attral" target="_blank" rel="noopener" title="Connect on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <p><a href="index.html">Home</a></p>
+          <p><a href="shop.html">Shop</a></p>
+          <p><a href="about.html">About Us</a></p>
+          <p><a href="contact.html">Contact</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <p><a href="account.html">My Account</a></p>
+          <p><a href="cart.html">Shopping Cart</a></p>
+          <p><a href="affiliates.html">Affiliate Program</a></p>
+          <p><a href="blog.html" target="_blank" rel="noopener">Blog</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Contact Info</h4>
+          <p>📧 info@attral.in</p>
+          <p>📱 +91 8903479870</p>
+          <p>📍 Phase 2 Sathuvachari<br>Vellore - 632009<br>Tamil Nadu, India</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="year"></span> ATTRAL. All rights reserved.</p>
+        <nav>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/dropdown.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  
+  <script>
+    let currentProduct = null;
+    let orderData = {};
+    let appliedCoupons = []; // Array to store multiple applied coupons (max 2)
+    let shippingCost = 399; // Default shipping cost
+    let freeShippingThreshold = 999999; // No automatic free shipping - only via coupons
+    let maxCoupons = 2; // Maximum number of coupons allowed
+
+    // Load order data from sessionStorage or URL params
+    async function loadOrderData() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderType = urlParams.get('type');
+        
+        if (orderType === 'cart') {
+          // Handle cart checkout or Buy Now direct checkout
+          const cartData = sessionStorage.getItem('cartCheckout');
+          const buyNowProduct = sessionStorage.getItem('buyNowProduct');
+          
+          if (cartData) {
+            // Handle cart checkout
+            const checkoutData = JSON.parse(cartData);
+            currentProduct = {
+              id: 'cart',
+              title: `Cart Order (${checkoutData.items.length} items)`,
+              price: checkoutData.total,
+              image: checkoutData.items[0]?.image || 'assets/product_images/1.jpeg',
+              items: checkoutData.items
+            };
+            sessionStorage.removeItem('cartCheckout'); // Clear after use
+            await renderOrderDetails();
+            
+            // Auto-populate user data for cart checkout
+            await autoPopulateUserData();
+          } else if (buyNowProduct) {
+            // Handle Buy Now direct checkout (bypassing cart page)
+            const product = JSON.parse(buyNowProduct);
+            currentProduct = {
+              id: 'buynow',
+              title: `Buy Now: ${product.title}`,
+              price: product.price,
+              image: product.image || 'assets/product_images/1.jpeg',
+              items: [product]
+            };
+            sessionStorage.removeItem('buyNowProduct'); // Clear after use
+            await renderOrderDetails();
+            
+            // Auto-populate user data for Buy Now checkout
+            await autoPopulateUserData();
+          } else {
+            showError('Order data not found');
+          }
+        } else {
+          // Handle single product Buy Now
+          const storedProduct = sessionStorage.getItem('buyNowProduct');
+          if (storedProduct) {
+            currentProduct = JSON.parse(storedProduct);
+            sessionStorage.removeItem('buyNowProduct'); // Clear after use
+            await renderOrderDetails();
+          } else {
+            // Try to get from URL params
+            const productId = urlParams.get('productId');
+            
+            if (productId) {
+              // Load product from products.json
+              try {
+                const response = await fetch('data/products.json');
+                const products = await response.json();
+                currentProduct = products.find(p => p.id == productId);
+                if (currentProduct) {
+                  await renderOrderDetails();
+                } else {
+                  showError('Product not found');
+                }
+              } catch (error) {
+                console.error('Error loading product:', error);
+                showError('Error loading product details');
+              }
+            } else {
+              showError('No product selected');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading order data:', error);
+        showError('Error loading order details');
+      }
+    }
+
+    // Auto-populate user data from stored information
+    async function autoPopulateUserData() {
+      try {
+        // Try to get user data from Firebase address book
+        const userData = await getUserData();
+        
+        if (userData) {
+          // Populate customer information fields
+          if (userData.firstName) document.getElementById('firstName').value = userData.firstName;
+          if (userData.lastName) document.getElementById('lastName').value = userData.lastName;
+          if (userData.email) document.getElementById('email').value = userData.email;
+          if (userData.phone) document.getElementById('phone').value = userData.phone;
+          
+          // Populate shipping address fields if available
+          if (userData.address) document.getElementById('address').value = userData.address;
+          if (userData.city) document.getElementById('city').value = userData.city;
+          if (userData.state) document.getElementById('state').value = userData.state;
+          if (userData.pincode) document.getElementById('pincode').value = userData.pincode;
+          if (userData.country) document.getElementById('country').value = userData.country;
+          
+          // Show edit option
+          showEditOption();
+          
+          // Show notification about auto-population
+          if (userData.address) {
+            showNotification('User information and shipping address auto-populated from your address book. You can edit if needed.', 'info');
+          } else {
+            showNotification('User information auto-populated from your profile. You can edit if needed.', 'info');
+          }
+        } else {
+          console.log('No user data found for auto-population');
+        }
+      } catch (error) {
+        console.error('Error auto-populating user data:', error);
+        showNotification('Could not auto-populate user data. Please fill in your information manually.', 'error');
+      }
+    }
+
+    // Get user data from Firebase address book
+    async function getUserData() {
+      try {
+        console.log('🔍 Starting getUserData...');
+        
+        // Wait for Firebase to be ready
+        await waitForFirebase();
+        
+        // Check if Firebase is available and user is authenticated
+        if (!window.AttralFirebase || !window.AttralFirebase.auth || !window.AttralFirebase.db) {
+          console.log('❌ Firebase not available, falling back to local data');
+          return getLocalUserData();
+        }
+
+        console.log('✅ Firebase is available');
+
+        // Wait for user authentication
+        const user = await waitForUserAuth();
+        if (!user) {
+          console.log('❌ User not authenticated, falling back to local data');
+          return getLocalUserData();
+        }
+
+        console.log('✅ User authenticated:', user.uid, user.email);
+
+        // Fetch default address from Firebase (try uid, then userId)
+        console.log('🔍 Fetching default address...');
+        const addrCol = window.AttralFirebase.db.collection('addresses');
+        let addressesSnapshot = await addrCol
+          .where('uid', '==', user.uid)
+          .where('isDefault', '==', true)
+          .limit(1)
+          .get();
+        if (addressesSnapshot.empty) {
+          // Some schemas use userId instead of uid
+          addressesSnapshot = await addrCol
+            .where('userId', '==', user.uid)
+            .where('isDefault', '==', true)
+            .limit(1)
+            .get();
+        }
+
+        console.log('📊 Default address query result:', addressesSnapshot.size, 'documents');
+
+        if (!addressesSnapshot.empty) {
+          const defaultAddress = addressesSnapshot.docs[0].data();
+          console.log('✅ Found default address:', defaultAddress);
+          
+          // Extract user information from default address
+          const userData = {
+            firstName: defaultAddress.fullName ? defaultAddress.fullName.split(' ')[0] : '',
+            lastName: defaultAddress.fullName ? defaultAddress.fullName.split(' ').slice(1).join(' ') : '',
+            email: user.email || '',
+            phone: defaultAddress.phone || '',
+            address: (defaultAddress.addressLine1 || '') + (defaultAddress.addressLine2 ? ', ' + defaultAddress.addressLine2 : ''),
+            city: defaultAddress.city || '',
+            state: defaultAddress.state || '',
+            pincode: defaultAddress.pincode || '',
+            country: defaultAddress.country || 'India'
+          };
+
+          console.log('✅ Returning user data from default address:', userData);
+          return userData;
+        }
+
+        // If no default address, try to get any address
+        console.log('🔍 No default address, fetching any address...');
+        let anyAddressSnapshot;
+        
+        try {
+          // First try with orderBy
+          anyAddressSnapshot = await addrCol
+            .where('uid', '==', user.uid)
+            .orderBy('createdAt', 'desc')
+            .limit(1)
+            .get();
+        } catch (error) {
+          console.log('⚠️ OrderBy failed, trying without orderBy...', error.message);
+          // If orderBy fails, try without it
+          anyAddressSnapshot = await addrCol
+            .where('uid', '==', user.uid)
+            .limit(1)
+            .get();
+        }
+        // Try userId field if still empty
+        if (anyAddressSnapshot.empty) {
+          try {
+            anyAddressSnapshot = await addrCol
+              .where('userId', '==', user.uid)
+              .orderBy('createdAt', 'desc')
+              .limit(1)
+              .get();
+          } catch {
+            anyAddressSnapshot = await addrCol
+              .where('userId', '==', user.uid)
+              .limit(1)
+              .get();
+          }
+        }
+
+        console.log('📊 Any address query result:', anyAddressSnapshot.size, 'documents');
+
+        if (!anyAddressSnapshot.empty) {
+          const address = anyAddressSnapshot.docs[0].data();
+          console.log('✅ Found user address:', address);
+          
+          const userData = {
+            firstName: address.fullName ? address.fullName.split(' ')[0] : '',
+            lastName: address.fullName ? address.fullName.split(' ').slice(1).join(' ') : '',
+            email: user.email || '',
+            phone: address.phone || '',
+            address: (address.addressLine1 || '') + (address.addressLine2 ? ', ' + address.addressLine2 : ''),
+            city: address.city || '',
+            state: address.state || '',
+            pincode: address.pincode || '',
+            country: address.country || 'India'
+          };
+
+          console.log('✅ Returning user data from any address:', userData);
+          return userData;
+        }
+
+        // If no addresses found, try users profile document
+        try {
+          console.log('🔍 No addresses found, checking users profile...');
+          const userDoc = await window.AttralFirebase.db.collection('users').doc(user.uid).get();
+          if (userDoc.exists) {
+            const ud = userDoc.data() || {};
+            return {
+              firstName: ud.firstName || (user.displayName ? user.displayName.split(' ')[0] : ''),
+              lastName: ud.lastName || (user.displayName ? user.displayName.split(' ').slice(1).join(' ') : ''),
+              email: ud.email || user.email || '',
+              phone: ud.phone || ud.phoneNumber || user.phoneNumber || '',
+              address: ud.address || ud.addressLine1 || '',
+              city: ud.city || '',
+              state: ud.state || '',
+              pincode: ud.pincode || '',
+              country: ud.country || 'India'
+            };
+          }
+        } catch (e) {
+          console.log('Users profile lookup skipped/failed:', e?.message || e);
+        }
+
+        // Finally, fall back to Firebase Auth data
+        console.log('❌ No addresses or profile found, using Firebase Auth data');
+        return {
+          firstName: user.displayName ? user.displayName.split(' ')[0] : '',
+          lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+          email: user.email || '',
+          phone: user.phoneNumber || ''
+        };
+
+      } catch (error) {
+        console.error('❌ Error fetching user data from Firebase:', error);
+        return getLocalUserData();
+      }
+    }
+
+    // Wait for Firebase to be ready
+    async function waitForFirebase() {
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+      
+      while (attempts < maxAttempts) {
+        if (window.AttralFirebase && window.AttralFirebase.auth && window.AttralFirebase.db) {
+          console.log('✅ Firebase is ready');
+          return;
+        }
+        attempts++;
+        console.log(`⏳ Waiting for Firebase... attempt ${attempts}/${maxAttempts}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      throw new Error('Firebase failed to load');
+    }
+
+    // Wait for user authentication
+    async function waitForUserAuth() {
+      const auth = window.AttralFirebase?.auth;
+      if (!auth) return null;
+      // Fast path
+      const current = auth.currentUser;
+      if (current && !current.isAnonymous) {
+        console.log('✅ User is authenticated (immediate)');
+        return current;
+      }
+      // Event-based wait with timeout
+      return new Promise(resolve => {
+        let settled = false;
+        const timeout = setTimeout(() => {
+          if (!settled) {
+            console.log('❌ User authentication timeout');
+            settled = true;
+            resolve(null);
+          }
+        }, 8000);
+        const unsubscribe = auth.onAuthStateChanged(user => {
+          if (settled) return;
+        if (user && !user.isAnonymous) {
+            console.log('✅ User is authenticated (event)');
+            settled = true;
+            clearTimeout(timeout);
+            unsubscribe && unsubscribe();
+            resolve(user);
+          }
+        });
+      });
+    }
+
+    // Debug function to test Firebase connection and data
+    async function debugFirebaseConnection() {
+      console.log('🔧 DEBUG: Testing Firebase connection...');
+      
+      try {
+        await waitForFirebase();
+        console.log('✅ Firebase is ready');
+        
+        const user = await waitForUserAuth();
+        if (!user) {
+          console.log('❌ No authenticated user');
+          return;
+        }
+        
+        console.log('✅ User authenticated:', {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          isAnonymous: user.isAnonymous
+        });
+        
+        // Test addresses collection
+        console.log('🔍 Testing addresses collection...');
+        const allAddresses = await window.AttralFirebase.db.collection('addresses')
+          .where('uid', '==', user.uid)
+          .get();
+        
+        console.log('📊 All addresses for user:', allAddresses.size);
+        allAddresses.forEach((doc, index) => {
+          const data = doc.data();
+          console.log(`Address ${index + 1}:`, {
+            id: doc.id,
+            fullName: data.fullName,
+            phone: data.phone,
+            isDefault: data.isDefault,
+            createdAt: data.createdAt
+          });
+        });
+        
+        // Test default address query
+        console.log('🔍 Testing default address query...');
+        const defaultAddresses = await window.AttralFirebase.db.collection('addresses')
+          .where('uid', '==', user.uid)
+          .where('isDefault', '==', true)
+          .get();
+        
+        console.log('📊 Default addresses:', defaultAddresses.size);
+        
+      } catch (error) {
+        console.error('❌ Debug error:', error);
+      }
+    }
+
+    // Make debug function available globally
+    window.debugFirebaseConnection = debugFirebaseConnection;
+
+    // Debug payment system
+    function debugPayment() {
+      console.log('🔧 PAYMENT DEBUG INFO:');
+      console.log('Razorpay Key:', window.ATTRAL_PUBLIC?.RAZORPAY_KEY_ID);
+      console.log('Current Product:', currentProduct);
+      
+      try {
+        const orderData = collectOrderData();
+        console.log('Order Data:', orderData);
+        console.log('Total Amount:', orderData.pricing?.total);
+        console.log('Amount in Paise:', orderData.pricing?.total * 100);
+      } catch (error) {
+        console.error('Error collecting order data:', error);
+      }
+      
+      // Test API endpoint
+      const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+      fetch(`${apiBaseUrl}/api/create_order.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: 100,
+          currency: 'INR',
+          receipt: 'test_receipt'
+        })
+      })
+      .then(response => {
+        console.log('API Response Status:', response.status);
+        return response.text();
+      })
+      .then(data => {
+        console.log('API Response:', data);
+      })
+      .catch(error => {
+        console.error('API Test Error:', error);
+      });
+    }
+
+    // Make functions available globally
+    window.debugPayment = debugPayment;
+
+    // Debug coupon system
+    function debugCoupons() {
+      console.log('🔧 COUPON DEBUG INFO:');
+      console.log('Coupons loaded:', couponsLoaded);
+      console.log('Coupon database:', couponDatabase);
+      console.log('Available coupon codes:', Object.keys(couponDatabase));
+      console.log('Firebase available:', !!(window.AttralFirebase && window.AttralFirebase.db));
+      
+      // Check for specific affiliate coupon
+      const testCode = 'partea-nk6p5d4leb';
+      console.log(`Testing coupon code: ${testCode}`);
+      console.log('Direct lookup:', couponDatabase[testCode]);
+      console.log('Case-insensitive lookup:', couponDatabase[testCode.toLowerCase()]);
+      
+      // Try to reload coupons
+      console.log('Attempting to reload coupons...');
+      loadCouponsFromFirebase().then(() => {
+        console.log('Coupons reloaded. New database:', couponDatabase);
+        console.log('Available codes after reload:', Object.keys(couponDatabase));
+      }).catch(error => {
+        console.error('Error reloading coupons:', error);
+      });
+    }
+
+    window.debugCoupons = debugCoupons;
+
+    // Setup automatic coupon reloading in background
+    function setupAutomaticCouponReload() {
+      // Reload coupons every 30 seconds to ensure fresh data
+      setInterval(async () => {
+        try {
+          if (window.AttralFirebase && window.AttralFirebase.db) {
+            console.log('🔄 Background coupon reload...');
+            await loadCouponsFromFirebase();
+            console.log('✅ Background coupon reload completed');
+          }
+        } catch (error) {
+          console.log('⚠️ Background coupon reload failed:', error.message);
+          // Don't show error to user as this is background operation
+        }
+      }, 30000); // 30 seconds
+
+      // Also reload coupons when page becomes visible (user switches back to tab)
+      document.addEventListener('visibilitychange', async () => {
+        if (!document.hidden && window.AttralFirebase && window.AttralFirebase.db) {
+          console.log('🔄 Page visible - reloading coupons...');
+          try {
+            await loadCouponsFromFirebase();
+            console.log('✅ Visibility-based coupon reload completed');
+          } catch (error) {
+            console.log('⚠️ Visibility-based coupon reload failed:', error.message);
+          }
+        }
+      });
+
+      // Reload coupons when user focuses on coupon input (in case they've been away)
+      const couponInput = document.getElementById('coupon-code');
+      if (couponInput) {
+        couponInput.addEventListener('focus', async () => {
+          // Only reload if coupons haven't been loaded recently (within last 10 seconds)
+          const lastReload = window.lastCouponReload || 0;
+          const now = Date.now();
+          
+          if (now - lastReload > 10000 && window.AttralFirebase && window.AttralFirebase.db) {
+            console.log('🔄 Coupon input focused - reloading coupons...');
+            try {
+              await loadCouponsFromFirebase();
+              window.lastCouponReload = now;
+              console.log('✅ Focus-based coupon reload completed');
+            } catch (error) {
+              console.log('⚠️ Focus-based coupon reload failed:', error.message);
+            }
+          }
+        });
+      }
+    }
+
+    // ==================== NEWSLETTER SIGNUP ====================
+    // Newsletter signup is now handled by Brevo integration above
+
+    // ==================== COUPON SYSTEM ====================
+    
+    // Coupon database - Now integrated with Firebase Firestore
+    let couponDatabase = {};
+    let couponsLoaded = false;
+
+    // Load coupons from Firebase Firestore
+    async function loadCouponsFromFirebase() {
+      try {
+        console.log('🔄 Loading coupons from Firebase...');
+        
+        // Wait for Firebase to be ready
+        await waitForFirebase();
+        
+        if (!window.AttralFirebase || !window.AttralFirebase.db) {
+          console.log('❌ Firebase not available, using fallback coupons');
+          loadFallbackCoupons();
+          return;
+        }
+
+        // Fetch ALL coupons from Firestore (not just active ones)
+        // We'll filter active ones during validation
+        const couponsSnapshot = await window.AttralFirebase.db
+          .collection('coupons')
+          .get();
+
+        console.log('📊 Loaded coupons from Firebase:', couponsSnapshot.size);
+
+        // Clear existing database
+        couponDatabase = {};
+
+        // Build coupon database from Firestore data
+        couponsSnapshot.forEach(doc => {
+          const couponData = doc.data();
+          const coupon = {
+            id: doc.id, // Include document ID for reference
+            code: couponData.code,
+            name: couponData.name,
+            type: couponData.type,
+            value: couponData.value,
+            minAmount: couponData.minAmount || 0,
+            maxDiscount: couponData.maxDiscount || null,
+            isActive: couponData.isActive,
+            validUntil: couponData.validUntil ? couponData.validUntil.toDate() : new Date('2025-12-31'),
+            description: couponData.description || '',
+            usageLimit: couponData.usageLimit || null,
+            usageCount: couponData.usageCount || 0,
+            isAffiliateCoupon: couponData.isAffiliateCoupon || false,
+            affiliateCode: couponData.affiliateCode || null
+          };
+          
+          // Store in database with code as key for easy lookup
+          couponDatabase[coupon.code] = coupon;
+        });
+
+        couponsLoaded = true;
+        console.log('✅ Coupons loaded successfully:', Object.keys(couponDatabase));
+        console.log('📋 Loaded coupon details:', couponDatabase);
+
+      } catch (error) {
+        console.error('❌ Error loading coupons from Firebase:', error);
+        loadFallbackCoupons();
+      }
+    }
+
+    // Fallback coupons for when Firebase is not available
+    function loadFallbackCoupons() {
+      console.log('🔄 Loading fallback coupons...');
+      couponDatabase = {
+        'WELCOME10': {
+          code: 'WELCOME10',
+          name: 'Welcome Discount',
+          type: 'percentage',
+          value: 10,
+          minAmount: 500,
+          maxDiscount: 500,
+          isActive: true,
+          validUntil: new Date('2025-12-31'),
+          description: '10% off on your first order'
+        }
+      };
+      couponsLoaded = true;
+    }
+
+    // Apply coupon function
+    async function applyCoupon() {
+      const couponCode = document.getElementById('coupon-code').value.trim().toUpperCase();
+      const applyBtn = document.getElementById('apply-coupon-btn');
+      const couponMessage = document.getElementById('coupon-message');
+      
+      // Clear previous messages
+      hideCouponMessage();
+      
+      if (!couponCode) {
+        showCouponMessage('Please enter a coupon code', 'error');
+        return;
+      }
+
+      // Check if maximum coupons reached
+      if (appliedCoupons.length >= maxCoupons) {
+        showCouponMessage(`Maximum ${maxCoupons} coupons allowed per order`, 'error');
+        return;
+      }
+
+      // Disable button during validation
+      applyBtn.disabled = true;
+      applyBtn.textContent = 'Validating...';
+
+      try {
+        // Ensure coupons are loaded from Firebase
+        if (!couponsLoaded) {
+          console.log('🔄 Coupons not loaded yet, loading from Firebase...');
+          await loadCouponsFromFirebase();
+        }
+
+        // Check newsletter coupon first
+        let coupon = null;
+        const newsletterCoupon = sessionStorage.getItem('newsletter_coupon');
+        if (newsletterCoupon) {
+          const newsletterCouponData = JSON.parse(newsletterCoupon);
+          // revive validUntil if stored as string
+          if (newsletterCouponData && newsletterCouponData.validUntil && typeof newsletterCouponData.validUntil === 'string') {
+            const d = new Date(newsletterCouponData.validUntil);
+            if (!isNaN(d.getTime())) newsletterCouponData.validUntil = d; else delete newsletterCouponData.validUntil;
+          }
+          if (newsletterCouponData.code === couponCode) {
+            coupon = newsletterCouponData;
+            console.log('✅ Found newsletter coupon:', coupon);
+          }
+        }
+        
+        // If not newsletter coupon, check regular database
+        if (!coupon) {
+          coupon = couponDatabase[couponCode];
+          if (coupon) {
+            console.log('✅ Found coupon in database:', coupon);
+          } else {
+            console.log('❌ Coupon not found in database. Available coupons:', Object.keys(couponDatabase));
+            console.log('🔍 Searching for partial matches...');
+            
+            // Try case-insensitive search
+            const lowerCode = couponCode.toLowerCase();
+            for (const [code, couponData] of Object.entries(couponDatabase)) {
+              if (code.toLowerCase() === lowerCode) {
+                console.log('✅ Found case-insensitive match:', code, couponData);
+                coupon = couponData;
+                break;
+              }
+            }
+            
+            // If still not found, show available coupons for debugging
+            if (!coupon) {
+              console.log('📋 All available coupons:', couponDatabase);
+              showCouponMessage(`Invalid coupon code. Available codes: ${Object.keys(couponDatabase).join(', ')}`, 'error');
+              return;
+            }
+          }
+        }
+        
+        if (!coupon) {
+          showCouponMessage('Invalid coupon code', 'error');
+          return;
+        }
+
+        if (!coupon.isActive) {
+          showCouponMessage('This coupon is no longer active', 'error');
+          return;
+        }
+
+        if (coupon.validUntil && new Date() > coupon.validUntil) {
+          showCouponMessage('This coupon has expired', 'error');
+          return;
+        }
+
+        const subtotal = getSubtotal();
+        if (subtotal < coupon.minAmount) {
+          showCouponMessage(`Minimum order amount of ₹${coupon.minAmount} required for this coupon`, 'error');
+          return;
+        }
+
+        // Check if coupon is already applied
+        if (appliedCoupons.find(c => c.code === couponCode)) {
+          showCouponMessage('This coupon is already applied', 'info');
+          return;
+        }
+
+        // Apply the coupon
+        appliedCoupons.push(coupon);
+        displayAppliedCoupons();
+        updateOrderSummary();
+        
+        showCouponMessage(`${coupon.name} applied successfully! ${coupon.description}`, 'success');
+        
+        // Clear input
+        document.getElementById('coupon-code').value = '';
+
+      } catch (error) {
+        console.error('Error applying coupon:', error);
+        showCouponMessage('Error applying coupon. Please try again.', 'error');
+      } finally {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Apply';
+      }
+    }
+
+    // Remove applied coupon
+    function removeCoupon(couponCode) {
+      appliedCoupons = appliedCoupons.filter(c => c.code !== couponCode);
+      displayAppliedCoupons();
+      updateOrderSummary();
+      showCouponMessage('Coupon removed', 'info');
+    }
+
+    // Display applied coupons
+    function displayAppliedCoupons() {
+      const appliedCouponsDiv = document.getElementById('applied-coupons');
+      appliedCouponsDiv.innerHTML = '';
+      
+      appliedCoupons.forEach(coupon => {
+        const couponDiv = document.createElement('div');
+        couponDiv.className = 'applied-coupon';
+        couponDiv.style.cssText = `
+          background: #f0fdf4;
+          border: 2px solid #10b981;
+          border-radius: 8px;
+          padding: 12px;
+          margin-top: 12px;
+        `;
+        
+        let discountText = '';
+        if (coupon.type === 'percentage') {
+          discountText = `${coupon.value}% off`;
+        } else if (coupon.type === 'fixed') {
+          discountText = `₹${coupon.value} off`;
+        } else if (coupon.type === 'shipping') {
+          discountText = 'Free Shipping';
+        }
+        
+        couponDiv.innerHTML = `
+          <div class="coupon-info" style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <span class="coupon-name" style="font-weight: 600; color: #065f46;">${coupon.name}</span>
+            <span class="coupon-discount" style="font-weight: 600; color: #10b981;">${discountText}</span>
+            <button class="remove-coupon-btn" onclick="removeCoupon('${coupon.code}')" style="background: #ef4444; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;">✕</button>
+          </div>
+        `;
+        
+        appliedCouponsDiv.appendChild(couponDiv);
+      });
+    }
+
+    // Show coupon message
+    function showCouponMessage(message, type) {
+      const couponMessage = document.getElementById('coupon-message');
+      couponMessage.textContent = message;
+      couponMessage.className = `coupon-message ${type}`;
+      couponMessage.style.display = 'block';
+      
+      // Auto-hide success messages after 3 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          hideCouponMessage();
+        }, 3000);
+      }
+    }
+
+    // Hide coupon message
+    function hideCouponMessage() {
+      const couponMessage = document.getElementById('coupon-message');
+      couponMessage.style.display = 'none';
+    }
+
+    // Calculate discount amount from all applied coupons
+    function calculateDiscount(subtotal) {
+      if (appliedCoupons.length === 0) return 0;
+      
+      let totalDiscount = 0;
+      let hasFreeShipping = false;
+      
+      appliedCoupons.forEach(coupon => {
+        let couponDiscount = 0;
+        
+        if (coupon.type === 'percentage') {
+          couponDiscount = (subtotal * coupon.value) / 100;
+          // Apply max discount limit
+          if (coupon.maxDiscount && couponDiscount > coupon.maxDiscount) {
+            couponDiscount = coupon.maxDiscount;
+          }
+        } else if (coupon.type === 'fixed') {
+          couponDiscount = coupon.value;
+        } else if (coupon.type === 'shipping') {
+          hasFreeShipping = true;
+          couponDiscount = 0; // Will be handled in shipping calculation
+        }
+        
+        totalDiscount += couponDiscount;
+      });
+      
+      // Don't allow discount more than subtotal
+      return Math.min(totalDiscount, subtotal);
+    }
+
+    // Get shipping cost
+    function getShippingCost(subtotal) {
+      // Check if any applied coupon provides free shipping
+      const hasFreeShippingCoupon = appliedCoupons.some(coupon => coupon.type === 'shipping');
+      
+      if (hasFreeShippingCoupon) {
+        return 0;
+      }
+      
+      // Always charge shipping unless free shipping coupon is applied
+      return shippingCost;
+    }
+
+    // Get subtotal amount
+    function getSubtotal() {
+      if (currentProduct) {
+        return currentProduct.price || 0;
+      }
+      return 0;
+    }
+
+    // Update order summary with new calculations
+    function updateOrderSummary() {
+      const subtotal = getSubtotal();
+      const shipping = getShippingCost(subtotal);
+      const discount = calculateDiscount(subtotal);
+      const total = subtotal + shipping - discount;
+      
+      // Update display
+      document.getElementById('subtotal').textContent = `₹${subtotal.toLocaleString()}`;
+      
+      // Update shipping
+      const shippingElement = document.getElementById('shipping-amount');
+      if (shipping === 0) {
+        shippingElement.textContent = 'FREE';
+        shippingElement.className = 'free-shipping';
+      } else {
+        shippingElement.textContent = `₹${shipping}`;
+        shippingElement.className = 'shipping-charge';
+      }
+      
+      // Update discount row
+      const discountRow = document.getElementById('discount-row');
+      const discountAmount = document.getElementById('discount-amount');
+      
+      if (discount > 0) {
+        discountAmount.textContent = `-₹${discount.toLocaleString()}`;
+        discountRow.style.display = 'flex';
+      } else {
+        discountRow.style.display = 'none';
+      }
+      
+      // Update total
+      document.getElementById('total-amount').textContent = `₹${total.toLocaleString()}`;
+    }
+
+    // Enhanced collectOrderData to include coupon information
+    function collectOrderData() {
+      const subtotal = getSubtotal();
+      const shipping = getShippingCost(subtotal);
+      const discount = calculateDiscount(subtotal);
+      const total = subtotal + shipping - discount;
+      
+      const orderData = {
+        // Customer information
+        customer: {
+          firstName: document.getElementById('firstName').value,
+          lastName: document.getElementById('lastName').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value
+        },
+        
+        // Shipping information
+        shipping: {
+          address: document.getElementById('address').value,
+          city: document.getElementById('city').value,
+          state: document.getElementById('state').value,
+          pincode: document.getElementById('pincode').value,
+          country: document.getElementById('country').value
+        },
+        
+        // Product information
+        product: currentProduct,
+        
+        // Pricing information
+        pricing: {
+          subtotal: subtotal,
+          shipping: shipping,
+          discount: discount,
+          total: total,
+          currency: 'INR'
+        },
+        
+        // Coupon information
+        coupons: appliedCoupons.map(coupon => ({
+          code: coupon.code,
+          name: coupon.name,
+          type: coupon.type,
+          value: coupon.value,
+          isNewsletterCoupon: coupon.isNewsletterCoupon || false,
+          isAffiliateCoupon: !!coupon.isAffiliateCoupon,
+          affiliateCode: coupon.affiliateCode || null
+        })),
+        
+        // Order metadata
+        orderType: (currentProduct?.items && currentProduct.items.length > 0) ? 'cart' : 'single',
+        timestamp: new Date().toISOString()
+      };
+      
+      return orderData;
+    }
+
+    // Fallback function to get local user data
+    function getLocalUserData() {
+      // Try localStorage for previously saved user data
+      const savedUserData = localStorage.getItem('attral_user_data');
+      if (savedUserData) {
+        try {
+          return JSON.parse(savedUserData);
+        } catch (e) {
+          console.error('Error parsing saved user data:', e);
+        }
+      }
+      
+      // Try sessionStorage for temporary data
+      const tempUserData = sessionStorage.getItem('attral_temp_user');
+      if (tempUserData) {
+        try {
+          return JSON.parse(tempUserData);
+        } catch (e) {
+          console.error('Error parsing temp user data:', e);
+        }
+      }
+      
+      return null;
+    }
+
+    // Show edit option for user information
+    function showEditOption() {
+      const customerForm = document.getElementById('customer-form');
+      const customerSection = customerForm.closest('.order-section');
+      
+      // Show auto-populated indicator
+      const indicator = document.getElementById('auto-populated-indicator');
+      if (indicator) {
+        indicator.style.display = 'inline';
+      }
+      
+      // Create edit toggle button
+      const editButton = document.createElement('button');
+      editButton.type = 'button';
+      editButton.className = 'edit-user-btn';
+      editButton.innerHTML = '✏️ Edit Information';
+      editButton.onclick = toggleUserEditMode;
+      
+      // Insert after section title
+      const sectionTitle = customerSection.querySelector('.section-title');
+      sectionTitle.appendChild(editButton);
+      
+      // Initially disable form fields
+      disableUserFields();
+    }
+
+    // Toggle user edit mode
+    async function toggleUserEditMode() {
+      const editButton = document.querySelector('.edit-user-btn');
+      const userFields = ['firstName', 'lastName', 'email', 'phone'];
+      
+      const isDisabled = document.getElementById('firstName').disabled;
+      
+      if (isDisabled) {
+        // Enable editing
+        userFields.forEach(fieldId => {
+          const field = document.getElementById(fieldId);
+          field.disabled = false;
+          field.style.backgroundColor = 'white';
+          field.style.opacity = '1';
+        });
+        
+        editButton.innerHTML = '✅ Save Information';
+        editButton.style.background = '#10b981';
+        
+        showNotification('You can now edit your information', 'success');
+      } else {
+        // Save and disable editing
+        await saveUserData();
+        disableUserFields();
+        
+        editButton.innerHTML = '✏️ Edit Information';
+        editButton.style.background = '#667eea';
+        
+        showNotification('Information saved successfully', 'success');
+      }
+    }
+
+    // Disable user fields
+    function disableUserFields() {
+      const userFields = ['firstName', 'lastName', 'email', 'phone'];
+      
+      userFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        field.disabled = true;
+        field.style.backgroundColor = '#f8fafc';
+        field.style.opacity = '0.8';
+      });
+    }
+
+    // Save user data
+    async function saveUserData() {
+      const userData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        pincode: document.getElementById('pincode').value,
+        country: document.getElementById('country').value
+      };
+      
+      // Save to localStorage for future use
+      localStorage.setItem('attral_user_data', JSON.stringify(userData));
+      
+      // Save to sessionStorage for this session
+      sessionStorage.setItem('attral_temp_user', JSON.stringify(userData));
+
+      // Try to save to Firebase addresses collection if user is authenticated
+      try {
+        if (window.AttralFirebase && window.AttralFirebase.auth && window.AttralFirebase.db) {
+          const user = window.AttralFirebase.auth.currentUser;
+          if (user && userData.firstName && userData.phone && userData.address) {
+            const addressData = {
+              uid: user.uid,
+              fullName: `${userData.firstName} ${userData.lastName}`.trim(),
+              phone: userData.phone,
+              addressLine1: userData.address,
+              addressLine2: '',
+              city: userData.city,
+              state: userData.state,
+              pincode: userData.pincode,
+              country: userData.country,
+              isDefault: true, // Set as default address
+              createdAt: new Date(),
+              updatedAt: new Date()
+            };
+
+            // Check if user has any existing addresses
+            const existingAddresses = await window.AttralFirebase.db.collection('addresses')
+              .where('uid', '==', user.uid)
+              .get();
+
+            if (existingAddresses.empty) {
+              // Add new address
+              await window.AttralFirebase.db.collection('addresses').add(addressData);
+              console.log('New address saved to Firebase');
+            } else {
+              // Update existing default address or add new one
+              const defaultAddress = existingAddresses.docs.find(doc => doc.data().isDefault);
+              if (defaultAddress) {
+                // Update existing default address
+                await defaultAddress.ref.update(addressData);
+                console.log('Default address updated in Firebase');
+              } else {
+                // Add new default address
+                await window.AttralFirebase.db.collection('addresses').add(addressData);
+                console.log('New default address saved to Firebase');
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error saving address to Firebase:', error);
+        // Don't show error to user as this is a background operation
+      }
+    }
+
+    // Render order details
+    async function renderOrderDetails() {
+      if (!currentProduct) return;
+
+      if (currentProduct.id === 'cart') {
+        // Handle cart checkout
+        document.getElementById('product-summary').style.display = 'none';
+        document.getElementById('cart-items').style.display = 'block';
+        
+        const cartItemsList = document.getElementById('cart-items-list');
+        cartItemsList.innerHTML = '';
+        
+        // Load current prices from products.json to ensure consistency
+        let currentPrices = {};
+        try {
+          const response = await fetch('data/products.json');
+          const products = await response.json();
+          products.forEach(product => {
+            currentPrices[product.id] = product.price;
+            // Also map by slug ID for compatibility
+            const slugId = product.title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
+            currentPrices[slugId] = product.price;
+          });
+        } catch (error) {
+          console.warn('Failed to load current prices, using stored prices:', error);
+        }
+        
+        currentProduct.items.forEach(item => {
+          // Use current price from products.json if available, otherwise fallback to stored price
+          const currentPrice = currentPrices[item.id] || item.price || 0;
+          
+          const itemDiv = document.createElement('div');
+          itemDiv.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+          `;
+          
+          itemDiv.innerHTML = `
+            <img src="${item.image}" alt="${item.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" />
+            <div style="flex: 1;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">${item.title}</h4>
+              <p style="margin: 0; color: #6b7280;">Quantity: ${item.quantity} × ₹${currentPrice.toLocaleString()}</p>
+            </div>
+            <div style="font-weight: 700; color: #1f2937;">
+              ₹${(currentPrice * item.quantity).toLocaleString()}
+            </div>
+          `;
+          
+          cartItemsList.appendChild(itemDiv);
+        });
+        
+        // Update order summary with pricing
+        updateOrderSummary();
+      } else {
+        // Handle single product
+        document.getElementById('product-summary').style.display = 'flex';
+        document.getElementById('cart-items').style.display = 'none';
+        
+        document.getElementById('product-image').src = currentProduct.image;
+        document.getElementById('product-image').alt = currentProduct.title;
+        document.getElementById('product-title').textContent = currentProduct.title;
+        document.getElementById('product-price').textContent = `₹${currentProduct.price.toLocaleString()}`;
+        
+        // Update order summary with pricing
+        updateOrderSummary();
+      }
+
+      // Update page title
+      document.title = `Order ${currentProduct.title} | ATTRAL`;
+    }
+
+    // Form validation
+    function validateForm() {
+      const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'pincode'];
+      let isValid = true;
+
+      requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        const errorElement = document.getElementById(`${fieldId}-error`);
+        const value = field.value.trim();
+
+        // Clear previous errors
+        if (errorElement) {
+          errorElement.textContent = '';
+        }
+
+        // Skip validation if field is disabled (auto-populated)
+        if (field.disabled) {
+          return;
+        }
+
+        // Validate required fields
+        if (!value) {
+          if (errorElement) {
+            errorElement.textContent = 'This field is required';
+          }
+          isValid = false;
+        }
+
+        // Email validation
+        if (fieldId === 'email' && value) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value)) {
+            if (errorElement) {
+              errorElement.textContent = 'Please enter a valid email address';
+            }
+            isValid = false;
+          }
+        }
+
+        // Phone validation
+        if (fieldId === 'phone' && value) {
+          const phoneRegex = /^[6-9]\d{9}$/;
+          if (!phoneRegex.test(value.replace(/\D/g, ''))) {
+            if (errorElement) {
+              errorElement.textContent = 'Please enter a valid 10-digit phone number';
+            }
+            isValid = false;
+          }
+        }
+
+        // PIN code validation
+        if (fieldId === 'pincode' && value) {
+          const pincodeRegex = /^\d{6}$/;
+          if (!pincodeRegex.test(value)) {
+            if (errorElement) {
+              errorElement.textContent = 'Please enter a valid 6-digit PIN code';
+            }
+            isValid = false;
+          }
+        }
+      });
+
+      return isValid;
+    }
+
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+      // Remove any existing notifications
+      const existingNotifications = document.querySelectorAll('.notification');
+      existingNotifications.forEach(n => n.remove());
+      
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-in forwards';
+        setTimeout(() => notification.remove(), 300);
+      }, 4000);
+    }
+
+    // Show error message
+    function showError(message) {
+      const messageElement = document.getElementById('payment-message');
+      messageElement.innerHTML = `<div class="error-message">${message}</div>`;
+    }
+
+    // Show success message
+    function showSuccess(message) {
+      const messageElement = document.getElementById('payment-message');
+      messageElement.innerHTML = `<div class="success-message">${message}</div>`;
+    }
+
+
+    // Initiate payment
+    async function initiatePayment() {
+      const checkoutBtn = document.getElementById('checkout-btn');
+      const checkoutText = document.getElementById('checkout-text');
+      const checkoutSpinner = document.getElementById('checkout-spinner');
+
+      // Validate form
+      if (!validateForm()) {
+        showError('Please fill in all required fields correctly');
+        return;
+      }
+
+      // Show loading state
+      checkoutBtn.disabled = true;
+      checkoutText.style.display = 'none';
+      checkoutSpinner.style.display = 'block';
+
+      try {
+        // Collect order data
+        const orderData = collectOrderData();
+        
+        // Check if Razorpay is properly configured
+        const razorpayKey = window.ATTRAL_PUBLIC?.RAZORPAY_KEY_ID;
+        console.log('🔧 Razorpay Key Check:', {
+          key: razorpayKey,
+          isConfigured: razorpayKey && razorpayKey !== 'rzp_test_xxxxxxxxxxxx',
+          configObject: window.ATTRAL_PUBLIC
+        });
+        
+        if (!razorpayKey || razorpayKey === 'rzp_test_xxxxxxxxxxxx') {
+          throw new Error('Razorpay credentials not configured. Please contact support.');
+        }
+
+        // Create order on server
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        // Build Razorpay notes using auto-populated customer info and Firebase uid
+        const fbUser = (window.AttralFirebase && window.AttralFirebase.auth) ? window.AttralFirebase.auth.currentUser : null;
+        const notes = {
+          uid: fbUser && fbUser.uid ? fbUser.uid : '',
+          email: orderData.customer?.email || '',
+          firstName: orderData.customer?.firstName || '',
+          lastName: orderData.customer?.lastName || '',
+          phone: orderData.customer?.phone || '',
+          // Shipping details
+          address: orderData.shipping?.address || '',
+          city: orderData.shipping?.city || '',
+          state: orderData.shipping?.state || '',
+          pincode: orderData.shipping?.pincode || '',
+          country: orderData.shipping?.country || ''
+        };
+        const response = await fetch(`${apiBaseUrl}/api/create_order.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            amount: orderData.pricing.total * 100, // Convert to paise for Razorpay
+            currency: orderData.pricing.currency,
+            receipt: `rcpt_${Date.now()}`,
+            customer: orderData.customer,
+            shipping: orderData.shipping,
+            product: orderData.product,
+            coupons: orderData.coupons,
+            pricing: orderData.pricing,
+            notes: notes
+          })
+        });
+
+        const order = await response.json();
+        
+        console.log('🔧 Order Creation Response:', {
+          status: response.status,
+          order: order,
+          responseOk: response.ok
+        });
+
+        if (!response.ok) {
+          const errorMsg = order.error || order.message || 'Failed to create order';
+          console.error('❌ Order creation failed:', errorMsg);
+          throw new Error(errorMsg);
+        }
+
+        if (!order || !order.id) {
+          console.error('❌ Invalid order response:', order);
+          throw new Error('Invalid order response from server');
+        }
+
+        // Configure Razorpay options
+        const options = {
+          key: window.ATTRAL_PUBLIC.RAZORPAY_KEY_ID || 'rzp_test_xxxxxxxxxxxx',
+          amount: order.amount,
+          currency: order.currency,
+          name: 'ATTRAL',
+          description: `Order for ${orderData.product.title}`,
+          order_id: order.id,
+          handler: function(response) {
+            handlePaymentSuccess(order, response, orderData);
+          },
+          prefill: {
+            name: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
+            email: orderData.customer.email,
+            contact: orderData.customer.phone
+          },
+          theme: {
+            color: '#ff6b35'
+          },
+          modal: {
+            ondismiss: function() {
+              // Reset button state when modal is dismissed
+              checkoutBtn.disabled = false;
+              checkoutText.style.display = 'inline';
+              checkoutSpinner.style.display = 'none';
+            }
+          }
+        };
+
+        // Open Razorpay checkout
+        // During payment, block any unexpected redirects except success page
+        try {
+          (function setupPaymentRedirectGuard(){
+            const allowed = function(url){ return /order-success\.html/i.test(String(url||'')); };
+            const originalReplace = window.location.replace;
+            window.location.replace = function(url){
+              if (!allowed(url)) { console.warn('🚫 Redirect blocked during payment:', url); return; }
+              return originalReplace.call(this, url);
+            };
+            const originalAssign = window.location.assign;
+            window.location.assign = function(url){
+              if (!allowed(url)) { console.warn('🚫 Assign blocked during payment:', url); return; }
+              return originalAssign.call(this, url);
+            };
+            const origPush = history.pushState;
+            history.pushState = function(state, title, url){
+              if (url && !allowed(url)) { console.warn('🚫 pushState blocked during payment:', url); return; }
+              return origPush.apply(this, arguments);
+            };
+            const origReplaceState = history.replaceState;
+            history.replaceState = function(state, title, url){
+              if (url && !allowed(url)) { console.warn('🚫 replaceState blocked during payment:', url); return; }
+              return origReplaceState.apply(this, arguments);
+            };
+          })();
+        } catch(_e) { /* ignore */ }
+
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function(response) {
+          showError('Payment failed. Please try again.');
+          checkoutBtn.disabled = false;
+          checkoutText.style.display = 'inline';
+          checkoutSpinner.style.display = 'none';
+        });
+        
+        rzp.open();
+
+      } catch (error) {
+        console.error('Payment initiation error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          orderData: orderData
+        });
+        
+        let errorMessage = 'Error initiating payment. Please try again.';
+        
+        // More specific error messages
+        if (error.message.includes('Failed to create order')) {
+          errorMessage = 'Unable to create payment order. Please check your internet connection and try again.';
+        } else if (error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else if (error.message.includes('Razorpay')) {
+          errorMessage = 'Payment service error. Please try again later.';
+        }
+        
+        showError(errorMessage);
+        checkoutBtn.disabled = false;
+        checkoutText.style.display = 'inline';
+        checkoutSpinner.style.display = 'none';
+      }
+    }
+
+    // ===== Firestore Order Management =====
+    async function saveOrderToFirestore(order, response, orderData) {
+      // Wait for Firebase to be ready
+      const maxWait = 10000; // 10 seconds
+      const startTime = Date.now();
+      
+      while (!window.AttralFirebase || !window.AttralFirebase.db) {
+        if (Date.now() - startTime > maxWait) {
+          console.warn('Firebase not ready after 10s, skipping Firestore write');
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      try {
+        const orderRecord = {
+          createdAt: new Date(),
+          orderId: order.id,
+          paymentId: response.razorpay_payment_id,
+          signature: response.razorpay_signature,
+          // Store exact amounts to avoid rounding issues
+          amount: orderData.pricing.total,
+          amountPaise: Math.round(orderData.pricing.total * 100),
+          currency: orderData.pricing.currency,
+          type: orderData.orderType,
+          product: orderData.product,
+          customer: orderData.customer,
+          shipping: orderData.shipping,
+          coupons: orderData.coupons,
+          pricing: orderData.pricing,
+          status: 'completed',
+          source: 'client'
+        };
+
+        const docRef = await window.AttralFirebase.db.collection('orders').add(orderRecord);
+        console.log('✅ Order saved to Firestore with ID:', docRef.id);
+        
+        // Update session storage with Firestore document ID
+        try {
+          const current = JSON.parse(sessionStorage.getItem('lastOrderData') || '{}');
+          current.firestoreId = docRef.id;
+          sessionStorage.setItem('lastOrderData', JSON.stringify(current));
+        } catch (e) { /* ignore */ }
+        
+      } catch (firebaseError) {
+        console.error('❌ Firebase save error:', firebaseError);
+        
+        // Fallback: Store in localStorage for manual reconciliation
+        try {
+          const fallbackData = {
+            ...orderData,
+            razorpay_order_id: order.id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            status: 'completed',
+            source: 'client_fallback',
+            error: firebaseError.message,
+            timestamp: new Date().toISOString()
+          };
+          
+          const fallback = JSON.parse(localStorage.getItem('attral_firestore_fallback') || '[]');
+          fallback.push(fallbackData);
+          localStorage.setItem('attral_firestore_fallback', JSON.stringify(fallback));
+          console.log('📝 Order saved to localStorage fallback');
+        } catch (e) {
+          console.error('❌ Fallback save failed:', e);
+        }
+      }
+    }
+
+    // ===== Resilient order posting and offline queue =====
+    function getPendingOrderQueue(){
+      try { return JSON.parse(localStorage.getItem('attral_pending_orders')||'[]'); } catch { return []; }
+    }
+    function setPendingOrderQueue(list){ localStorage.setItem('attral_pending_orders', JSON.stringify(list)); }
+    function enqueuePendingOrder(payload){ const q=getPendingOrderQueue(); q.push({ payload, ts: Date.now(), attempts: 0 }); setPendingOrderQueue(q); }
+    async function flushPendingOrders(){
+      const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+      let q = getPendingOrderQueue();
+      if (!q.length) return;
+      const keep = [];
+      for (const item of q){
+        try {
+          const res = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/create`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(item.payload) });
+          const j = await res.json().catch(()=>({}));
+          console.log('[order-queue] flush result', { status: res.status, ok: res.ok, body: j });
+          if (!res.ok || !j.success) { throw new Error('not ok'); }
+        } catch(e){
+          item.attempts = (item.attempts||0)+1;
+          if (item.attempts < 5) keep.push(item); // keep for future retries
+        }
+      }
+      setPendingOrderQueue(keep);
+    }
+    async function postOrderWithRetry(payload, maxAttempts = 3){
+      const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+      let attempt = 0; let lastError = null;
+      while (attempt < maxAttempts){
+        attempt++;
+        try {
+          const res = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/create`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+          const j = await res.json().catch(()=>({}));
+          console.log('[order-manager] attempt', attempt, { status: res.status, ok: res.ok, body: j });
+          if (res.ok && j && j.success) return j;
+          lastError = new Error(j && j.error || 'order manager error');
+        } catch (e){ lastError = e; }
+        await new Promise(r=>setTimeout(r, Math.min(8000, 500 * Math.pow(2, attempt-1))));
+      }
+      // enqueue for later flush
+      enqueuePendingOrder(payload);
+      throw lastError || new Error('order manager failed');
+    }
+
+    // Global flag to prevent multiple redirect attempts
+    let paymentSuccessHandled = false;
+
+    // Handle successful payment
+    async function handlePaymentSuccess(order, response, orderData) {
+      // Prevent multiple executions
+      if (paymentSuccessHandled) {
+        console.log('⚠️ Payment success already handled, skipping duplicate call');
+        return;
+      }
+      paymentSuccessHandled = true;
+
+      try {
+        console.log('🎉 Payment successful! Processing order...', {
+          orderId: order.id,
+          paymentId: response.razorpay_payment_id,
+          amount: orderData.pricing.total
+        });
+
+        // Verify payment on server
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        const verifyResponse = await fetch(`${apiBaseUrl}/api/verify.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            order_id: order.id,
+            payment_id: response.razorpay_payment_id,
+            signature: response.razorpay_signature
+          })
+        });
+
+        const verification = await verifyResponse.json();
+        console.log('🔍 Payment verification result:', verification);
+
+        if (!verification.valid) {
+          console.warn('⚠️ Payment verification failed, but continuing with order creation...');
+          // Don't fail the order creation for verification issues
+          // The webhook will handle the actual order creation
+        }
+
+        // Store order data for success page
+        try {
+          const orderDataForSuccess = {
+            ...orderData,
+            razorpay_order_id: order.id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            status: 'confirmed',
+            timestamp: new Date().toISOString()
+          };
+          // Persist applied coupons explicitly for success page and server
+          try {
+            orderDataForSuccess.coupons = Array.isArray(orderData.coupons) ? orderData.coupons.slice(0, 5) : [];
+          } catch(_) { /* ignore */ }
+          sessionStorage.setItem('lastOrderData', JSON.stringify(orderDataForSuccess));
+          console.log('✅ Order data stored for success page');
+        } catch (error) {
+          console.error('❌ Failed to store order data:', error);
+        }
+
+        // Create order in our server order management system FIRST (before redirect)
+        try {
+          // Get current user ID for access control
+          let userId = null;
+          if (window.AttralFirebase && window.AttralFirebase.auth) {
+            const user = window.AttralFirebase.auth.currentUser;
+            userId = user ? user.uid : null;
+          }
+
+          // Create order with retry - do NOT await to avoid blocking redirect
+          postOrderWithRetry({
+            order_id: order.id,
+            payment_id: response.razorpay_payment_id,
+            signature: response.razorpay_signature,
+            customer: orderData.customer,
+            product: orderData.product,
+            // Include exact amounts
+            pricing: {
+              ...orderData.pricing,
+              amountPaise: Math.round(orderData.pricing.total * 100)
+            },
+            shipping: orderData.shipping,
+            coupons: Array.isArray(orderData.coupons) ? orderData.coupons.slice(0, 5) : [],
+            payment: {
+              method: 'razorpay',
+              transaction_id: response.razorpay_payment_id,
+              signature: response.razorpay_signature
+            },
+            user_id: userId // Include user ID for access control
+          }).then(function(createOrderResult){
+            if (!(createOrderResult && createOrderResult.success)) {
+              console.error('Order creation failed:', createOrderResult && createOrderResult.error);
+            } else {
+              try {
+                const current = JSON.parse(sessionStorage.getItem('lastOrderData')||'{}');
+                current.order_number = createOrderResult.order_number;
+                sessionStorage.setItem('lastOrderData', JSON.stringify(current));
+              } catch(_){}
+              console.log('Order created successfully:', createOrderResult.order_number);
+            }
+          }).catch(function(e){ console.error('Order creation error:', e); });
+        } catch (orderError) {
+          console.error('Order creation error:', orderError);
+          // Don't fail the payment for order creation errors
+        }
+
+        // ✅ CRITICAL: REDIRECT TO SUCCESS PAGE - This must be the LAST action
+        // Small delay to ensure background operations are initiated
+        setTimeout(() => {
+          const successUrl = `order-success.html?orderId=${order.id}`;
+          console.log('🚀 Redirecting to success page:', successUrl);
+          
+          // Set a flag to prevent any cart operations from interfering
+          sessionStorage.setItem('payment_success_redirect', 'true');
+          
+          // Disable all cart library functions temporarily
+          if (window.Attral) {
+            window.Attral.__disableRedirects = true;
+          }
+          
+          // Use replace to prevent back navigation issues
+          window.location.replace(successUrl);
+        }, 500); // 500ms delay to ensure order creation is initiated
+
+      } catch (error) {
+        console.error('Payment verification error:', error);
+        showError('Payment verification failed. Please contact support.');
+      }
+    }
+
+    // 🛡️ PROTECTION: Override any cart operations that might cause redirects during payment
+    const originalCartClear = window.Attral?.clearCartSafely;
+    if (window.Attral && originalCartClear) {
+      window.Attral.clearCartSafely = function() {
+        // If payment is being processed, defer cart clearing
+        if (paymentSuccessHandled) {
+          console.log('⏳ Deferring cart clear - payment in progress');
+          return true;
+        }
+        return originalCartClear.apply(this, arguments);
+      };
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('year').textContent = new Date().getFullYear();
+      
+      if (window.Attral) {
+        window.Attral.initHeaderCartCount();
+      }
+      
+      // Load order data and auto-populate user information
+      loadOrderData();
+      
+      // Load coupons from Firebase
+      loadCouponsFromFirebase();
+      
+      // Set up automatic coupon reloading in background
+      setupAutomaticCouponReload();
+      
+      // Add Enter key listener for coupon input
+      document.getElementById('coupon-code').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyCoupon();
+        }
+      });
+
+      // Try flushing any pending orders left in queue from previous sessions
+      flushPendingOrders();
+    });
+
+  </script>
+</body>
+</html>

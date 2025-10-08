@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎛️ Admin Dashboard | ATTRAL E-commerce Control Center</title>
+  <meta name="description" content="Enhanced admin control panel for ATTRAL e-commerce business management with modern UI/UX, real-time analytics, and improved accessibility" />
+  
+  <!-- Enhanced Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Enhanced Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/admin-enhanced.css" />
+  <link rel="icon" type="image/png" href="logo.png" />
+  
+  <style>
+    /* Enhanced Admin Dashboard Specific Styles */
+    .admin-dashboard {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      font-family: var(--admin-font-primary);
+      position: relative;
+    }
+    
+    .admin-dashboard::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(6, 182, 212, 0.03) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .admin-header {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+      border: 1px solid var(--admin-gray-200);
+      box-shadow: var(--admin-shadow-xl);
+      backdrop-filter: blur(20px);
+      border-radius: var(--admin-radius-xl);
+      margin-bottom: var(--admin-space-xl);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .admin-header::before {
+      background: linear-gradient(90deg, var(--admin-primary), var(--admin-secondary), var(--admin-accent));
+    }
+    
+    .admin-welcome {
+      display: flex;
+      align-items: center;
+      gap: var(--admin-space-lg);
+      margin-bottom: var(--admin-space-lg);
+    }
+    
+    .admin-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--admin-radius-full);
+      background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--admin-white);
+      font-size: 1.5rem;
+      font-weight: 700;
+      box-shadow: var(--admin-shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .admin-avatar::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    
+    .admin-welcome-text h2 {
+      margin: 0 0 var(--admin-space-xs) 0;
+      color: var(--admin-gray-900);
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .admin-welcome-text p {
+      margin: 0;
+      color: var(--admin-gray-600);
+      font-size: 0.875rem;
+    }
+    
+    .admin-quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--admin-space-md);
+      margin-bottom: var(--admin-space-xl);
+    }
+    
+    .admin-quick-action {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+      border-radius: var(--admin-radius-lg);
+      padding: var(--admin-space-lg);
+      box-shadow: var(--admin-shadow-md);
+      border: 1px solid var(--admin-gray-200);
+      text-decoration: none;
+      color: var(--admin-gray-700);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+    
+    .admin-quick-action:hover {
+      box-shadow: var(--admin-shadow-xl);
+      transform: translateY(-4px) scale(1.02);
+      color: var(--admin-primary);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+    }
+    
+    .admin-quick-action::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--admin-primary);
+      transform: scaleX(0);
+      transition: var(--admin-transition);
+    }
+    
+    .admin-quick-action:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .admin-quick-action-icon {
+      font-size: 2rem;
+      margin-bottom: var(--admin-space-sm);
+      display: block;
+    }
+    
+    .admin-quick-action-title {
+      font-weight: 600;
+      margin: 0 0 var(--admin-space-xs) 0;
+      font-size: 1rem;
+    }
+    
+    .admin-quick-action-desc {
+      font-size: 0.875rem;
+      color: var(--admin-gray-500);
+      margin: 0;
+    }
+    
+    .admin-content-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: var(--admin-space-xl);
+      margin-bottom: var(--admin-space-xl);
+    }
+    
+    .admin-main-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--admin-space-xl);
+    }
+    
+    .admin-sidebar-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--admin-space-lg);
+    }
+    
+    .admin-recent-orders {
+      background: var(--admin-white);
+      border-radius: var(--admin-radius-xl);
+      padding: var(--admin-space-xl);
+      box-shadow: var(--admin-shadow-md);
+      border: 1px solid var(--admin-gray-200);
+    }
+    
+    .admin-order-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--admin-space-md) 0;
+      border-bottom: 1px solid var(--admin-gray-100);
+    }
+    
+    .admin-order-item:last-child {
+      border-bottom: none;
+    }
+    
+    .admin-order-info {
+      display: flex;
+      align-items: center;
+      gap: var(--admin-space-md);
+    }
+    
+    .admin-order-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--admin-radius-full);
+      background: var(--admin-gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--admin-gray-600);
+    }
+    
+    .admin-order-details h4 {
+      margin: 0 0 var(--admin-space-xs) 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--admin-gray-900);
+    }
+    
+    .admin-order-details p {
+      margin: 0;
+      font-size: 0.75rem;
+      color: var(--admin-gray-500);
+    }
+    
+    .admin-order-status {
+      padding: var(--admin-space-xs) var(--admin-space-sm);
+      border-radius: var(--admin-radius-full);
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .admin-order-status.pending {
+      background: var(--admin-warning-light);
+      color: var(--admin-warning-dark);
+    }
+    
+    .admin-order-status.completed {
+      background: var(--admin-success-light);
+      color: var(--admin-success-dark);
+    }
+    
+    .admin-order-status.processing {
+      background: var(--admin-info-light);
+      color: var(--admin-info-dark);
+    }
+    
+    .admin-system-status {
+      background: var(--admin-white);
+      border-radius: var(--admin-radius-xl);
+      padding: var(--admin-space-xl);
+      box-shadow: var(--admin-shadow-md);
+      border: 1px solid var(--admin-gray-200);
+    }
+    
+    .admin-status-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--admin-space-md) 0;
+      border-bottom: 1px solid var(--admin-gray-100);
+    }
+    
+    .admin-status-item:last-child {
+      border-bottom: none;
+    }
+    
+    .admin-status-label {
+      font-weight: 500;
+      color: var(--admin-gray-700);
+      font-size: 0.875rem;
+    }
+    
+    .admin-status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: var(--admin-radius-full);
+      background: var(--admin-success);
+      position: relative;
+    }
+    
+    .admin-status-indicator::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px;
+      height: 6px;
+      border-radius: var(--admin-radius-full);
+      background: var(--admin-white);
+    }
+    
+    .admin-status-indicator.warning {
+      background: var(--admin-warning);
+    }
+    
+    .admin-status-indicator.error {
+      background: var(--admin-danger);
+    }
+    
+    .admin-footer {
+      background: var(--admin-white);
+      border-radius: var(--admin-radius-xl);
+      padding: var(--admin-space-xl);
+      box-shadow: var(--admin-shadow-md);
+      border: 1px solid var(--admin-gray-200);
+      text-align: center;
+    }
+    
+    .admin-footer p {
+      margin: 0;
+      color: var(--admin-gray-500);
+      font-size: 0.875rem;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .admin-content-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .admin-quick-actions {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .admin-container {
+        padding: var(--admin-space-md);
+      }
+      
+      .admin-header {
+        padding: var(--admin-space-lg);
+      }
+      
+      .admin-welcome {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .admin-quick-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body class="admin-dashboard">
+  <div class="admin-container">
+    <!-- Enhanced Header -->
+    <header class="admin-header admin-animate-fade-in">
+      <div class="admin-welcome">
+        <div class="admin-avatar">A</div>
+        <div class="admin-welcome-text">
+          <h2>Welcome back, Admin!</h2>
+          <p>Here's what's happening with your e-commerce business today.</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Quick Actions -->
+    <section class="admin-quick-actions admin-animate-fade-in">
+      <a href="admin-orders.html" class="admin-quick-action">
+        <span class="admin-quick-action-icon">📦</span>
+        <h3 class="admin-quick-action-title">Manage Orders</h3>
+        <p class="admin-quick-action-desc">View and process customer orders</p>
+      </a>
+      
+      <a href="admin-users.html" class="admin-quick-action">
+        <span class="admin-quick-action-icon">👥</span>
+        <h3 class="admin-quick-action-title">User Management</h3>
+        <p class="admin-quick-action-desc">Manage customer accounts and permissions</p>
+      </a>
+      
+      <a href="admin-products.html" class="admin-quick-action">
+        <span class="admin-quick-action-icon">🛍️</span>
+        <h3 class="admin-quick-action-title">Product Catalog</h3>
+        <p class="admin-quick-action-desc">Add, edit, and manage products</p>
+      </a>
+      
+      <a href="admin-analytics.html" class="admin-quick-action">
+        <span class="admin-quick-action-icon">📊</span>
+        <h3 class="admin-quick-action-title">Analytics</h3>
+        <p class="admin-quick-action-desc">View business insights and reports</p>
+      </a>
+      
+      <a href="admin-messages.html" class="admin-quick-action">
+        <span class="admin-quick-action-icon">💬</span>
+        <h3 class="admin-quick-action-title">Messages</h3>
+        <p class="admin-quick-action-desc">Customer support and inquiries</p>
+      </a>
+      
+      <a href="admin-access.html" class="admin-quick-action">
+        <span class="admin-quick-action-icon">🛡️</span>
+        <h3 class="admin-quick-action-title">Site Control</h3>
+        <p class="admin-quick-action-desc">Maintenance mode and access control</p>
+      </a>
+    </section>
+
+    <!-- Main Content Grid -->
+    <div class="admin-content-grid">
+      <!-- Main Content -->
+      <main class="admin-main-content">
+        <!-- Stats Cards -->
+        <div class="admin-stats-grid">
+          <div class="admin-stat-card admin-animate-fade-in">
+            <div class="admin-stat-value">₹1,24,500</div>
+            <div class="admin-stat-label">Total Revenue</div>
+            <div class="admin-stat-change positive">
+              <span>↗</span> +12.5% from last month
+            </div>
+          </div>
+          
+          <div class="admin-stat-card admin-animate-fade-in">
+            <div class="admin-stat-value">342</div>
+            <div class="admin-stat-label">Total Orders</div>
+            <div class="admin-stat-change positive">
+              <span>↗</span> +8.2% from last month
+            </div>
+          </div>
+          
+          <div class="admin-stat-card admin-animate-fade-in">
+            <div class="admin-stat-value">1,247</div>
+            <div class="admin-stat-label">Total Customers</div>
+            <div class="admin-stat-change positive">
+              <span>↗</span> +15.3% from last month
+            </div>
+          </div>
+          
+          <div class="admin-stat-card admin-animate-fade-in">
+            <div class="admin-stat-value">98.5%</div>
+            <div class="admin-stat-label">Order Success Rate</div>
+            <div class="admin-stat-change positive">
+              <span>↗</span> +2.1% from last month
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="admin-card admin-recent-orders admin-animate-fade-in">
+          <div class="admin-card-header">
+            <div>
+              <h3 class="admin-card-title">Recent Orders</h3>
+              <p class="admin-card-subtitle">Latest customer orders and their status</p>
+            </div>
+            <a href="admin-orders.html" class="admin-btn admin-btn-secondary">View All</a>
+          </div>
+          
+          <div class="admin-order-item">
+            <div class="admin-order-info">
+              <div class="admin-order-avatar">R</div>
+              <div class="admin-order-details">
+                <h4>Rajesh Kumar</h4>
+                <p>Order #ATR-2024-001 • 2 items</p>
+              </div>
+            </div>
+            <span class="admin-order-status completed">Completed</span>
+          </div>
+          
+          <div class="admin-order-item">
+            <div class="admin-order-info">
+              <div class="admin-order-avatar">S</div>
+              <div class="admin-order-details">
+                <h4>Sunita Patel</h4>
+                <p>Order #ATR-2024-002 • 1 item</p>
+              </div>
+            </div>
+            <span class="admin-order-status processing">Processing</span>
+          </div>
+          
+          <div class="admin-order-item">
+            <div class="admin-order-info">
+              <div class="admin-order-avatar">A</div>
+              <div class="admin-order-details">
+                <h4>Amit Sharma</h4>
+                <p>Order #ATR-2024-003 • 3 items</p>
+              </div>
+            </div>
+            <span class="admin-order-status pending">Pending</span>
+          </div>
+        </div>
+      </main>
+
+      <!-- Sidebar -->
+      <aside class="admin-sidebar-content">
+        <!-- System Status -->
+        <div class="admin-card admin-system-status admin-animate-fade-in">
+          <div class="admin-card-header">
+            <h3 class="admin-card-title">System Status</h3>
+          </div>
+          
+          <div class="admin-status-item">
+            <span class="admin-status-label">Website</span>
+            <div class="admin-status-indicator"></div>
+          </div>
+          
+          <div class="admin-status-item">
+            <span class="admin-status-label">Database</span>
+            <div class="admin-status-indicator"></div>
+          </div>
+          
+          <div class="admin-status-item">
+            <span class="admin-status-label">Payment Gateway</span>
+            <div class="admin-status-indicator"></div>
+          </div>
+          
+          <div class="admin-status-item">
+            <span class="admin-status-label">Email Service</span>
+            <div class="admin-status-indicator warning"></div>
+          </div>
+          
+          <div class="admin-status-item">
+            <span class="admin-status-label">Analytics</span>
+            <div class="admin-status-indicator"></div>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="admin-card admin-animate-fade-in">
+          <div class="admin-card-header">
+            <h3 class="admin-card-title">Today's Activity</h3>
+          </div>
+          
+          <div class="admin-status-item">
+            <span class="admin-status-label">New Orders</span>
+            <span class="admin-stat-value" style="font-size: 1.25rem; color: var(--admin-primary);">23</span>
+          </div>
+          
+          <div class="admin-status-item">
+            <span class="admin-status-label">New Customers</span>
+            <span class="admin-stat-value" style="font-size: 1.25rem; color: var(--admin-success);">8</span>
+          </div>
+          
+          <div class="admin-status-item">
+            <span class="admin-status-label">Messages</span>
+            <span class="admin-stat-value" style="font-size: 1.25rem; color: var(--admin-warning);">5</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Footer -->
+    <footer class="admin-footer admin-animate-fade-in">
+      <p>© 2024 ATTRAL E-commerce. Enhanced Admin Dashboard v2.0 | Last updated: <span id="lastUpdated"></span></p>
+    </footer>
+  </div>
+
+  <!-- Enhanced JavaScript -->
+  <script src="js/firebase.js"></script>
+  <script src="js/admin-system.js"></script>
+  <script src="js/admin-dashboard.js"></script>
+  <script>
+    // Enhanced Admin Dashboard JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+      // Update last updated time
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+      
+      // Add loading states
+      const cards = document.querySelectorAll('.admin-card');
+      cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+      });
+      
+      // Animate cards on load
+      setTimeout(() => {
+        cards.forEach((card, index) => {
+          setTimeout(() => {
+            card.style.transition = 'all 0.3s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, index * 100);
+        });
+      }, 100);
+      
+      // Add hover effects to quick actions
+      const quickActions = document.querySelectorAll('.admin-quick-action');
+      quickActions.forEach(action => {
+        action.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-4px)';
+        });
+        
+        action.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+      
+      // Add click effects to buttons
+      const buttons = document.querySelectorAll('.admin-btn');
+      buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+          const ripple = document.createElement('span');
+          const rect = this.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top - size / 2;
+          
+          ripple.style.width = ripple.style.height = size + 'px';
+          ripple.style.left = x + 'px';
+          ripple.style.top = y + 'px';
+          ripple.classList.add('ripple');
+          
+          this.appendChild(ripple);
+          
+          setTimeout(() => {
+            ripple.remove();
+          }, 600);
+        });
+      });
+    });
+    
+    // Add ripple effect styles
+    const style = document.createElement('style');
+    style.textContent = `
+      .admin-btn {
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0);
+        animation: ripple-animation 0.6s linear;
+        pointer-events: none;
+      }
+      
+      @keyframes ripple-animation {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

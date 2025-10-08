@@ -1,0 +1,390 @@
+<!-- Authentication Modal -->
+<div id="auth-modal" class="auth-modal" style="display: none;">
+  <div class="auth-modal-content">
+    <span class="auth-close">&times;</span>
+    
+    <!-- Login Form -->
+    <div id="login-form" class="auth-form">
+      <h2>Sign In</h2>
+      <form id="signin-form">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Sign In</button>
+        <p class="auth-switch">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
+      </form>
+    </div>
+
+    <!-- Signup Form -->
+    <div id="signup-form" class="auth-form" style="display: none;">
+      <h2>Sign Up</h2>
+      <form id="register-form">
+        <div class="form-group">
+          <label for="signup-name">Full Name</label>
+          <input type="text" id="signup-name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" name="password" required minlength="6">
+        </div>
+        <div class="form-group">
+          <label for="signup-phone">Phone (Optional)</label>
+          <input type="tel" id="signup-phone" name="phone">
+        </div>
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+        <p class="auth-switch">Already have an account? <a href="#" id="show-signin">Sign In</a></p>
+      </form>
+    </div>
+
+    <!-- User Profile -->
+    <div id="user-profile" class="auth-form" style="display: none;">
+      <h2>Welcome!</h2>
+      <div class="user-info">
+        <p><strong>Email:</strong> <span id="user-email"></span></p>
+        <p><strong>Name:</strong> <span id="user-name"></span></p>
+      </div>
+      <button id="signout-btn" class="btn btn-secondary">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.auth-modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.auth-close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.auth-close:hover {
+  color: #000;
+}
+
+.auth-form h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 1rem;
+  color: #666;
+}
+
+.auth-switch a {
+  color: #ff6b35;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+.user-info {
+  margin-bottom: 1.5rem;
+}
+
+.user-info p {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary {
+  background-color: #ff6b35;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #e55a2b;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: none;
+}
+
+.success-message {
+  color: #28a745;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: none;
+}
+</style>
+
+<script>
+// Authentication Modal JavaScript
+(function() {
+  const authModal = document.getElementById('auth-modal');
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  const userProfile = document.getElementById('user-profile');
+  const showSignupLink = document.getElementById('show-signup');
+  const showSigninLink = document.getElementById('show-signin');
+  const signinForm = document.getElementById('signin-form');
+  const registerForm = document.getElementById('register-form');
+  const signoutBtn = document.getElementById('signout-btn');
+  const closeBtn = document.querySelector('.auth-close');
+
+  // Show modal
+  function showAuthModal() {
+    authModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Hide modal
+  function hideAuthModal() {
+    authModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
+  // Switch between forms
+  function showLoginForm() {
+    loginForm.style.display = 'block';
+    signupForm.style.display = 'none';
+    userProfile.style.display = 'none';
+  }
+
+  function showSignupForm() {
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'block';
+    userProfile.style.display = 'none';
+  }
+
+  function showUserProfile(user) {
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'none';
+    userProfile.style.display = 'block';
+    
+    document.getElementById('user-email').textContent = user.email || 'N/A';
+    document.getElementById('user-name').textContent = user.displayName || 'N/A';
+  }
+
+  // Event listeners
+  closeBtn.addEventListener('click', hideAuthModal);
+  authModal.addEventListener('click', function(e) {
+    if (e.target === authModal) {
+      hideAuthModal();
+    }
+  });
+
+  showSignupLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    showSignupForm();
+  });
+
+  showSigninLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    showLoginForm();
+  });
+
+  // Sign in form
+  signinForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    try {
+      if (window.AttralFirebase && window.AttralFirebase.auth) {
+        await window.AttralFirebase.auth.signInWithEmailAndPassword(email, password);
+        hideAuthModal();
+        showMessage('Successfully signed in!', 'success');
+      } else {
+        throw new Error('Firebase not initialized');
+      }
+    } catch (error) {
+      if (error.code === 'auth/user-not-found') {
+        showMessage('No account found with this email. Please sign up first.', 'error');
+      } else if (error.code === 'auth/wrong-password') {
+        showMessage('Incorrect password. Please try again.', 'error');
+      } else if (error.code === 'auth/invalid-credential') {
+        showMessage('Invalid credentials. Please check your email and password.', 'error');
+      } else {
+        showMessage(error.message, 'error');
+      }
+    }
+  });
+
+  // Sign up form
+  registerForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const name = document.getElementById('signup-name').value;
+    const phone = document.getElementById('signup-phone').value;
+
+    try {
+      if (window.AttralFirebase && window.AttralFirebase.auth) {
+        const userCredential = await window.AttralFirebase.auth.createUserWithEmailAndPassword(email, password);
+        
+        // Update user profile
+        await userCredential.user.updateProfile({
+          displayName: name
+        });
+
+        // Save additional user data to Firestore
+        if (window.AttralFirebase.db) {
+          await window.AttralFirebase.db.collection('users').doc(userCredential.user.uid).set({
+            displayName: name,
+            email: email,
+            phone: phone,
+            createdAt: new Date(),
+            lastLoginAt: new Date()
+          }, { merge: true });
+        }
+
+        // 📧 Send welcome email
+        if (window.AttralEmailService) {
+          try {
+            await window.AttralEmailService.sendWelcomeEmail(email, name);
+            console.log('✅ Welcome email sent');
+          } catch (emailError) {
+            console.warn('⚠️ Welcome email failed:', emailError);
+          }
+        }
+
+        hideAuthModal();
+        showMessage('Account created successfully! Check your email for a welcome gift! 🎁', 'success');
+      } else {
+        throw new Error('Firebase not initialized');
+      }
+    } catch (error) {
+      if (error.code === 'auth/email-already-in-use') {
+        showMessage('An account with this email already exists. Please sign in instead.', 'error');
+      } else if (error.code === 'auth/weak-password') {
+        showMessage('Password should be at least 6 characters.', 'error');
+      } else if (error.code === 'auth/invalid-email') {
+        showMessage('Please enter a valid email address.', 'error');
+      } else {
+        showMessage(error.message, 'error');
+      }
+    }
+  });
+
+  // Sign out
+  signoutBtn.addEventListener('click', async function() {
+    try {
+      await window.AttralFirebase.signOut();
+      showLoginForm();
+      showMessage('Successfully signed out!', 'success');
+    } catch (error) {
+      showMessage(error.message, 'error');
+    }
+  });
+
+  // Show messages
+  function showMessage(message, type) {
+    // Remove existing messages
+    const existingMessages = document.querySelectorAll('.error-message, .success-message');
+    existingMessages.forEach(msg => msg.remove());
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+
+    const currentForm = loginForm.style.display !== 'none' ? loginForm : signupForm;
+    currentForm.appendChild(messageDiv);
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      messageDiv.remove();
+    }, 5000);
+  }
+
+  // Listen for auth state changes
+  if (window.AttralFirebase && window.AttralFirebase.auth) {
+    window.AttralFirebase.auth.onAuthStateChanged(function(user) {
+      if (user && !user.isAnonymous) {
+        showUserProfile(user);
+      } else {
+        showLoginForm();
+      }
+    });
+  }
+
+  // Make showAuthModal globally available
+  window.showAuthModal = showAuthModal;
+})();
+</script>

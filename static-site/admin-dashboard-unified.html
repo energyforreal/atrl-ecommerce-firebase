@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎛️ ATTRAL Admin Dashboard | Modern E-commerce Control Center</title>
+  <meta name="description" content="Modern, responsive admin dashboard for ATTRAL e-commerce with real-time Firestore data integration" />
+  
+  <!-- Enhanced Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Enhanced Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/admin-enhanced.css" />
+  <link rel="icon" type="image/png" href="logo.png" />
+  
+  <!-- Chart.js for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    /* Modern Admin Dashboard Styles */
+    .admin-dashboard {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      position: relative;
+    }
+    
+    .admin-dashboard::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .admin-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border-right: 1px solid #e2e8f0;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+    
+    .admin-sidebar.collapsed {
+      transform: translateX(-100%);
+    }
+    
+    .admin-main {
+      margin-left: 280px;
+      min-height: 100vh;
+      transition: margin-left 0.3s ease;
+    }
+    
+    .admin-main.expanded {
+      margin-left: 0;
+    }
+    
+    .admin-topbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .admin-content {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .admin-mobile-menu {
+      display: none;
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+    
+    /* Enhanced Navigation Styles */
+    .admin-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1rem;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      color: #6b7280;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 0.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .admin-nav-link:hover {
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      color: #1f2937;
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .admin-nav-link.active {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+      transform: translateX(0);
+    }
+    
+    .admin-nav-link.external-link {
+      border: 1px solid #e2e8f0;
+      background: rgba(255, 255, 255, 0.5);
+    }
+    
+    .admin-nav-link.external-link:hover {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.05);
+      color: #6366f1;
+    }
+    
+    /* Navigation Icon Wrapper */
+    .nav-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .admin-nav-link.active .nav-icon-wrapper {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .admin-nav-link:hover .nav-icon-wrapper {
+      background: rgba(99, 102, 241, 0.1);
+      transform: scale(1.1);
+    }
+    
+    .nav-icon {
+      font-size: 1.25rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .admin-nav-link:hover .nav-icon {
+      transform: scale(1.1);
+    }
+    
+    /* Navigation Content */
+    .nav-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+    
+    .nav-label {
+      font-weight: 600;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+    
+    .nav-subtitle {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      line-height: 1rem;
+    }
+    
+    .admin-nav-link.active .nav-subtitle {
+      opacity: 0.9;
+    }
+    
+    /* Navigation Badges */
+    .nav-badges {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      align-items: flex-end;
+    }
+    
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      min-width: 1.25rem;
+      justify-content: center;
+    }
+    
+    .admin-badge-warning {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    
+    .admin-badge-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    
+    .admin-badge-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .admin-badge-info {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    
+    .admin-badge-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    /* Navigation Indicators */
+    .nav-indicator {
+      width: 4px;
+      height: 24px;
+      background: transparent;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    
+    .admin-nav-link.active .nav-indicator {
+      background: rgba(255, 255, 255, 0.8);
+    }
+    
+    .nav-external-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(107, 114, 128, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .admin-nav-link.external-link:hover .nav-external-indicator {
+      background: rgba(99, 102, 241, 0.1);
+      transform: scale(1.1);
+    }
+    
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+    
+    .admin-badge-warning {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    
+    .admin-badge-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    
+    @media (max-width: 768px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .admin-main {
+        margin-left: 0;
+      }
+      
+      .admin-mobile-menu {
+        display: block;
+      }
+      
+      .admin-content {
+        padding: 1rem;
+      }
+    }
+    
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Authentication Modal Styles */
+    .auth-modal {
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .auth-modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    .auth-close {
+      position: absolute;
+      right: 1rem;
+      top: 1rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+      transition: color 0.2s ease;
+    }
+
+    .auth-close:hover {
+      color: #000;
+    }
+
+    .auth-form h2 {
+      margin-bottom: 1.5rem;
+      color: #333;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 1rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .auth-switch {
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .auth-switch a {
+      color: #6366f1;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-switch a:hover {
+      text-decoration: underline;
+    }
+
+    .user-info {
+      background: #f8fafc;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .user-info p {
+      margin: 0.5rem 0;
+      color: #374151;
+    }
+  </style>
+</head>
+
+<body class="admin-dashboard">
+  <!-- Sidebar Navigation -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div style="padding: 2rem 1.5rem;">
+      <!-- Logo -->
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem;">
+        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.25rem;">
+          A
+        </div>
+        <div>
+          <h2 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2937;">ATTRAL Admin</h2>
+          <p style="margin: 0; font-size: 0.875rem; color: #6b7280;">Control Center</p>
+        </div>
+      </div>
+      
+      <!-- Enhanced Navigation Menu -->
+      <nav style="flex: 1; overflow-y: auto; padding-right: 0.5rem;">
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          <!-- Dashboard Section -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="#dashboard" class="admin-nav-link active" data-section="dashboard" onclick="adminDashboard.navigateToSection('dashboard', this)">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">📊</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Dashboard</span>
+                <span class="nav-subtitle">Overview & Stats</span>
+              </div>
+              <div class="nav-indicator"></div>
+            </a>
+          </li>
+
+          <!-- Orders Section -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="#orders" class="admin-nav-link" data-section="orders" onclick="adminDashboard.navigateToSection('orders', this)">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">📦</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Orders</span>
+                <span class="nav-subtitle">Order Management</span>
+              </div>
+              <div class="nav-badges">
+                <span class="admin-badge admin-badge-warning" id="pending-orders-count">0</span>
+                <span class="admin-badge admin-badge-info" id="total-orders-count">0</span>
+              </div>
+              <div class="nav-indicator"></div>
+            </a>
+          </li>
+
+          <!-- Fulfillment Section -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="#fulfillment" class="admin-nav-link" data-section="fulfillment" onclick="adminDashboard.navigateToSection('fulfillment', this)">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">🚚</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Fulfillment</span>
+                <span class="nav-subtitle">Shipping & Tracking</span>
+              </div>
+              <div class="nav-badges">
+                <span class="admin-badge admin-badge-danger" id="pending-fulfillment-count">0</span>
+              </div>
+              <div class="nav-indicator"></div>
+            </a>
+          </li>
+
+          <!-- Messages Section -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="#messages" class="admin-nav-link" data-section="messages" onclick="adminDashboard.navigateToSection('messages', this)">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">💬</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Messages</span>
+                <span class="nav-subtitle">Customer Support</span>
+              </div>
+              <div class="nav-badges">
+                <span class="admin-badge admin-badge-danger" id="unread-messages-count">0</span>
+                <span class="admin-badge admin-badge-secondary" id="total-messages-count">0</span>
+              </div>
+              <div class="nav-indicator"></div>
+            </a>
+          </li>
+
+          <!-- Coupons Section -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="#coupons" class="admin-nav-link" data-section="coupons" onclick="adminDashboard.navigateToSection('coupons', this)">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">🎫</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Coupons</span>
+                <span class="nav-subtitle">Discount Management</span>
+              </div>
+              <div class="nav-badges">
+                <span class="admin-badge admin-badge-success" id="active-coupons-count">0</span>
+              </div>
+              <div class="nav-indicator"></div>
+            </a>
+          </li>
+
+          <!-- Users Section -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="#users" class="admin-nav-link" data-section="users" onclick="adminDashboard.navigateToSection('users', this)">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">👥</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Users</span>
+                <span class="nav-subtitle">User Management</span>
+              </div>
+              <div class="nav-badges">
+                <span class="admin-badge admin-badge-info" id="total-users-count">0</span>
+              </div>
+              <div class="nav-indicator"></div>
+            </a>
+          </li>
+
+          <!-- Products Section -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="#products" class="admin-nav-link" data-section="products" onclick="adminDashboard.navigateToSection('products', this)">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">🛍️</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Products</span>
+                <span class="nav-subtitle">Inventory Management</span>
+              </div>
+              <div class="nav-badges">
+                <span class="admin-badge admin-badge-success" id="total-products-count">0</span>
+              </div>
+              <div class="nav-indicator"></div>
+            </a>
+          </li>
+
+          <!-- Affiliates Section -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="#affiliates" class="admin-nav-link" data-section="affiliates" onclick="adminDashboard.navigateToSection('affiliates', this)">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">🤝</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Affiliates</span>
+                <span class="nav-subtitle">Partner Program</span>
+              </div>
+              <div class="nav-badges">
+                <span class="admin-badge admin-badge-info" id="total-affiliates-count">0</span>
+              </div>
+              <div class="nav-indicator"></div>
+            </a>
+          </li>
+
+          <!-- Analytics Section -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="#analytics" class="admin-nav-link" data-section="analytics" onclick="adminDashboard.navigateToSection('analytics', this)">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">📈</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Analytics</span>
+                <span class="nav-subtitle">Reports & Insights</span>
+              </div>
+              <div class="nav-indicator"></div>
+            </a>
+          </li>
+
+          <!-- External Links Section -->
+          <li style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+            <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">
+              External Links
+            </div>
+          </li>
+
+          <!-- External Navigation Links -->
+          <li style="margin-bottom: 0.5rem;">
+            <a href="coupon-admin.html" class="admin-nav-link external-link" target="_blank" onclick="adminDashboard.trackExternalNavigation('coupon-admin')">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">🎫</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Coupon Admin</span>
+                <span class="nav-subtitle">Advanced Coupon Tools</span>
+              </div>
+              <div class="nav-external-indicator">
+                <span style="font-size: 0.75rem; color: #6b7280;">↗</span>
+              </div>
+            </a>
+          </li>
+
+          <li style="margin-bottom: 0.5rem;">
+            <a href="admin-messages.html" class="admin-nav-link external-link" target="_blank" onclick="adminDashboard.trackExternalNavigation('admin-messages')">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">💬</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Message Center</span>
+                <span class="nav-subtitle">Advanced Messaging</span>
+              </div>
+              <div class="nav-external-indicator">
+                <span style="font-size: 0.75rem; color: #6b7280;">↗</span>
+              </div>
+            </a>
+          </li>
+
+          <li style="margin-bottom: 0.5rem;">
+            <a href="admin-affiliate-sync.html" class="admin-nav-link external-link" target="_blank" onclick="adminDashboard.trackExternalNavigation('admin-affiliate-sync')">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">🔄</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Affiliate Sync</span>
+                <span class="nav-subtitle">Sync Dashboard</span>
+              </div>
+              <div class="nav-external-indicator">
+                <span style="font-size: 0.75rem; color: #6b7280;">↗</span>
+              </div>
+            </a>
+          </li>
+
+          <li style="margin-bottom: 0.5rem;">
+            <a href="dashboard.html" class="admin-nav-link external-link" target="_blank" onclick="adminDashboard.trackExternalNavigation('dashboard')">
+              <div class="nav-icon-wrapper">
+                <span class="nav-icon">📊</span>
+              </div>
+              <div class="nav-content">
+                <span class="nav-label">Public Dashboard</span>
+                <span class="nav-subtitle">View Public Stats</span>
+              </div>
+              <div class="nav-external-indicator">
+                <span style="font-size: 0.75rem; color: #6b7280;">↗</span>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      
+      <!-- User Info -->
+      <div style="position: absolute; bottom: 2rem; left: 1.5rem; right: 1.5rem;">
+        <div style="background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">
+              A
+            </div>
+            <div>
+              <p style="margin: 0; font-weight: 600; color: #1f2937; font-size: 0.875rem;">Admin User</p>
+              <p style="margin: 0; color: #6b7280; font-size: 0.75rem;">Online</p>
+            </div>
+          </div>
+          <button onclick="adminDashboard.logout()" style="width: 100%; background: #ef4444; color: white; border: none; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.875rem; cursor: pointer; transition: background-color 0.2s;">
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="admin-main" id="adminMain">
+    <!-- Top Bar -->
+    <div class="admin-topbar">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button class="admin-mobile-menu" onclick="toggleSidebar()">
+          ☰
+        </button>
+        <h1 style="margin: 0; font-size: 1.5rem; font-weight: 600; color: #1f2937;">Dashboard</h1>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280; font-size: 0.875rem;">
+          <span>🟢</span>
+          <span>Live</span>
+        </div>
+        <div id="last-updated" style="color: #6b7280; font-size: 0.875rem;"></div>
+      </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="admin-content">
+      <!-- Dashboard Section -->
+      <section id="dashboard-section" class="admin-section">
+        <!-- Stats Overview -->
+        <div class="admin-stats-grid">
+          <div class="admin-stat-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                💰
+              </div>
+              <div style="color: #10b981; font-size: 0.875rem; font-weight: 600;">+12.5%</div>
+            </div>
+            <div class="admin-stat-value" id="total-revenue">₹0</div>
+            <div class="admin-stat-label">Total Revenue</div>
+          </div>
+          
+          <div class="admin-stat-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                📦
+              </div>
+              <div style="color: #3b82f6; font-size: 0.875rem; font-weight: 600;">+8.2%</div>
+            </div>
+            <div class="admin-stat-value" id="total-orders">0</div>
+            <div class="admin-stat-label">Total Orders</div>
+          </div>
+          
+          <div class="admin-stat-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                👥
+              </div>
+              <div style="color: #8b5cf6; font-size: 0.875rem; font-weight: 600;">+15.3%</div>
+            </div>
+            <div class="admin-stat-value" id="total-users">0</div>
+            <div class="admin-stat-label">Total Users</div>
+          </div>
+          
+          <div class="admin-stat-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                🎫
+              </div>
+              <div style="color: #f59e0b; font-size: 0.875rem; font-weight: 600;">Active</div>
+            </div>
+            <div class="admin-stat-value" id="total-coupons">0</div>
+            <div class="admin-stat-label">Active Coupons</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+          <div class="admin-card" style="cursor: pointer;" onclick="adminDashboard.showSection('orders')">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                📦
+              </div>
+              <div>
+                <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem; font-weight: 600;">Manage Orders</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">View and process orders</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="admin-card" style="cursor: pointer;" onclick="adminDashboard.showSection('coupons')">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                🎫
+              </div>
+              <div>
+                <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem; font-weight: 600;">Coupon Management</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Create and manage coupons</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="admin-card" style="cursor: pointer;" onclick="adminDashboard.showSection('messages')">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                💬
+              </div>
+              <div>
+                <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem; font-weight: 600;">Customer Messages</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">View and respond to messages</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="admin-card" style="cursor: pointer;" onclick="adminDashboard.showSection('analytics')">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #06b6d4, #0891b2); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                📈
+              </div>
+              <div>
+                <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem; font-weight: 600;">Analytics</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">View business insights</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div>
+                <h3 class="admin-card-title">Recent Orders</h3>
+                <p class="admin-card-subtitle">Latest customer orders</p>
+              </div>
+              <button class="admin-btn admin-btn-secondary" onclick="adminDashboard.showSection('orders')">View All</button>
+            </div>
+            <div id="recent-orders-list">
+              <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                <div class="admin-spinner"></div>
+                <p style="margin: 0.5rem 0 0 0;">Loading orders...</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div>
+                <h3 class="admin-card-title">Recent Messages</h3>
+                <p class="admin-card-subtitle">Latest customer inquiries</p>
+              </div>
+              <button class="admin-btn admin-btn-secondary" onclick="adminDashboard.showSection('messages')">View All</button>
+            </div>
+            <div id="recent-messages-list">
+              <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                <div class="admin-spinner"></div>
+                <p style="margin: 0.5rem 0 0 0;">Loading messages...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Other sections will be loaded dynamically -->
+      <section id="orders-section" class="admin-section" style="display: none;">
+        <div id="orders-content">
+          <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <div class="admin-spinner"></div>
+            <p style="margin: 0.5rem 0 0 0;">Loading orders...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="fulfillment-section" class="admin-section" style="display: none;">
+        <div id="fulfillment-content">
+          <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <div class="admin-spinner"></div>
+            <p style="margin: 0.5rem 0 0 0;">Loading fulfillment data...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="messages-section" class="admin-section" style="display: none;">
+        <div id="messages-content">
+          <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <div class="admin-spinner"></div>
+            <p style="margin: 0.5rem 0 0 0;">Loading messages...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="coupons-section" class="admin-section" style="display: none;">
+        <div id="coupons-content">
+          <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <div class="admin-spinner"></div>
+            <p style="margin: 0.5rem 0 0 0;">Loading coupons...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="users-section" class="admin-section" style="display: none;">
+        <div id="users-content">
+          <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <div class="admin-spinner"></div>
+            <p style="margin: 0.5rem 0 0 0;">Loading users...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="products-section" class="admin-section" style="display: none;">
+        <div id="products-content">
+          <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <div class="admin-spinner"></div>
+            <p style="margin: 0.5rem 0 0 0;">Loading products...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="affiliates-section" class="admin-section" style="display: none;">
+        <div id="affiliates-content">
+          <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <div class="admin-spinner"></div>
+            <p style="margin: 0.5rem 0 0 0;">Loading affiliates...</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="analytics-section" class="admin-section" style="display: none;">
+        <div id="analytics-content">
+          <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <div class="admin-spinner"></div>
+            <p style="margin: 0.5rem 0 0 0;">Loading analytics...</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Authentication Modal -->
+  <div id="auth-modal" class="auth-modal" style="display: none;">
+    <div class="auth-modal-content">
+      <span class="auth-close">&times;</span>
+      
+      <!-- Login Form -->
+      <div id="login-form" class="auth-form">
+        <h2>🔐 Admin Authentication</h2>
+        <form id="signin-form">
+          <div class="form-group">
+            <label for="login-email">Username</label>
+            <input type="text" id="login-email" name="email" value="attral" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" name="password" value="Rakeshmurali@10" required>
+          </div>
+          
+          <div class="form-group" style="background: #f0fdf4; padding: 1rem; border-radius: 0.5rem; border: 1px solid #22c55e; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.25rem;">🔐</span>
+              <strong style="color: #166534;">Secure Admin Login</strong>
+            </div>
+            <p style="margin: 0; font-size: 0.875rem; color: #166534;">
+              Sign in with your admin credentials to access all Firestore data.
+            </p>
+          </div>
+          
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+            🔐 Sign In
+          </button>
+          
+          <!-- Google Sign-In Button -->
+          <div style="text-align: center; margin: 1rem 0;">
+            <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.5rem;">Or</div>
+            <button type="button" id="google-signin-btn" class="btn" style="width: 100%; background: #ffffff; color: #374151; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Continue with Google
+            </button>
+          </div>
+          
+          <p class="auth-switch">Need admin access? <a href="#" id="show-signup">Contact Administrator</a></p>
+        </form>
+      </div>
+
+      <!-- Admin Profile -->
+      <div id="user-profile" class="auth-form" style="display: none;">
+        <h2>👤 Admin Profile</h2>
+        <div class="user-info">
+          <p><strong>Email:</strong> <span id="user-email">attralsolar@gmail.com</span></p>
+          <p><strong>Role:</strong> <span id="user-role">Administrator</span></p>
+          <p><strong>Last Login:</strong> <span id="last-login">Just now</span></p>
+        </div>
+        <button id="signout-btn" class="btn btn-secondary">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/admin-system.js"></script>
+  <script src="js/admin-dashboard-unified.js"></script>
+  
+  <script>
+    // Global functions
+    function toggleSidebar() {
+      const sidebar = document.getElementById('adminSidebar');
+      const main = document.getElementById('adminMain');
+      sidebar.classList.toggle('collapsed');
+      main.classList.toggle('expanded');
+    }
+    
+    function showSection(sectionName) {
+      if (window.adminDashboard) {
+        window.adminDashboard.showSection(sectionName);
+      }
+    }
+  </script>
+</body>
+</html>

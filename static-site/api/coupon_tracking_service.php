@@ -1,0 +1,538 @@
+<?php
+/**
+ * 🎟️ FIRESTORE COUPON TRACKING SERVICE
+ * 
+ * Production-grade, idempotent, affiliate-aware coupon tracking for e-commerce.
+ * 
+ * Features:
+ * - Atomic increment operations using Firestore FieldValue::increment()
+ * - Idempotency guards to prevent duplicate increments per order/payment
+ * - Affiliate commission tracking with payout amounts
+ * - Code normalization for consistent querying
+ * - Comprehensive error handling and logging
+ * - Transaction-safe operations
+ * 
+ * @version 2.0.0
+ * @author ATTRAL E-Commerce Platform
+ * @license MIT
+ */
+
+// Prevent direct access
+if (!defined('COUPON_SERVICE_LOADED')) {
+    define('COUPON_SERVICE_LOADED', true);
+}
+
+/**
+ * Normalize coupon code for consistent querying
+ * 
+ * @param string $code Raw coupon code input
+ * @return string Normalized coupon code (trimmed, uppercase)
+ */
+function normalizeCouponCode($code) {
+    if (!$code || !is_string($code)) {
+        return '';
+    }
+    return strtoupper(trim($code));
+}
+
+/**
+ * Simple atomic increment test function
+ * 
+ * Increments both usageCount and payoutUsage by 1 for testing purposes.
+ * Does NOT use idempotency guards - use applyCouponForOrder() for production.
+ * 
+ * @param \Google\Cloud\Firestore\FirestoreClient $db Firestore database instance
+ * @param string $code Coupon code to increment
+ * @return array Result with success status and details
+ * 
+ * @example
+ * $result = incrementCouponByCode($firestore, 'SAVE20');
+ * if ($result['success']) {
+ *     echo "Incremented: " . $result['coupon']['code'];
+ * }
+ */
+function incrementCouponByCode($db, $code) {
+    try {
+        $normalizedCode = normalizeCouponCode($code);
+        
+        if (!$normalizedCode) {
+            return [
+                'success' => false,
+                'error' => 'Invalid coupon code provided',
+                'code' => $code
+            ];
+        }
+        
+        error_log("COUPON SERVICE: Incrementing usage for code: $normalizedCode");
+        
+        // Query coupons collection by code field
+        $couponsRef = $db->collection('coupons');
+        $query = $couponsRef->where('code', '=', $normalizedCode)->limit(1);
+        $documents = $query->documents();
+        
+        $found = false;
+        $couponData = null;
+        
+        foreach ($documents as $doc) {
+            if ($doc->exists()) {
+                $found = true;
+                $docId = $doc->id();
+                $couponData = $doc->data();
+                
+                // Get document reference for update
+                $docRef = $db->collection('coupons')->document($docId);
+                
+                // Atomic increment - creates fields if they don't exist
+                $updates = [
+                    ['path' => 'usageCount', 'value' => \Google\Cloud\Firestore\FieldValue::increment(1)],
+                    ['path' => 'payoutUsage', 'value' => \Google\Cloud\Firestore\FieldValue::increment(1)],
+                    ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new DateTime())]
+                ];
+                
+                $docRef->update($updates);
+                
+                // Read updated values
+                $updatedSnap = $docRef->snapshot();
+                $updatedData = $updatedSnap->exists() ? $updatedSnap->data() : [];
+                
+                error_log("COUPON SERVICE: Successfully incremented $normalizedCode - usageCount: " . ($updatedData['usageCount'] ?? 0));
+                
+                return [
+                    'success' => true,
+                    'message' => 'Coupon usage incremented',
+                    'coupon' => [
+                        'id' => $docId,
+                        'code' => $normalizedCode,
+                        'usageCount' => $updatedData['usageCount'] ?? 0,
+                        'payoutUsage' => $updatedData['payoutUsage'] ?? 0
+                    ]
+                ];
+            }
+            break; // limit(1)
+        }
+        
+        if (!$found) {
+            error_log("COUPON SERVICE: Coupon not found: $normalizedCode");
+            return [
+                'success' => false,
+                'error' => 'Coupon not found',
+                'code' => $normalizedCode
+            ];
+        }
+        
+    } catch (Exception $e) {
+        error_log("COUPON SERVICE ERROR: " . $e->getMessage());
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+            'code' => $code ?? 'unknown'
+        ];
+    }
+}
+
+/**
+ * Apply coupon for order with full idempotency and affiliate support
+ * 
+ * This is the production-ready function that:
+ * 1. Checks for duplicate application using guard documents
+ * 2. Atomically increments usageCount
+ * 3. Increments payoutUsage by actual commission amount (for affiliates)
+ * 4. Creates guard document to prevent duplicate increments
+ * 5. Logs affiliate usage for reporting
+ * 
+ * @param \Google\Cloud\Firestore\FirestoreClient $db Firestore database instance
+ * @param string $code Coupon code to apply
+ * @param string $orderId Order document ID in Firestore
+ * @param array $meta Order metadata (amount, customer, etc.)
+ * @param bool $isAffiliate Whether this is an affiliate coupon
+ * @param float $payoutAmount Commission amount in rupees (if affiliate)
+ * @param string|null $paymentId Optional payment ID for idempotency key
+ * @return array Result with success status and details
+ * 
+ * @example Basic usage:
+ * $result = applyCouponForOrder($db, 'SAVE20', $orderId, [
+ *     'amount' => 999.00,
+ *     'customerEmail' => 'customer@example.com'
+ * ], false, 0, $paymentId);
+ * 
+ * @example Affiliate usage:
+ * $result = applyCouponForOrder($db, 'JOHN-REF', $orderId, [
+ *     'amount' => 999.00,
+ *     'customerEmail' => 'customer@example.com'
+ * ], true, 99.90, $paymentId);
+ */
+function applyCouponForOrder($db, $code, $orderId, $meta = [], $isAffiliate = false, $payoutAmount = 0, $paymentId = null) {
+    try {
+        $normalizedCode = normalizeCouponCode($code);
+        
+        if (!$normalizedCode) {
+            return [
+                'success' => false,
+                'error' => 'Invalid coupon code provided',
+                'code' => $code
+            ];
+        }
+        
+        if (!$orderId) {
+            return [
+                'success' => false,
+                'error' => 'Order ID is required',
+                'code' => $normalizedCode
+            ];
+        }
+        
+        // Use payment ID for idempotency if available, otherwise use order ID
+        $idempotencyKey = $paymentId ?: $orderId;
+        $guardKey = sha1($idempotencyKey . '|' . $normalizedCode);
+        
+        error_log("COUPON SERVICE: Applying coupon $normalizedCode for order $orderId (idempotency key: $guardKey)");
+        
+        // === STEP 1: Check for existing application (idempotency) ===
+        $orderRef = $db->collection('orders')->document($orderId);
+        $guardsRef = $orderRef->collection('couponIncrements')->document($guardKey);
+        $guardSnap = $guardsRef->snapshot();
+        
+        if ($guardSnap->exists()) {
+            error_log("COUPON SERVICE: Coupon $normalizedCode already applied for order $orderId (idempotent)");
+            $guardData = $guardSnap->data();
+            return [
+                'success' => true,
+                'idempotent' => true,
+                'message' => 'Coupon already applied (idempotent)',
+                'code' => $normalizedCode,
+                'appliedAt' => $guardData['createdAt'] ?? null
+            ];
+        }
+        
+        // === STEP 2: Find coupon document ===
+        $couponsRef = $db->collection('coupons');
+        $query = $couponsRef->where('code', '=', $normalizedCode)->limit(1);
+        $documents = $query->documents();
+        
+        $couponDocRef = null;
+        $couponDocId = null;
+        $couponData = null;
+        
+        foreach ($documents as $doc) {
+            if ($doc->exists()) {
+                $couponDocId = $doc->id();
+                $couponData = $doc->data();
+                $couponDocRef = $db->collection('coupons')->document($couponDocId);
+                break;
+            }
+        }
+        
+        if (!$couponDocRef) {
+            error_log("COUPON SERVICE: Coupon not found: $normalizedCode");
+            return [
+                'success' => false,
+                'error' => 'Coupon not found',
+                'code' => $normalizedCode
+            ];
+        }
+        
+        // === STEP 3: Prepare atomic updates ===
+        $updates = [
+            ['path' => 'usageCount', 'value' => \Google\Cloud\Firestore\FieldValue::increment(1)],
+            ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new DateTime())]
+        ];
+        
+        // For affiliate coupons, increment payoutUsage by commission amount
+        if ($isAffiliate && $payoutAmount > 0) {
+            $updates[] = ['path' => 'payoutUsage', 'value' => \Google\Cloud\Firestore\FieldValue::increment($payoutAmount)];
+            $updates[] = ['path' => 'isAffiliateCoupon', 'value' => true];
+            
+            // Track affiliate code if provided in meta
+            if (isset($meta['affiliateCode'])) {
+                $updates[] = ['path' => 'affiliateCode', 'value' => $meta['affiliateCode']];
+            }
+        } else {
+            // For regular coupons, increment payoutUsage by 1 (just a counter)
+            $updates[] = ['path' => 'payoutUsage', 'value' => \Google\Cloud\Firestore\FieldValue::increment(1)];
+        }
+        
+        // === STEP 4: Apply updates atomically ===
+        try {
+            $couponDocRef->update($updates);
+            error_log("COUPON SERVICE: Atomically incremented $normalizedCode (usageCount +1, payoutUsage +" . ($isAffiliate ? $payoutAmount : 1) . ")");
+        } catch (\Throwable $updateError) {
+            // Fallback: read-modify-write if atomic increment not supported
+            error_log("COUPON SERVICE: Atomic increment failed, using fallback for $normalizedCode - " . $updateError->getMessage());
+            
+            $snap = $couponDocRef->snapshot();
+            $data = $snap->exists() ? $snap->data() : [];
+            $currentUsage = isset($data['usageCount']) ? intval($data['usageCount']) : 0;
+            $currentPayout = isset($data['payoutUsage']) ? floatval($data['payoutUsage']) : 0;
+            
+            $fallbackUpdates = [
+                ['path' => 'usageCount', 'value' => $currentUsage + 1],
+                ['path' => 'payoutUsage', 'value' => $currentPayout + ($isAffiliate ? $payoutAmount : 1)],
+                ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new DateTime())]
+            ];
+            
+            if ($isAffiliate) {
+                $fallbackUpdates[] = ['path' => 'isAffiliateCoupon', 'value' => true];
+                if (isset($meta['affiliateCode'])) {
+                    $fallbackUpdates[] = ['path' => 'affiliateCode', 'value' => $meta['affiliateCode']];
+                }
+            }
+            
+            $couponDocRef->update($fallbackUpdates);
+            error_log("COUPON SERVICE: Fallback update successful for $normalizedCode");
+        }
+        
+        // === STEP 5: Create guard document (idempotency) ===
+        $guardData = [
+            'code' => $normalizedCode,
+            'orderId' => $orderId,
+            'paymentId' => $paymentId ?? $orderId,
+            'isAffiliate' => $isAffiliate,
+            'payoutAmount' => $payoutAmount,
+            'createdAt' => new \Google\Cloud\Core\Timestamp(new DateTime())
+        ];
+        
+        $guardsRef->set($guardData);
+        error_log("COUPON SERVICE: Created guard document for $normalizedCode (key: $guardKey)");
+        
+        // === STEP 6: Log affiliate usage (if applicable) ===
+        if ($isAffiliate) {
+            logAffiliateUsage($db, $orderId, $normalizedCode, $meta, $payoutAmount, $idempotencyKey);
+        }
+        
+        // === STEP 7: Return success ===
+        return [
+            'success' => true,
+            'idempotent' => false,
+            'message' => 'Coupon applied successfully',
+            'coupon' => [
+                'id' => $couponDocId,
+                'code' => $normalizedCode,
+                'isAffiliate' => $isAffiliate,
+                'payoutAmount' => $payoutAmount
+            ],
+            'guardKey' => $guardKey
+        ];
+        
+    } catch (Exception $e) {
+        error_log("COUPON SERVICE ERROR: Failed to apply coupon $code for order $orderId - " . $e->getMessage());
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+            'code' => $code ?? 'unknown',
+            'orderId' => $orderId ?? 'unknown'
+        ];
+    }
+}
+
+/**
+ * Log affiliate usage in dedicated subcollection for reporting
+ * 
+ * Creates an idempotent entry in orders/{orderId}/affiliate_usage/{guardKey}
+ * 
+ * @param \Google\Cloud\Firestore\FirestoreClient $db Firestore database instance
+ * @param string $orderId Order document ID
+ * @param string $couponCode Normalized coupon code
+ * @param array $meta Order metadata (amount, customer, affiliate code, etc.)
+ * @param float $payoutAmount Commission amount in rupees
+ * @param string $idempotencyKey Unique key for this application
+ * @return bool Success status
+ */
+function logAffiliateUsage($db, $orderId, $couponCode, $meta, $payoutAmount, $idempotencyKey) {
+    try {
+        $guardKey = sha1($idempotencyKey . '|' . $couponCode);
+        $logRef = $db->collection('orders')
+            ->document($orderId)
+            ->collection('affiliate_usage')
+            ->document($guardKey);
+        
+        // Check if already logged (idempotent)
+        $snap = $logRef->snapshot();
+        if ($snap->exists()) {
+            error_log("COUPON SERVICE: Affiliate usage already logged for $couponCode (idempotent)");
+            return true;
+        }
+        
+        // Create affiliate usage log entry
+        $entry = [
+            'orderId' => $orderId,
+            'couponCode' => $couponCode,
+            'affiliateCode' => $meta['affiliateCode'] ?? null,
+            'amount' => $meta['amount'] ?? 0,
+            'commission' => $payoutAmount,
+            'customerEmail' => $meta['customerEmail'] ?? null,
+            'createdAt' => new \Google\Cloud\Core\Timestamp(new DateTime())
+        ];
+        
+        $logRef->set($entry);
+        error_log("COUPON SERVICE: Logged affiliate usage for $couponCode (commission: ₹$payoutAmount)");
+        
+        return true;
+        
+    } catch (Exception $e) {
+        error_log("COUPON SERVICE ERROR: Failed to log affiliate usage - " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Batch apply multiple coupons for an order
+ * 
+ * Processes multiple coupons in sequence, handling errors gracefully.
+ * Returns detailed results for each coupon.
+ * 
+ * @param \Google\Cloud\Firestore\FirestoreClient $db Firestore database instance
+ * @param array $coupons Array of coupon objects with code, isAffiliateCoupon, etc.
+ * @param string $orderId Order document ID
+ * @param array $orderMeta Order metadata (amount, customer, etc.)
+ * @param string|null $paymentId Optional payment ID for idempotency
+ * @return array Results array with individual coupon outcomes
+ * 
+ * @example
+ * $coupons = [
+ *     ['code' => 'SAVE20', 'isAffiliateCoupon' => false],
+ *     ['code' => 'JOHN-REF', 'isAffiliateCoupon' => true, 'affiliateCode' => 'john-abc123']
+ * ];
+ * $results = batchApplyCouponsForOrder($db, $coupons, $orderId, [
+ *     'amount' => 999.00,
+ *     'customerEmail' => 'customer@example.com'
+ * ], $paymentId);
+ */
+function batchApplyCouponsForOrder($db, $coupons, $orderId, $orderMeta = [], $paymentId = null) {
+    $results = [];
+    
+    if (!is_array($coupons) || empty($coupons)) {
+        return [
+            'success' => false,
+            'error' => 'No coupons provided',
+            'results' => []
+        ];
+    }
+    
+    error_log("COUPON SERVICE: Batch applying " . count($coupons) . " coupons for order $orderId");
+    
+    foreach ($coupons as $coupon) {
+        if (empty($coupon['code'])) {
+            $results[] = [
+                'success' => false,
+                'error' => 'Empty coupon code',
+                'code' => ''
+            ];
+            continue;
+        }
+        
+        $code = $coupon['code'];
+        $isAffiliate = !empty($coupon['isAffiliateCoupon']);
+        $affiliateCode = $coupon['affiliateCode'] ?? null;
+        
+        // Calculate payout amount for affiliate coupons (10% commission)
+        $payoutAmount = 0;
+        if ($isAffiliate && isset($orderMeta['amount'])) {
+            $payoutAmount = floatval($orderMeta['amount']) * 0.10; // 10% commission
+        }
+        
+        // Merge affiliate code into metadata
+        $meta = array_merge($orderMeta, [
+            'affiliateCode' => $affiliateCode
+        ]);
+        
+        // Apply the coupon
+        $result = applyCouponForOrder($db, $code, $orderId, $meta, $isAffiliate, $payoutAmount, $paymentId);
+        $results[] = $result;
+        
+        // Log outcome
+        if ($result['success']) {
+            $status = $result['idempotent'] ?? false ? '↩️' : '✅';
+            error_log("COUPON SERVICE: $status $code " . $result['message']);
+        } else {
+            error_log("COUPON SERVICE: ❌ $code failed - " . ($result['error'] ?? 'Unknown error'));
+        }
+    }
+    
+    // Determine overall success
+    $successCount = count(array_filter($results, function($r) { return $r['success']; }));
+    $totalCount = count($results);
+    
+    return [
+        'success' => $successCount > 0,
+        'message' => "$successCount of $totalCount coupons applied successfully",
+        'successCount' => $successCount,
+        'totalCount' => $totalCount,
+        'results' => $results
+    ];
+}
+
+/**
+ * Initialize coupon fields if they don't exist
+ * 
+ * Ensures all coupons have required fields with default values.
+ * Useful for migrating existing coupons or fixing data issues.
+ * 
+ * @param \Google\Cloud\Firestore\FirestoreClient $db Firestore database instance
+ * @param string $couponId Coupon document ID
+ * @return array Result with success status
+ */
+function initializeCouponFields($db, $couponId) {
+    try {
+        $docRef = $db->collection('coupons')->document($couponId);
+        $snap = $docRef->snapshot();
+        
+        if (!$snap->exists()) {
+            return [
+                'success' => false,
+                'error' => 'Coupon not found',
+                'couponId' => $couponId
+            ];
+        }
+        
+        $data = $snap->data();
+        $updates = [];
+        
+        // Initialize missing fields
+        if (!isset($data['usageCount'])) {
+            $updates[] = ['path' => 'usageCount', 'value' => 0];
+        }
+        if (!isset($data['payoutUsage'])) {
+            $updates[] = ['path' => 'payoutUsage', 'value' => 0];
+        }
+        if (!isset($data['isActive'])) {
+            $updates[] = ['path' => 'isActive', 'value' => true];
+        }
+        if (!isset($data['updatedAt'])) {
+            $updates[] = ['path' => 'updatedAt', 'value' => new \Google\Cloud\Core\Timestamp(new DateTime())];
+        }
+        
+        if (!empty($updates)) {
+            $docRef->update($updates);
+            error_log("COUPON SERVICE: Initialized " . count($updates) . " fields for coupon $couponId");
+            return [
+                'success' => true,
+                'message' => 'Fields initialized',
+                'fieldsAdded' => count($updates)
+            ];
+        }
+        
+        return [
+            'success' => true,
+            'message' => 'No initialization needed',
+            'fieldsAdded' => 0
+        ];
+        
+    } catch (Exception $e) {
+        error_log("COUPON SERVICE ERROR: Failed to initialize fields - " . $e->getMessage());
+        return [
+            'success' => false,
+            'error' => $e->getMessage()
+        ];
+    }
+}
+
+// Export functions for use in other modules
+if (!function_exists('getCouponTrackingServiceVersion')) {
+    function getCouponTrackingServiceVersion() {
+        return '2.0.0';
+    }
+}
+
+error_log("COUPON SERVICE: Module loaded successfully (version " . getCouponTrackingServiceVersion() . ")");
+?>
+

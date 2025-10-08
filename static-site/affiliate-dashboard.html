@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Affiliate Dashboard | Attral Store</title>
+  <meta name="description" content="View your affiliate link and referred orders." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* Enhanced Benefits Section Styles (Dashboard) */
+    .benefits-section {
+      padding: 72px 0;
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg-secondary, #f8fafc) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .benefits-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(800px 200px at 10% -10%, rgba(99,102,241,0.08), transparent 40%),
+                  radial-gradient(700px 200px at 110% 110%, rgba(236,72,153,0.06), transparent 40%);
+      pointer-events: none;
+    }
+    .benefits-section .section-head {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .benefits-section .section-head h2 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-light);
+      letter-spacing: 0.2px;
+    }
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-top: 28px;
+    }
+    .benefit-card {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.6));
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+      backdrop-filter: blur(8px);
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+    .benefit-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(400px 80px at 0% 0%, rgba(99,102,241,0.08), transparent 40%);
+      opacity: .9;
+    }
+    .benefit-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.12);
+      border-color: rgba(99,102,241,0.28);
+    }
+    .benefit-icon {
+      width: 54px; height: 54px;
+      display: grid; place-items: center;
+      margin-bottom: 12px;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 28px;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.08);
+      animation: benefitFloat 4s ease-in-out infinite;
+    }
+    .benefit-card:nth-child(1) .benefit-icon { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .benefit-card:nth-child(2) .benefit-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .benefit-card:nth-child(3) .benefit-icon { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .benefit-card:nth-child(4) .benefit-icon { background: linear-gradient(135deg, #ec4899, #db2777); }
+    .benefit-card:nth-child(5) .benefit-icon { background: linear-gradient(135deg, #10b981, #059669); }
+    .benefit-card:nth-child(6) .benefit-icon { background: linear-gradient(135deg, #06b6d4, #0ea5e9); }
+    .benefit-card:nth-child(7) .benefit-icon { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .benefit-card h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-light);
+      letter-spacing: .2px;
+    }
+    .benefit-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+    @keyframes benefitFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    @media (max-width: 768px) {
+      .benefits-section { padding: 56px 0; }
+      .benefits-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    }
+    @media (max-width: 520px) {
+      .benefits-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" /></a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="user-dashboard.html">My Account</a>
+        <a href="affiliates.html">Affiliate Central</a>
+        <a href="contact.html">Contact Us</a>
+        <div class="dropdown">
+          <a href="#" class="dropdown-toggle active">More ▾</a>
+          <div class="dropdown-menu">
+            <a href="about.html">About Us</a>
+            <a href="blog.html" target="_blank" rel="noopener">Blog</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+          </div>
+        </div>
+        <a href="cart.html" class="cart-link">Cart <span id="cart-count" class="badge">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Dashboard Header -->
+    <section class="dashboard-header">
+      <div class="welcome-card">
+        <div class="welcome-content">
+          <h1 id="welcome-title">🎉 Welcome to Your Affiliate Dashboard</h1>
+          <p>Track your referrals, earnings, and performance in real-time</p>
+          <div class="user-details" id="user-details" style="display: none;">
+            <div class="user-info">
+              <span class="user-name" id="user-name"></span>
+              <span class="user-email" id="user-email"></span>
+            </div>
+            <div class="affiliate-info">
+              <span class="affiliate-code">Affiliate Code: <strong id="affiliate-code-display"></strong></span>
+              <span class="join-date">Joined: <span id="join-date"></span></span>
+            </div>
+          </div>
+        </div>
+      <div class="user-avatar">
+        <div class="avatar-circle" id="user-avatar">
+          <img id="user-photo" alt="User" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover;" />
+          <svg id="user-fallback-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- Stats Overview -->
+    <section class="stats-overview">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <div class="stat-value" id="total-earnings">₹0</div>
+            <div class="stat-label">Total Earnings</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-value" id="total-referrals">0</div>
+            <div class="stat-label">Total Referrals</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-value" id="conversion-rate">0%</div>
+            <div class="stat-label">Conversion Rate</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📈</div>
+          <div class="stat-content">
+            <div class="stat-value" id="monthly-earnings">₹0</div>
+            <div class="stat-label">This Month</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Affiliate Link Section -->
+    <section class="affiliate-link-section">
+      <div class="link-card">
+        <div class="card-header">
+          <h2>🔗 Your Affiliate Link</h2>
+          <p>Share this link to start earning commissions on every sale</p>
+        </div>
+        <div class="link-content">
+          <div class="link-display">
+            <div class="link-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 6H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4h-2v4H6V8h4V6zm7-3H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 9H4V6h12v6z"/>
+              </svg>
+            </div>
+            <div class="link-text">
+              <div class="link-label">Your unique affiliate link:</div>
+              <div id="aff-link" class="link-url">Loading…</div>
+            </div>
+          </div>
+          <div class="link-actions">
+            <button id="copy-link" class="btn btn-primary copy-btn">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+              </svg>
+              Copy Link
+            </button>
+            <button id="share-link" class="btn btn-ghost share-btn">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+              </svg>
+              Share
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Referred Orders Section -->
+    <section class="orders-section">
+      <div class="orders-card">
+        <div class="card-header">
+          <h2>📋 Referred Orders</h2>
+          <p>Track all orders made through your affiliate link</p>
+        </div>
+        <div class="orders-filters">
+          <div class="filter-group">
+            <label for="date-filter">Time Period:</label>
+            <select id="date-filter" class="filter-select">
+              <option value="all">All Time</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="90d">Last 90 Days</option>
+              <option value="1y">Last Year</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="status-filter">Status:</label>
+            <select id="status-filter" class="filter-select">
+              <option value="all">All Orders</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <input type="text" id="search-orders" placeholder="Search orders..." class="search-input">
+          </div>
+        </div>
+        <div class="orders-content">
+          <div class="orders-header">
+            <div class="orders-info">
+              <span id="orders-count">0 orders</span>
+              <span id="orders-total">Total: ₹0</span>
+            </div>
+            <div class="pagination-controls">
+              <button id="prev-page" class="btn btn-ghost btn-sm" disabled>← Previous</button>
+              <span id="page-info">Page 1 of 1</span>
+              <button id="next-page" class="btn btn-ghost btn-sm" disabled>Next →</button>
+            </div>
+          </div>
+          <div id="referred-orders" class="orders-list">
+            <div class="loading-state">
+              <div class="loading-spinner"></div>
+              <p>Loading your referrals...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+      <div class="actions-grid">
+        <div class="action-card marketing-card">
+          <div class="action-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <h3>Marketing Materials</h3>
+            <p>Download banners, images, and promotional content to boost your referrals</p>
+            <div class="action-stats">
+              <span class="stat-item">📊 15+ Assets</span>
+              <span class="stat-item">🎨 Multiple Formats</span>
+          </div>
+        </div>
+          <button id="marketing-download" class="btn btn-primary action-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+            </svg>
+            Download
+          </button>
+        </div>
+        <div class="action-card payout-card">
+          <div class="action-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <h3>Payout Settings</h3>
+            <p>Manage your payment methods and preferences for seamless earnings</p>
+            <div class="action-stats">
+              <span class="stat-item">💳 Multiple Methods</span>
+              <span class="stat-item">⚡ Instant Payouts</span>
+            </div>
+          </div>
+          <button id="payout-settings-btn" class="btn btn-primary action-btn" onclick="openPayoutModal && openPayoutModal()">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            Settings
+          </button>
+        </div>
+        <!-- Removed Performance Analytics and User Dashboard per request -->
+      </div>
+    </section>
+
+    <!-- Why Choose Our Affiliate Program (copied from affiliates.html) -->
+    <section class="benefits-section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Why Choose Our Affiliate Program?</h2>
+        </div>
+        
+        <div class="benefits-grid">
+          <div class="benefit-card card-tech">
+            <div class="benefit-icon">💎</div>
+            <h3>Premium Commissions</h3>
+            <p>Earn up to ₹300 commission on every sale you refer.</p>
+          </div>
+          
+          <div class="benefit-card card-tech">
+            <div class="benefit-icon">⏰</div>
+            <h3>10-15 Day Lock Period</h3>
+            <p>After the lock period, commissions are marked as approved and available for payout.</p>
+          </div>
+          
+          <div class="benefit-card card-tech">
+            <div class="benefit-icon">📊</div>
+            <h3>Real-Time Dashboard</h3>
+            <p>Track your performance, earnings, and referrals with our comprehensive analytics platform.</p>
+          </div>
+          
+          <div class="benefit-card card-tech">
+            <div class="benefit-icon">🎯</div>
+            <h3>Marketing Support</h3>
+            <p>Access banners, product images, and marketing materials to help you succeed.</p>
+          </div>
+          
+          <div class="benefit-card card-tech">
+            <div class="benefit-icon">⚡</div>
+            <h3>Fast Payouts</h3>
+            <p>Get paid monthly via bank transfer or UPI.</p>
+          </div>
+          
+          <div class="benefit-card card-tech">
+            <div class="benefit-icon">🌟</div>
+            <h3>Quality Products</h3>
+            <p>Promote innovative GaN technology products that customers love and trust.</p>
+          </div>
+          
+          <div class="benefit-card card-tech">
+            <div class="benefit-icon">💰</div>
+            <h3>Minimum Payout Threshold</h3>
+            <p>Affiliates are eligible for payout once their total approved commissions reach just ₹1000.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About ATTRAL</h4>
+          <p>Smart Power. Smarter Living. We provide next-gen consumer electronics to power your lifestyle with cutting-edge GaN technology.</p>
+          <div class="social-links">
+            <a href="https://facebook.com/attral" target="_blank" rel="noopener" title="Follow us on Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://instagram.com/attral" target="_blank" rel="noopener" title="Follow us on Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.83-9.281H7.83c-.49 0-.89.4-.89.89v7.83c0 .49.4.89.89.89h8.449c0 .49.4.89.89.89v-7.83c0-.49-.4-.89-.89-.89z"/>
+              </svg>
+            </a>
+            <a href="https://twitter.com/attral" target="_blank" rel="noopener" title="Follow us on Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </a>
+            <a href="https://linkedin.com/company/attral" target="_blank" rel="noopener" title="Connect on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <p><a href="index.html">Home</a></p>
+          <p><a href="shop.html">Shop</a></p>
+          <p><a href="about.html">About Us</a></p>
+          <p><a href="contact.html">Contact</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <p><a href="account.html">My Account</a></p>
+          <p><a href="cart.html">Shopping Cart</a></p>
+          <p><a href="affiliates.html">Affiliate Program</a></p>
+          <p><a href="blog.html" target="_blank" rel="noopener">Blog</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Contact Info</h4>
+          <p>📧 info@attral.in</p>
+          <p>📱 +91 8903479870</p>
+          <p>📍 Phase 2 Sathuvachari<br>Vellore - 632009<br>Tamil Nadu, India</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="year"></span> ATTRAL. All rights reserved.</p>
+        <nav>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/auth-manager.js"></script>
+  <script src="js/dropdown.js"></script>
+  <script>
+    // Wait for everything to be fully loaded
+    window.addEventListener('load', function() {
+      console.log('Page fully loaded, starting dashboard initialization...');
+      
+      // Wait a bit more to ensure all scripts are loaded
+      setTimeout(function() {
+        console.log('All scripts loaded, initializing dashboard...');
+        
+        // Initialize basic elements
+        const yearElement = document.getElementById('year');
+        if (yearElement) {
+          yearElement.textContent = new Date().getFullYear();
+        }
+        
+        if (window.Attral && window.Attral.initHeaderCartCount) {
+          window.Attral.initHeaderCartCount();
+        }
+
+        function qs(id){ return document.getElementById(id); }
+
+      function requireAuth(){
+        console.log('requireAuth called - showing loading state');
+        // Show loading state immediately
+        showLoadingState();
+        
+        // Set a shorter timeout to prevent infinite loading
+        const loadingTimeout = setTimeout(() => {
+          console.error('Dashboard loading timeout - showing error state');
+          showErrorState('Dashboard is taking too long to load. Please refresh the page and try again.');
+        }, 15000); // 15 second timeout
+        
+        // Add a secondary timeout to show dashboard even if some elements are missing
+        const fallbackTimeout = setTimeout(() => {
+          console.warn('Fallback timeout reached - attempting to show dashboard anyway');
+          // Try to proceed with a basic dashboard
+          showBasicDashboard();
+        }, 8000); // 8 second fallback
+      
+      // Wait for Firebase and AuthManager to be available
+      let retryCount = 0;
+      const maxRetries = 50; // 5 seconds max wait time
+      
+      function waitForAuthManager() {
+        console.log(`Checking for AuthManager and Firebase... (${retryCount}/${maxRetries})`);
+        
+        if (window.AuthManager && window.AttralFirebase) {
+          console.log('AuthManager and Firebase available, proceeding with authentication');
+          
+          // Use unified auth manager
+          window.AuthManager.addAuthStateListener(function(user){
+            clearTimeout(loadingTimeout); // Clear timeout when user is authenticated
+            clearTimeout(fallbackTimeout); // Clear fallback timeout too
+            
+            if(!user || user.isAnonymous){ 
+              console.log('User not authenticated, redirecting to affiliates page');
+              // Redirect to affiliates page for authentication
+              window.location.href = 'affiliates.html';
+              return; 
+            }
+            
+            console.log('User authenticated in affiliate dashboard:', user.email);
+            
+            // Add user info to header
+            updateUserInfo(user);
+            hideOverlay();
+            loadAffiliate(user);
+          });
+        } else {
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            console.error('AuthManager and Firebase failed to load after maximum retries');
+            console.log('Redirecting to affiliates page for authentication');
+            window.location.href = 'affiliates.html';
+            return;
+          }
+          console.log(`Waiting for AuthManager and Firebase to load... (${retryCount}/${maxRetries})`);
+          setTimeout(waitForAuthManager, 100);
+        }
+      }
+      
+      // Start waiting for dependencies
+      waitForAuthManager();
+    }
+
+    function updateUserInfo(user) {
+      const welcomeTitle = document.getElementById('welcome-title');
+      const userDetails = document.getElementById('user-details');
+      const userName = document.getElementById('user-name');
+      const userEmail = document.getElementById('user-email');
+      const joinDate = document.getElementById('join-date');
+      const userPhoto = document.getElementById('user-photo');
+      const userFallbackIcon = document.getElementById('user-fallback-icon');
+      
+      if (welcomeTitle && user.displayName) {
+        welcomeTitle.textContent = `🎉 Welcome back, ${user.displayName}!`;
+      }
+      
+      if (userDetails) {
+        userDetails.style.display = 'block';
+      }
+      
+      if (userName) {
+        userName.textContent = user.displayName || 'User';
+      }
+      
+      if (userEmail) {
+        userEmail.textContent = user.email || 'No email provided';
+      }
+      
+      if (joinDate) {
+        const date = user.metadata?.creationTime ? new Date(user.metadata.creationTime) : new Date();
+        joinDate.textContent = date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      }
+
+      // Show photo if available, prioritize Google account photo
+      if (userPhoto && userFallbackIcon) {
+        console.log('Setting up affiliate dashboard avatar for:', user.displayName || user.email);
+        console.log('User object:', user);
+        console.log('User photoURL:', user.photoURL);
+        console.log('User provider data:', user.providerData);
+        console.log('User displayName:', user.displayName);
+        
+        // Get photo URL - try multiple sources
+        let photoURL = null;
+        
+        // Method 1: Check user.photoURL first (this is usually the Google photo if signed in with Google)
+        if (user.photoURL && user.photoURL.trim() !== '') {
+          photoURL = user.photoURL;
+          console.log('Using user.photoURL:', photoURL);
+        }
+        
+        // Method 2: Check Google provider data if user.photoURL is not available
+        if (!photoURL && user.providerData && user.providerData.length > 0) {
+          const googleProvider = user.providerData.find(provider => provider.providerId === 'google.com');
+          if (googleProvider && googleProvider.photoURL) {
+            photoURL = googleProvider.photoURL;
+            console.log('Using Google provider photo URL:', photoURL);
+          }
+        }
+        
+        // Method 3: For Google accounts, construct photo URL if needed
+        if (!photoURL && user.email && user.email.includes('@gmail.com')) {
+          console.log('Detected Gmail account but no photo URL found');
+        }
+        
+        if (photoURL && photoURL.trim() !== '') {
+          console.log('Loading user photo from:', photoURL);
+          
+          userPhoto.src = photoURL;
+          userPhoto.alt = user.displayName || 'User';
+          userPhoto.style.display = 'block';
+          userPhoto.style.width = '100%';
+          userPhoto.style.height = '100%';
+          userPhoto.style.borderRadius = '50%';
+          userPhoto.style.objectFit = 'cover';
+          userFallbackIcon.style.display = 'none';
+          
+          // Set a timeout to handle slow loading
+          const loadTimeout = setTimeout(() => {
+            console.log('Photo loading timeout in affiliate dashboard, using fallback');
+            userPhoto.style.display = 'none';
+            userFallbackIcon.style.display = 'block';
+          }, 5000);
+          
+          // Handle successful image load
+          userPhoto.onload = function() {
+            clearTimeout(loadTimeout);
+            console.log('User photo loaded successfully in affiliate dashboard');
+          };
+          
+          // Handle image load error
+          userPhoto.onerror = function() {
+            clearTimeout(loadTimeout);
+            console.log('User photo failed to load from:', photoURL, 'using fallback icon');
+            userPhoto.style.display = 'none';
+            userFallbackIcon.style.display = 'block';
+          };
+        } else {
+          console.log('No photo URL available, using fallback icon');
+          userPhoto.style.display = 'none';
+          userFallbackIcon.style.display = 'block';
+        }
+      }
+    }
+
+    // Non-destructive overlay helpers
+    function ensureOverlayRoot(){
+      let root = document.getElementById('overlay-root');
+      if(!root){
+        root = document.createElement('div');
+        root.id = 'overlay-root';
+        root.style.position = 'fixed';
+        root.style.inset = '0';
+        root.style.display = 'none';
+        root.style.alignItems = 'center';
+        root.style.justifyContent = 'center';
+        root.style.background = 'rgba(0,0,0,0.35)';
+        root.style.zIndex = '1000';
+        document.body.appendChild(root);
+      }
+      return root;
+    }
+
+    function hideOverlay(){
+      const root = document.getElementById('overlay-root');
+      if(root){ root.style.display = 'none'; }
+    }
+
+    function showLoadingState() {
+      const root = ensureOverlayRoot();
+      root.innerHTML = `
+        <div class="loading-container" style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; max-width: 520px; width: 92%;">
+          <div class="loading-spinner large"></div>
+          <h2>Loading your dashboard...</h2>
+          <p>Please wait while we initialize your affiliate dashboard</p>
+          <div class="loading-steps">
+            <div class="loading-step">🔐 Authenticating...</div>
+            <div class="loading-step">📊 Loading your data...</div>
+            <div class="loading-step">🎯 Setting up your dashboard...</div>
+          </div>
+          <div class="loading-timeout" style="margin-top: 20px; font-size: 12px; color: var(--muted);">
+            If this takes too long, <a href="javascript:location.reload()" style="color: var(--brand);">refresh the page</a>
+          </div>
+        </div>`;
+      root.style.display = 'flex';
+    }
+
+    function showErrorState(message) {
+      const root = ensureOverlayRoot();
+      root.innerHTML = `
+        <div class="error-container" style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; max-width: 560px; width: 92%;">
+          <div class="error-icon">⚠️</div>
+          <h2>Unable to Load Dashboard</h2>
+          <p>${message}</p>
+          <div class="error-actions">
+            <button onclick="location.reload()" class="btn btn-primary">Try Again</button>
+            <a href="affiliates.html" class="btn btn-ghost">Back to Affiliate Page</a>
+          </div>
+          <div class="error-help">
+            <p><strong>Need help?</strong></p>
+            <ul>
+              <li>Make sure you're signed in with your account</li>
+              <li>Check your internet connection</li>
+              <li>Try refreshing the page</li>
+              <li>Contact support if the problem persists</li>
+            </ul>
+          </div>
+        </div>`;
+      root.style.display = 'flex';
+    }
+
+    function showBasicDashboard() {
+      console.log('Showing basic dashboard without authentication');
+      const root = document.getElementById('referred-orders');
+      if (root) {
+        root.innerHTML = `
+          <div class="dashboard-header">
+            <div class="welcome-card">
+              <div class="welcome-content">
+                <h1>🎉 Welcome to Your Affiliate Dashboard</h1>
+                <p>Track your referrals, earnings, and performance in real-time</p>
+                <div class="user-details" style="display: block;">
+                  <div class="user-info">
+                    <span class="user-name">Guest User</span>
+                    <span class="user-email">Please sign in to access your data</span>
+                  </div>
+                  <div class="affiliate-info">
+                    <span class="affiliate-code">Affiliate Code: <strong>Loading...</strong></span>
+                    <span class="join-date">Please sign in to view details</span>
+                  </div>
+                </div>
+              </div>
+              <div class="user-avatar">
+                <div class="avatar-circle">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="stats-overview">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                  <div class="stat-value">₹0</div>
+                  <div class="stat-label">Total Earnings</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">Total Referrals</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-content">
+                  <div class="stat-value">0%</div>
+                  <div class="stat-label">Conversion Rate</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-content">
+                  <div class="stat-value">₹0</div>
+                  <div class="stat-label">This Month</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="affiliate-link-section">
+            <div class="link-card">
+              <div class="card-header">
+                <h2>🔗 Your Affiliate Link</h2>
+                <p>Please sign in to get your affiliate link</p>
+              </div>
+              <div class="link-content">
+                <div class="link-display">
+                  <div class="link-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10 6H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4h-2v4H6V8h4V6zm7-3H3c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 9H4V6h12v6z"/>
+                    </svg>
+                  </div>
+                  <div class="link-text">
+                    <div class="link-label">Your unique affiliate link:</div>
+                    <div class="link-url">Please sign in to access your link</div>
+                  </div>
+                </div>
+                <div class="link-actions">
+                  <a href="affiliates.html" class="btn btn-primary">Sign In</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="orders-section">
+            <div class="orders-card">
+              <div class="card-header">
+                <h2>📋 Referred Orders</h2>
+                <p>Please sign in to view your referrals</p>
+              </div>
+              <div class="orders-content">
+                <div class="empty-state">
+                  <div class="empty-icon">🔐</div>
+                  <h3>Sign in required</h3>
+                  <p>Please sign in to view your referred orders and start earning commissions!</p>
+                  <a href="affiliates.html" class="btn btn-primary">Sign In</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function loadAffiliate(user){
+      const fb = window.AttralFirebase; 
+      
+      if (!fb || !fb.db) {
+        console.error('Firebase not available');
+        showErrorState('Database connection not available. Please refresh the page.');
+        return;
+      }
+      
+      const db = fb.db;
+      const ref = db.collection('affiliates').doc(user.uid);
+      
+      ref.get().then(s=>{
+        if(!s.exists){ 
+          // Create affiliate profile if it doesn't exist
+          createAffiliateProfile(user, db, ref);
+          return; 
+        }
+        
+        const aff = s.data();
+        initializeDashboard(user, aff);
+        
+      }).catch(error => {
+        console.error('Error loading affiliate profile:', error);
+        
+        // Check if it's a network error
+        if (error.code === 'unavailable' || error.message.includes('network')) {
+          showErrorState('Network connection issue. Please check your internet connection and try again.');
+        } else if (error.code === 'permission-denied') {
+          showErrorState('Access denied. Please make sure you are logged in with the correct account.');
+        } else {
+          showErrorState('Failed to load your affiliate profile. Please try again.');
+        }
+      });
+    }
+
+    function createAffiliateProfile(user, db, ref) {
+      const fb = window.AttralFirebase;
+      if (!fb || !fb.functions) {
+        console.error('Firebase Functions not available');
+        showErrorState('Service unavailable. Please refresh the page.');
+        return;
+      }
+      fb.callFunction('createAffiliateProfile', {})
+        .then((aff) => {
+          // Ensure affiliateLink exists for current host
+          const affiliateData = {
+            ...aff,
+            affiliateLink: aff.affiliateLink || generateAffiliateLink(aff.code)
+          };
+          // Merge link back so future loads reuse it
+          ref.set({ affiliateLink: affiliateData.affiliateLink }, { merge: true }).catch(()=>{});
+          // Update UI
+          const affiliateCodeDisplay = document.getElementById('affiliate-code-display');
+          if (affiliateCodeDisplay) {
+            affiliateCodeDisplay.textContent = affiliateData.code;
+          }
+          initializeDashboard(user, affiliateData);
+        })
+        .catch((error) => {
+          console.error('Error creating affiliate profile via function:', error);
+          if (error.code === 'unavailable' || (error.message && error.message.includes('network'))) {
+            showErrorState('Network connection issue. Please check your internet connection and try again.');
+          } else if (error.code === 'permission-denied' || error.code === 'unauthenticated') {
+            showErrorState('Access denied. Please make sure you are logged in with the correct account.');
+          } else {
+            showErrorState('Failed to create your affiliate profile. Please try again.');
+          }
+        });
+    }
+
+    function generateAffiliateLink(code) {
+      const base = (window.ATTRAL_PUBLIC && window.ATTRAL_PUBLIC.AFFILIATE_BASE_URL) || window.location.origin;
+      const pathBase = base.replace(/\/$/, '');
+      return `${pathBase}/index.html?ref=${encodeURIComponent(code)}`;
+    }
+
+    function initializeDashboard(user, aff) {
+      console.log('Initializing dashboard with user:', user.email, 'affiliate:', aff.code);
+      
+      // Update affiliate code display
+      const affiliateCodeDisplay = document.getElementById('affiliate-code-display');
+      if (affiliateCodeDisplay) {
+        affiliateCodeDisplay.textContent = aff.code;
+      }
+      
+      // Use the stored affiliate link or generate one; persist if missing
+      const link = aff.affiliateLink || generateAffiliateLink(aff.code);
+      if (!aff.affiliateLink && window.AttralFirebase && window.AttralFirebase.db) {
+        try {
+          window.AttralFirebase.db.collection('affiliates').doc(user.uid).set({ affiliateLink: link }, { merge: true });
+        } catch (e) {}
+      }
+      
+      // Update affiliate link
+      if (qs('aff-link')) {
+        qs('aff-link').textContent = link;
+      }
+        
+      // Setup enhanced copy button
+      setupCopyButton(link);
+      
+      // Setup enhanced share button
+      setupShareButton(link);
+      
+      // Setup link actions: copy on click, analytics
+      setupCopyOnClick('aff-link', link);
+      setupLinkAnalytics(link, aff.code);
+
+      // Load referred orders and stats with a small delay to ensure DOM is ready
+      setTimeout(() => {
+        console.log('Loading referred orders and stats...');
+        
+        // Try to render orders, but don't fail if container is missing
+        try {
+          renderReferredOrders(aff.code);
+        } catch (error) {
+          console.error('Error rendering referred orders:', error);
+          // Don't let this stop the dashboard from loading
+        }
+        
+        try {
+          updateStats(aff.code);
+        } catch (error) {
+          console.error('Error updating stats:', error);
+          // Don't let this stop the dashboard from loading
+        }
+      }, 200);
+      
+      // Add a fallback that tries again after a longer delay
+      setTimeout(() => {
+        console.log('Fallback: trying to load orders and stats again...');
+        
+        // Check if orders were loaded successfully
+        const ordersContainer = qs('referred-orders');
+        if (ordersContainer && ordersContainer.innerHTML.includes('loading-state')) {
+          console.log('Orders still loading, trying again...');
+          try {
+            renderReferredOrders(aff.code);
+          } catch (error) {
+            console.error('Fallback error rendering referred orders:', error);
+          }
+        }
+        
+        // Check if stats were loaded successfully
+        const earningsElement = qs('total-earnings');
+        if (earningsElement && earningsElement.textContent === '₹0') {
+          console.log('Stats still loading, trying again...');
+          try {
+            updateStats(aff.code);
+          } catch (error) {
+            console.error('Fallback error updating stats:', error);
+          }
+        }
+      }, 2000);
+    }
+
+    function updateStats(code) {
+      const fb = window.AttralFirebase;
+      if (!fb) {
+        console.error('Firebase not available for stats');
+        setStatsFallback();
+        return;
+      }
+      // Prefer secure callable over client aggregation
+      if (fb.functions && fb.callFunction) {
+        fb.callFunction('getAffiliateStats', { code: code })
+          .then((stats) => {
+            const totalEarnings = Number(stats.totalEarnings || 0);
+            const totalReferrals = Number(stats.totalReferrals || 0);
+            const monthlyEarnings = Number(stats.monthlyEarnings || 0);
+            const conversionRate = Number(stats.conversionRate || 0);
+            animateValue(qs('total-earnings'), 0, totalEarnings, 800, '₹');
+            animateValue(qs('total-referrals'), 0, totalReferrals, 800, '');
+            animateValue(qs('conversion-rate'), 0, conversionRate, 800, '%');
+            animateValue(qs('monthly-earnings'), 0, monthlyEarnings, 800, '₹');
+            // Additionally, show coupon usage for this affiliate if element exists
+            try {
+              const usageElId = 'affiliate-usage-count';
+              const usageEl = document.getElementById(usageElId);
+              if (usageEl && fb.db) {
+                fb.db.collection('coupons').where('code','==', code).limit(1).get().then(s=>{
+                  if (!s.empty){
+                    const d = s.docs[0].data();
+                    usageEl.textContent = `${Number(d.payoutUsage||0)} (cycle) / ${Number(d.usageCount||0)} total`;
+                  }
+                }).catch(()=>{});
+              }
+            } catch(_) {}
+          })
+          .catch((error) => {
+            console.error('Callable stats failed, falling back:', error);
+            // Fallback to zeroes instead of Error text
+            setStatsFallback();
+          });
+        return;
+      }
+      // As a last resort, set zeros
+      setStatsFallback();
+    }
+
+    function setStatsFallback(){
+      if (qs('total-earnings')) qs('total-earnings').textContent = '₹0';
+      if (qs('total-referrals')) qs('total-referrals').textContent = '0';
+      if (qs('conversion-rate')) qs('conversion-rate').textContent = '0%';
+      if (qs('monthly-earnings')) qs('monthly-earnings').textContent = '₹0';
+    }
+
+    function animateValue(element, start, end, duration, prefix = '', suffix = '') {
+      if (!element) return;
+      
+      const startTimestamp = performance.now();
+      const step = (timestamp) => {
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const current = Math.floor(progress * (end - start) + start);
+        element.textContent = prefix + current.toLocaleString() + suffix;
+        
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    let allOrders = [];
+    let filteredOrders = [];
+    let currentPage = 1;
+    const ordersPerPage = 10;
+
+    let renderRetryCount = 0;
+    const maxRenderRetries = 5;
+
+    function renderReferredOrders(code){
+      console.log('renderReferredOrders called with code:', code);
+      
+      const fb = window.AttralFirebase; 
+      
+      if (!fb) {
+        console.error('Firebase not available for orders');
+        showErrorInOrders('Service not available. Please refresh the page.');
+        return;
+      }
+      const root = document.getElementById('referred-orders');
+      
+      console.log('Looking for referred-orders container...');
+      console.log('Element found:', root);
+      
+      if (!root) {
+        console.error('referred-orders container not found');
+        showErrorInOrders('Orders container not found. Please refresh the page.');
+        return;
+      }
+      
+      // Helper function to show errors in orders section
+      function showErrorInOrders(message) {
+        const root = document.getElementById('referred-orders');
+        if (root) {
+          root.innerHTML = `
+            <div class="error-state">
+              <div class="error-icon">⚠️</div>
+              <h3>Unable to load orders</h3>
+              <p>${message}</p>
+              <button onclick="location.reload()" class="btn btn-primary">Refresh</button>
+            </div>
+          `;
+        } else {
+          console.error('Cannot show error - referred-orders container not found');
+        }
+      }
+      
+      // Reset retry count on success
+      renderRetryCount = 0;
+      
+      root.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Loading your referrals...</p></div>';
+      
+      // Load via callable with filters
+      const statusFilter = (qs('status-filter') && qs('status-filter').value) || 'all';
+      const dateFilter = (qs('date-filter') && qs('date-filter').value) || 'all';
+      const searchTerm = (qs('search-orders') && qs('search-orders').value) || '';
+      const pageSize = 50;
+      const pageToken = (window.__ordersPageToken) || null;
+
+      if (fb.functions && fb.callFunction) {
+        fb.callFunction('getAffiliateOrders', { code, status: statusFilter, date: dateFilter, search: searchTerm, pageSize, pageToken })
+          .then((res) => {
+            const { orders, total, totalAmount, nextPageToken } = res || { orders: [], total: 0, totalAmount: 0, nextPageToken: null };
+            window.__ordersNextPageToken = nextPageToken;
+            allOrders = orders;
+            filteredOrders = [...allOrders];
+            setupFilters();
+            currentPage = 1; // reset paging for client rendering
+            renderOrdersPage();
+            updateOrdersInfo(total, totalAmount);
+            updatePagination(total);
+          })
+          .catch((error) => {
+            console.error('Error loading orders via callable:', error);
+            root.innerHTML = `
+              <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>${error.code === 'permission-denied' ? 'Access denied' : 'Unable to load orders'}</h3>
+                <p>${error.code === 'permission-denied' ? 'Please make sure you are logged in with the correct account.' : 'Please try refreshing the page.'}</p>
+                <button onclick="location.reload()" class="btn btn-primary">Refresh</button>
+              </div>
+            `;
+          });
+      } else {
+        root.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No referrals yet</h3>
+            <p>Start sharing your affiliate link to earn commissions!</p>
+          </div>
+        `;
+        updateOrdersInfo(0, 0);
+        updatePagination(0);
+      }
+    }
+
+    function setupFilters() {
+      const dateFilter = qs('date-filter');
+      const statusFilter = qs('status-filter');
+      const searchInput = qs('search-orders');
+      
+      if (dateFilter) {
+        dateFilter.addEventListener('change', applyFilters);
+      }
+      if (statusFilter) {
+        statusFilter.addEventListener('change', applyFilters);
+      }
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(applyFilters, 300));
+      }
+    }
+
+    function applyFilters() {
+      const dateFilter = qs('date-filter')?.value || 'all';
+      const statusFilter = qs('status-filter')?.value || 'all';
+      const searchTerm = qs('search-orders')?.value.toLowerCase() || '';
+      
+      filteredOrders = allOrders.filter(order => {
+        // Date filter
+        if (dateFilter !== 'all') {
+          const orderDate = order.createdAt && order.createdAt.toDate ? order.createdAt.toDate() : new Date();
+          const now = new Date();
+          const daysDiff = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
+          
+          switch (dateFilter) {
+            case '7d': if (daysDiff > 7) return false; break;
+            case '30d': if (daysDiff > 30) return false; break;
+            case '90d': if (daysDiff > 90) return false; break;
+            case '1y': if (daysDiff > 365) return false; break;
+          }
+        }
+        
+        // Status filter
+        if (statusFilter !== 'all' && order.status !== statusFilter) {
+          return false;
+        }
+        
+        // Search filter
+        if (searchTerm && !order.orderId?.toLowerCase().includes(searchTerm)) {
+          return false;
+        }
+        
+        return true;
+      });
+      
+      currentPage = 1;
+      renderOrdersPage();
+    }
+
+    function renderOrdersPage() {
+      const root = qs('referred-orders');
+      const startIndex = (currentPage - 1) * ordersPerPage;
+      const endIndex = startIndex + ordersPerPage;
+      const pageOrders = filteredOrders.slice(startIndex, endIndex);
+      
+      if (filteredOrders.length === 0) {
+        root.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No orders found</h3>
+            <p>Try adjusting your filters or start sharing your affiliate link!</p>
+          </div>
+        `;
+        updateOrdersInfo(0, 0);
+        updatePagination(0);
+        return;
+      }
+      
+      root.innerHTML = '';
+      
+      let total = 0;
+      let totalCommission = 0;
+      
+      pageOrders.forEach(order => {
+        const orderAmount = order.amount || 0;
+        const commission = Math.round(orderAmount * 0.1); // 10% commission
+        
+        total += orderAmount;
+        totalCommission += commission;
+        
+        const orderItem = document.createElement('div');
+        orderItem.className = 'order-item';
+        
+        const orderInfo = document.createElement('div');
+        orderInfo.className = 'order-info';
+        
+        const title = document.createElement('h3');
+        title.textContent = `Order ${order.orderId || order.id}`;
+        
+        const date = document.createElement('p');
+        date.textContent = order.createdAt && order.createdAt.toDate ? 
+          order.createdAt.toDate().toLocaleString() : 
+          new Date().toLocaleString();
+        
+        const status = document.createElement('span');
+        status.className = `status-badge status-${order.status || 'completed'}`;
+        status.textContent = order.status || 'completed';
+        
+        orderInfo.appendChild(title);
+        orderInfo.appendChild(date);
+        orderInfo.appendChild(status);
+        
+        const orderAmountEl = document.createElement('div');
+        orderAmountEl.className = 'order-amount';
+        orderAmountEl.innerHTML = `
+          <div>₹${orderAmount.toLocaleString()}</div>
+          <small style="color: var(--muted); font-weight: 500;">Commission: ₹${commission}</small>
+        `;
+        
+        orderItem.appendChild(orderInfo);
+        orderItem.appendChild(orderAmountEl);
+        root.appendChild(orderItem);
+      });
+      
+      // Calculate totals for all filtered orders
+      const allFilteredTotal = filteredOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
+      const allFilteredCommission = filteredOrders.reduce((sum, order) => sum + Math.round((order.amount || 0) * 0.1), 0);
+      
+      updateOrdersInfo(filteredOrders.length, allFilteredTotal);
+      updatePagination(filteredOrders.length);
+    }
+
+    function updateOrdersInfo(count, total) {
+      if (qs('orders-count')) {
+        qs('orders-count').textContent = `${count} orders`;
+      }
+      if (qs('orders-total')) {
+        qs('orders-total').textContent = `Total: ₹${total.toLocaleString()}`;
+      }
+    }
+
+    function updatePagination(totalOrders) {
+      const totalPages = Math.ceil(totalOrders / ordersPerPage);
+      const prevBtn = qs('prev-page');
+      const nextBtn = qs('next-page');
+      const pageInfo = qs('page-info');
+      
+      if (prevBtn) prevBtn.disabled = currentPage === 1;
+      if (nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+      if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+      
+      if (prevBtn) {
+        prevBtn.onclick = () => {
+          if (currentPage > 1) {
+            currentPage--;
+            renderOrdersPage();
+          }
+        };
+      }
+      
+      if (nextBtn) {
+        nextBtn.onclick = () => {
+          if (currentPage < totalPages) {
+            currentPage++;
+            renderOrdersPage();
+          }
+        };
+      }
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    // Add comprehensive styles for the enhanced dashboard
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Loading and Error States */
+      .loading-container, .error-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 80px 20px;
+        text-align: center;
+        min-height: 400px;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--border);
+        border-top: 4px solid var(--brand);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      
+      .loading-spinner.large {
+        width: 60px;
+        height: 60px;
+        border-width: 6px;
+      }
+      
+      .loading-steps {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+      }
+      
+      .loading-step {
+        font-size: 14px;
+        color: var(--muted);
+        opacity: 0.7;
+        animation: pulse 2s infinite;
+      }
+      
+      .loading-step:nth-child(1) { animation-delay: 0s; }
+      .loading-step:nth-child(2) { animation-delay: 0.5s; }
+      .loading-step:nth-child(3) { animation-delay: 1s; }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .error-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.7;
+      }
+      
+      .error-container h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 12px;
+        color: var(--text-light);
+      }
+      
+      .error-container p {
+        color: var(--muted);
+        margin: 0 0 24px;
+        font-size: 16px;
+        max-width: 400px;
+      }
+      
+      .error-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+      
+      .error-help {
+        background: var(--card-light);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: left;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      
+      .error-help p {
+        margin: 0 0 12px;
+        font-weight: 600;
+        color: var(--text-light);
+      }
+      
+      .error-help ul {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--muted);
+      }
+      
+      .error-help li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+      }
+      
+      /* Orders Filters */
+      .orders-filters {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 24px;
+        padding: 20px;
+        background: var(--card-light);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        flex-wrap: wrap;
+        align-items: end;
+      }
+      
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 150px;
+      }
+      
+      .filter-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-light);
+      }
+      
+      .filter-select, .search-input {
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+      
+      .filter-select:focus, .search-input:focus {
+        outline: none;
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      }
+      
+      .search-input {
+        min-width: 200px;
+      }
+      
+      /* Orders Header */
+      .orders-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      
+      .orders-info {
+        display: flex;
+        gap: 24px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      
+      .orders-info span {
+        font-weight: 600;
+      }
+      
+      .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .pagination-controls button {
+        padding: 8px 12px;
+        font-size: 14px;
+        min-width: 80px;
+      }
+      
+      .pagination-controls button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      
+      /* Order Items */
+      .order-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        background: var(--card-light);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+      }
+      
+      .order-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border-color: var(--brand);
+      }
+      
+      .order-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .order-info h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text-light);
+      }
+      
+      .order-info p {
+        font-size: 14px;
+        color: var(--muted);
+        margin: 0;
+      }
+      
+      .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .status-completed {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      
+      .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      
+      .status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      
+      .order-amount {
+        text-align: right;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--brand);
+      }
+      
+      .order-amount small {
+        display: block;
+        font-size: 12px;
+        margin-top: 4px;
+        color: var(--muted);
+      }
+      
+      /* Empty State */
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        text-align: center;
+      }
+      
+      .empty-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+      
+      .empty-state h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 8px;
+        color: var(--text-light);
+      }
+      
+      .empty-state p {
+        color: var(--muted);
+        margin: 0;
+        font-size: 16px;
+        max-width: 300px;
+      }
+      
+      /* Enhanced Link Actions */
+      .copy-btn.copied {
+        background: var(--success) !important;
+        color: white !important;
+      }
+      
+      /* Dashboard Layout Improvements */
+      .dashboard-header {
+        margin-bottom: 40px;
+      }
+      
+      .welcome-card {
+        background: linear-gradient(135deg, var(--brand), var(--accent));
+        color: white;
+        padding: 40px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      }
+      
+      .welcome-content h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 0 0 12px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      }
+      
+      .welcome-content p {
+        font-size: 18px;
+        opacity: 0.9;
+        margin: 0 0 20px;
+      }
+      
+      .user-details {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px;
+        padding: 16px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+      }
+      
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      
+      .user-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+      }
+      
+      .user-email {
+        font-size: 14px;
+        opacity: 0.8;
+        color: white;
+      }
+      
+      .affiliate-info {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      
+      .affiliate-code {
+        color: white;
+      }
+      
+      .join-date {
+        color: white;
+      }
+      
+      .avatar-circle {
+        width: 96px;
+        height: 96px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+      }
+      
+      .avatar-circle svg { width: 56px; height: 56px; color: white; }
+      .avatar-circle img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+      
+      /* Stats Grid Enhancement */
+      .stats-overview {
+        margin-bottom: 40px;
+      }
+      
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+      
+      .stat-card {
+        background: var(--card);
+        padding: 24px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+      }
+      
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        border-color: var(--brand);
+      }
+      
+      .stat-icon {
+        font-size: 32px;
+        margin-bottom: 12px;
+      }
+      
+      .stat-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--brand);
+        margin-bottom: 8px;
+      }
+      
+      .stat-label {
+        font-size: 14px;
+        color: var(--muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      /* Enhanced Action Cards */
+      .quick-actions { margin-top: 40px; }
+      .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 28px;
+        margin-top: 24px;
+      }
+      /* Elevated glass cards with subtle gradient borders */
+      .action-card {
+        position: relative;
+        overflow: hidden;
+        padding: 26px;
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.50));
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 8px 26px rgba(0,0,0,0.06);
+        backdrop-filter: blur(10px);
+        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+        display: flex;
+        flex-direction: column;
+        min-height: 260px;
+      }
+      .action-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(1200px 200px at 10% -10%, rgba(99,102,241,0.12), transparent 40%),
+                    radial-gradient(900px 200px at 110% 110%, rgba(236,72,153,0.10), transparent 40%);
+        opacity: .9;
+      }
+      .action-card:hover { transform: translateY(-6px); box-shadow: 0 18px 45px rgba(0,0,0,0.12); border-color: rgba(99,102,241,0.28); }
+      .action-card .action-content { flex: 1; }
+      .action-card .action-content h3 { margin: 2px 0 8px; font-size: 20px; font-weight: 800; letter-spacing: .2px; }
+      .action-card .action-content p { margin: 0 0 16px; line-height: 1.55; }
+
+      .action-card.marketing-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      }
+      
+      .action-card.analytics-card {
+        background: linear-gradient(135deg, #fef7ff 0%, #f3e8ff 100%);
+      }
+      
+      .action-card.payout-card {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      }
+      
+      .action-card.user-dashboard-card {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      }
+      
+      .action-icon {
+        width: 56px; height: 56px; border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 18px; transition: transform .25s ease, box-shadow .25s ease, filter .2s ease;
+        box-shadow: 0 10px 18px rgba(0,0,0,0.08);
+        border: 1px solid rgba(255,255,255,0.5);
+      }
+      .action-card:hover .action-icon { transform: translateY(-2px); }
+      
+      .marketing-card .action-icon {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+      }
+      
+      .analytics-card .action-icon {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+      }
+      
+      .payout-card .action-icon {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+      }
+      
+      .user-dashboard-card .action-icon {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+      }
+      
+      .action-icon svg {
+        width: 24px;
+        height: 24px;
+      }
+      
+      .action-content h3 { color: var(--text-light); }
+      .action-content p { font-size: 14px; color: var(--muted); }
+      
+      .action-stats {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      
+      .stat-item { font-size: 12px; font-weight: 600; color: var(--text-light);
+        background: rgba(255,255,255,0.82); padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.06); }
+      
+      .action-btn {
+        align-self: flex-end;
+        width: auto; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        padding: 10px 16px; font-weight: 700; border-radius: 14px;
+        background: linear-gradient(90deg, #f97316, #ef4444);
+        color: #fff; border: none; box-shadow: 0 8px 20px rgba(249,115,22,0.22);
+        transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+      }
+      .action-btn svg { width: 18px; height: 18px; }
+      .action-btn:hover { transform: translateY(-1px); filter: brightness(1.04); box-shadow: 0 12px 26px rgba(249,115,22,0.28); }
+      
+      .empty-actions {
+        margin-top: 20px;
+      }
+      
+      .empty-actions .btn {
+        margin: 0 auto;
+      }
+      
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .welcome-card {
+          flex-direction: column;
+          text-align: center;
+          gap: 20px;
+          padding: 30px 20px;
+        }
+        
+        .welcome-content h1 {
+          font-size: 24px;
+        }
+        
+        .welcome-content p {
+          font-size: 16px;
+        }
+        
+        .user-details {
+          text-align: left;
+        }
+        
+        .affiliate-info {
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .orders-filters {
+          flex-direction: column;
+          gap: 16px;
+        }
+        
+        .filter-group {
+          min-width: 100%;
+        }
+        
+        .orders-header {
+          flex-direction: column;
+          gap: 16px;
+          align-items: stretch;
+        }
+        
+        .orders-info {
+          justify-content: space-between;
+        }
+        
+        .pagination-controls {
+          justify-content: center;
+        }
+        
+        .order-item {
+          flex-direction: column;
+          gap: 16px;
+          text-align: center;
+        }
+        
+        .order-amount {
+          text-align: center;
+        }
+        
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+        
+        .stat-card {
+          padding: 20px;
+        }
+        
+        .actions-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        
+        .action-card {
+          padding: 20px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        .welcome-content h1 {
+          font-size: 20px;
+        }
+        
+        .filter-select, .search-input {
+          font-size: 16px; /* Prevent zoom on iOS */
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Enhanced Link Management Functions
+      // Quick Actions: Marketing Materials (Google Drive ZIP)
+      (function initMarketingDownload(){
+        const btn = document.getElementById('marketing-download');
+        if (!btn) return;
+        const gdriveViewUrl = 'https://drive.google.com/file/d/16ENfOteiG8oUvfKEd6rEKm5r3Ncd95Rn/view?usp=sharing';
+        const fileIdMatch = gdriveViewUrl.match(/\/d\/([^/]+)/);
+        const fileId = fileIdMatch ? fileIdMatch[1] : null;
+        const directUrl = fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : gdriveViewUrl;
+        btn.onclick = function(){
+          window.open(directUrl, '_blank');
+        };
+      })();
+
+      // Payout Settings: open settings modal placeholder
+      (function initPayoutSettings(){
+        const payoutBtn = document.getElementById('payout-settings-btn');
+        if (!payoutBtn) return;
+        payoutBtn.onclick = openPayoutModal;
+      })();
+
+      function openPayoutModal(){
+        const modal = document.createElement('div');
+        modal.className = 'share-modal';
+        // Ensure modal styles exist (independent of share modal)
+        let styleEl = document.getElementById('payout-modal-style');
+        if (!styleEl) {
+          styleEl = document.createElement('style');
+          styleEl.id = 'payout-modal-style';
+          styleEl.textContent = `
+            .share-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index: 1000; padding:20px; }
+            .share-modal-content { background: var(--card); border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+            .share-modal-header { display:flex; justify-content: space-between; align-items:center; margin-bottom: 16px; }
+            .share-modal-header h3 { margin: 0; color: var(--text-light); }
+            .share-modal .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted); }
+            .form-label { display:block; font-size: 13px; color: var(--text-light); margin-bottom:6px; font-weight:600; }
+            .share-link-input { width: 100%; box-sizing: border-box; }
+          `;
+          document.head.appendChild(styleEl);
+        }
+        modal.innerHTML = `
+          <div class="share-modal-content" style="max-width:640px;">
+            <div class="share-modal-header">
+              <h3>Payout Settings</h3>
+              <button class="close-modal">&times;</button>
+            </div>
+            <div id="payout-success-message" class="success-message" style="display:none; background:#d4edda; color:#155724; padding:12px; border-radius:6px; margin-bottom:16px; border:1px solid #c3e6cb;">
+              <strong>✅ Success!</strong> Payment details saved successfully.
+            </div>
+            <div class="payout-body">
+              <div data-pane="methods">
+                <label class="form-label">Bank Account Name</label>
+                <input id="bank-name" class="share-link-input" placeholder="Account holder name" required />
+                <label class="form-label" style="margin-top:10px;">Account Number</label>
+                <input id="bank-number" class="share-link-input" placeholder="1234567890" required />
+                <label class="form-label" style="margin-top:10px;">IFSC Code</label>
+                <input id="bank-ifsc" class="share-link-input" placeholder="ABCD0123456" required />
+                <label class="form-label" style="margin-top:10px;">UPI ID</label>
+                <input id="upi-id" class="share-link-input" placeholder="name@bank" required />
+                <label class="form-label" style="margin-top:10px;">Mobile Number linked to UPI</label>
+                <input id="upi-mobile" class="share-link-input" placeholder="10-digit mobile" required />
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+              <button class="btn btn-ghost close-modal">Cancel</button>
+              <button id="payout-save" class="btn btn-primary">Save</button>
+            </div>
+          </div>`;
+
+        document.body.appendChild(modal);
+
+        const panes = modal.querySelectorAll('[data-pane]');
+        // Single form, no tabs for now (all mandatory)
+
+        const close = ()=>{ document.body.removeChild(modal); };
+        modal.querySelectorAll('.close-modal').forEach(b=> b.onclick = close);
+        modal.onclick = (e)=>{ if(e.target===modal) close(); };
+
+        // Hide success message initially
+        const successMessage = modal.querySelector('#payout-success-message');
+        if (successMessage) {
+          successMessage.style.display = 'none';
+        }
+
+        // Load existing settings
+        if (window.AttralFirebase && window.AttralFirebase.callFunction) {
+          window.AttralFirebase.callFunction('getPaymentDetails', {}).then(d=>{
+            modal.querySelector('#bank-name').value = d.bankAccountName || '';
+            modal.querySelector('#bank-number').value = d.bankAccountNumber || '';
+            modal.querySelector('#bank-ifsc').value = d.ifsc || '';
+            modal.querySelector('#upi-id').value = d.upiId || '';
+            modal.querySelector('#upi-mobile').value = d.upiMobile || '';
+          }).catch(()=>{});
+        }
+
+        // Save
+        const saveBtn = modal.querySelector('#payout-save');
+        saveBtn.onclick = function(){
+          const bankAccountName = modal.querySelector('#bank-name').value.trim();
+          const bankAccountNumber = modal.querySelector('#bank-number').value.trim();
+          const ifsc = modal.querySelector('#bank-ifsc').value.trim().toUpperCase();
+          const upiId = modal.querySelector('#upi-id').value.trim();
+          const upiMobile = modal.querySelector('#upi-mobile').value.trim().replace(/\D/g, '');
+          
+          // Validation
+          if (!bankAccountName || !bankAccountNumber || !ifsc || !upiId || !upiMobile) {
+            alert('All fields are mandatory.');
+            return;
+          }
+          
+          // IFSC validation (4 letters + 0 + 6 alphanumeric)
+          if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
+            alert('Invalid IFSC code format. Please enter a valid IFSC code (e.g., SBIN0001234).');
+            return;
+          }
+          
+          // Mobile validation
+          if (upiMobile.length < 10) {
+            alert('Please enter a valid 10-digit mobile number.');
+            return;
+          }
+          
+          const payload = { bankAccountName, bankAccountNumber, ifsc, upiId, upiMobile };
+          
+          if (window.AttralFirebase && window.AttralFirebase.callFunction) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            
+            window.AttralFirebase.callFunction('updatePaymentDetails', payload)
+              .then((result) => {
+                console.log('Payment details saved successfully:', result);
+                
+                // Show success message in the modal
+                const successMessage = modal.querySelector('#payout-success-message');
+                if (successMessage) {
+                  successMessage.style.display = 'block';
+                  // Auto-hide after 3 seconds
+                  setTimeout(() => {
+                    successMessage.style.display = 'none';
+                  }, 3000);
+                }
+                
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'SAVE';
+                
+                // Close modal after a short delay to show the success message
+                setTimeout(() => {
+                  close();
+                }, 1500);
+              })
+              .catch((error) => {
+                console.error('Error saving payment details:', error);
+                alert('Error saving payment details: ' + (error.message || 'Please try again.'));
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'SAVE';
+              });
+          }
+        };
+      }
+      // Expose globally so inline handlers work even if scope is nested
+      window.openPayoutModal = openPayoutModal;
+
+    function setupCopyButton(link) {
+      const copyBtn = qs('copy-link');
+      if (!copyBtn) return;
+      
+      copyBtn.onclick = function() {
+        // Try modern clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(link).then(() => {
+            showCopySuccess(copyBtn);
+            trackLinkAction('copy', link);
+          }).catch(() => {
+            fallbackCopy(link, copyBtn);
+          });
+        } else {
+          fallbackCopy(link, copyBtn);
+        }
+      };
+    }
+
+    function fallbackCopy(link, btn) {
+      // Create temporary textarea for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = link;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        showCopySuccess(btn);
+        trackLinkAction('copy_fallback', link);
+      } catch (err) {
+        showCopyError(btn);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    // Make the displayed link text clickable-to-copy with feedback
+    function setupCopyOnClick(elementId, link) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      el.style.cursor = 'pointer';
+      el.onclick = function(e){
+        e.preventDefault();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(link).then(()=>{
+            trackLinkAction('copy_click_text', link);
+            const original = el.textContent;
+            el.textContent = 'Copied!';
+            setTimeout(()=>{ el.textContent = original; }, 1200);
+          });
+        }
+      };
+    }
+
+    function showCopySuccess(btn) {
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Copied!';
+      btn.classList.add('copied');
+      btn.disabled = true;
+      
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('copied');
+        btn.disabled = false;
+      }, 2000);
+    }
+
+    function showCopyError(btn) {
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Failed';
+      btn.style.background = 'var(--error)';
+      
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.style.background = '';
+      }, 2000);
+    }
+
+    function setupShareButton(link) {
+      const shareBtn = qs('share-link');
+      if (!shareBtn) return;
+      
+      shareBtn.onclick = function() {
+        const shareData = {
+          title: 'ATTRAL - Smart Power Solutions',
+          text: 'Discover innovative GaN technology products at ATTRAL. Smart power solutions for modern living!',
+          url: link
+        };
+        
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+          navigator.share(shareData).then(() => {
+            trackLinkAction('share_native', link);
+          }).catch((err) => {
+            console.log('Share cancelled or failed:', err);
+          });
+        } else {
+          showShareModal(link);
+        }
+      };
+    }
+
+    function showShareModal(link) {
+      const modal = document.createElement('div');
+      modal.className = 'share-modal';
+      modal.innerHTML = `
+        <div class="share-modal-content">
+          <div class="share-modal-header">
+            <h3>Share Your Affiliate Link</h3>
+            <button class="close-modal">&times;</button>
+          </div>
+          <div class="share-options">
+            <button class="share-option" data-platform="whatsapp">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/></svg>
+              WhatsApp
+            </button>
+            <button class="share-option" data-platform="telegram">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+              Telegram
+            </button>
+            <button class="share-option" data-platform="twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+              Twitter
+            </button>
+            <button class="share-option" data-platform="facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              Facebook
+            </button>
+          </div>
+          <div class="share-link-container">
+            <input type="text" value="${link}" readonly class="share-link-input">
+            <button class="copy-share-link btn btn-primary">Copy Link</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Add modal styles
+      const modalStyle = document.createElement('style');
+      modalStyle.textContent = `
+        .share-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 20px;
+        }
+        
+        .share-modal-content {
+          background: var(--card);
+          border-radius: 16px;
+          padding: 24px;
+          max-width: 400px;
+          width: 100%;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .share-modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+        
+        .share-modal-header h3 {
+          margin: 0;
+          color: var(--text-light);
+        }
+        
+        .close-modal {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          color: var(--muted);
+        }
+        
+        .share-options {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+        
+        .share-option {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--card-light);
+          color: var(--text);
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .share-option:hover {
+          border-color: var(--brand);
+          transform: translateY(-2px);
+        }
+        
+        .share-option svg {
+          width: 20px;
+          height: 20px;
+        }
+        
+        .share-link-container {
+          display: flex;
+          gap: 8px;
+        }
+        
+        .share-link-input {
+          flex: 1;
+          padding: 12px;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--bg);
+          color: var(--text);
+        }
+        
+        .copy-share-link {
+          white-space: nowrap;
+        }
+      `;
+      document.head.appendChild(modalStyle);
+      
+      // Setup modal interactions
+      modal.querySelector('.close-modal').onclick = () => {
+        document.body.removeChild(modal);
+        document.head.removeChild(modalStyle);
+      };
+      
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+          document.head.removeChild(modalStyle);
+        }
+      };
+      
+      // Setup share options
+      modal.querySelectorAll('.share-option').forEach(btn => {
+        btn.onclick = () => {
+          const platform = btn.dataset.platform;
+          shareToPlatform(platform, link);
+          trackLinkAction(`share_${platform}`, link);
+          document.body.removeChild(modal);
+          document.head.removeChild(modalStyle);
+        };
+      });
+      
+      // Setup copy button
+      modal.querySelector('.copy-share-link').onclick = () => {
+        navigator.clipboard.writeText(link).then(() => {
+          showCopySuccess(modal.querySelector('.copy-share-link'));
+          trackLinkAction('copy_modal', link);
+        });
+      };
+    }
+
+    function shareToPlatform(platform, link) {
+      const text = 'Check out ATTRAL products! Smart power solutions for modern living.';
+      const encodedText = encodeURIComponent(text);
+      const encodedLink = encodeURIComponent(link);
+      
+      let url = '';
+      switch (platform) {
+        case 'whatsapp':
+          url = `https://wa.me/?text=${encodedText}%20${encodedLink}`;
+          break;
+        case 'telegram':
+          url = `https://t.me/share/url?url=${encodedLink}&text=${encodedText}`;
+          break;
+        case 'twitter':
+          url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedLink}`;
+          break;
+        case 'facebook':
+          url = `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`;
+          break;
+      }
+      
+      if (url) {
+        window.open(url, '_blank', 'width=600,height=400');
+      }
+    }
+
+    function setupLinkAnalytics(link, code) {
+      // Track link clicks and other analytics
+      const linkElement = qs('aff-link');
+      if (linkElement) {
+        linkElement.onclick = (e) => {
+          e.preventDefault();
+          trackLinkAction('click', link);
+          window.open(link, '_blank');
+        };
+      }
+    }
+
+    function trackLinkAction(action, link) {
+      if (window.AttralFirebase && window.AttralFirebase.trackEvent) {
+        window.AttralFirebase.trackEvent('affiliate_link_action', {
+          action: action,
+          link: link,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
+    // Simplified DOM readiness check
+    function initializeDashboardWhenReady() {
+      console.log('Checking DOM readiness...');
+      
+      // Check for the most critical element first
+      const referredOrdersElement = document.getElementById('referred-orders');
+      console.log('referred-orders element:', referredOrdersElement);
+      
+      if (!referredOrdersElement) {
+        console.log('referred-orders not found, waiting...');
+        if (window.dashboardInitRetries === undefined) {
+          window.dashboardInitRetries = 0;
+        }
+        window.dashboardInitRetries++;
+        
+        if (window.dashboardInitRetries > 20) { // 2 seconds max
+          console.error('referred-orders element not found after maximum retries');
+          console.log('Proceeding anyway - will handle missing elements gracefully');
+        } else {
+          setTimeout(initializeDashboardWhenReady, 100);
+          return;
+        }
+      }
+      
+      console.log('DOM ready, initializing dashboard...');
+      requireAuth();
+    }
+    
+    // More robust initialization
+    function startDashboardInitialization() {
+      console.log('Starting dashboard initialization...');
+      console.log('Document ready state:', document.readyState);
+      
+      // Wait a bit more to ensure everything is loaded
+      setTimeout(() => {
+        initializeDashboardWhenReady();
+      }, 200);
+    }
+    
+    // Start initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      console.log('DOM is still loading, waiting for DOMContentLoaded...');
+      document.addEventListener('DOMContentLoaded', startDashboardInitialization);
+    } else {
+      console.log('DOM is already ready, starting initialization...');
+      startDashboardInitialization();
+    }
+    
+      }, 500); // Close setTimeout - wait 500ms for all scripts to load
+    }); // Close window.addEventListener('load')
+  </script>
+</body>
+</html>
+
+
+

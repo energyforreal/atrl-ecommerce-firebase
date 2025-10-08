@@ -1,0 +1,11 @@
+{
+    "maintenance_mode": true,
+    "allowed_ips": ["27.4.248.160"],
+    "admin_password": "Rakeshmurali@10",
+    "maintenance_message": "Site is under maintenance for testing",
+    "bypass_paths": [
+        "/admin-login.html",
+        "/site-access-control.php",
+        "/maintenance.html"
+    ]
+}

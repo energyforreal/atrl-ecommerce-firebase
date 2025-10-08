@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Simple Affiliate Email Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .test-section h2 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .result.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        input[type="radio"] {
+            margin-right: 10px;
+            width: auto;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .quick-tests {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-btn {
+            background: #6f42c1;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .quick-btn:hover {
+            background: #5a32a3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Simple Affiliate Email Test</h1>
+        
+        <!-- Mode Toggle -->
+        <div class="test-section">
+            <h2>⚙️ Email Mode</h2>
+            <p>Choose between test mode (MockMailer) and production mode (real emails):</p>
+            
+            <div class="form-group">
+                <label>
+                    <input type="radio" name="emailMode" value="test" onchange="updateEmailMode()">
+                    🧪 Test Mode (MockMailer - No real emails sent)
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="radio" name="emailMode" value="production" checked onchange="updateEmailMode()">
+                    🚀 Production Mode (Real emails via PHPMailer + Brevo SMTP)
+                </label>
+            </div>
+            
+            <div id="modeWarning" class="result warning" style="display: none;">
+                ⚠️ WARNING: Production mode will send REAL emails! Make sure you have the correct SMTP configuration.
+            </div>
+        </div>
+        
+        <!-- Direct Email Tests -->
+        <div class="test-section">
+            <h2>📧 Direct Email Tests</h2>
+            <p>Test sending emails directly with your own data:</p>
+            
+            <div class="form-group">
+                <label for="testEmail">Email Address:</label>
+                <input type="email" id="testEmail" placeholder="affiliate@example.com" value="lokeshzen@gmail.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="testName">Display Name:</label>
+                <input type="text" id="testName" placeholder="John Doe" value="Lokesh Murali">
+            </div>
+            
+            <div class="form-group">
+                <label for="testCode">Affiliate Code:</label>
+                <input type="text" id="testCode" placeholder="john-doe-abc123" value="lokesh-9en4b82ktp">
+            </div>
+            
+            <div class="quick-tests">
+                <button class="quick-btn" onclick="sendTestEmail('welcome')">
+                    🎉 Welcome Email
+                </button>
+                <button class="quick-btn" onclick="sendTestEmail('commission')">
+                    💰 Commission Email
+                </button>
+                <button class="quick-btn" onclick="sendTestEmail('payout')">
+                    💳 Payout Email
+                </button>
+                <button class="quick-btn" onclick="sendTestEmail('milestone')">
+                    🏆 Milestone Email
+                </button>
+            </div>
+            
+            <div id="emailResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Order Simulation -->
+        <div class="test-section">
+            <h2>🛒 Order Simulation Test</h2>
+            <p>Simulate a complete order with affiliate code:</p>
+            
+            <div class="form-group">
+                <label for="orderAffiliateCode">Affiliate Code:</label>
+                <input type="text" id="orderAffiliateCode" placeholder="lokesh-9en4b82ktp" value="lokesh-9en4b82ktp">
+            </div>
+            
+            <div class="form-group">
+                <label for="orderTotal">Order Total (₹):</label>
+                <input type="number" id="orderTotal" placeholder="1500.00" step="0.01" value="1500.00">
+            </div>
+            
+            <div class="form-group">
+                <label for="orderId">Order ID:</label>
+                <input type="text" id="orderId" placeholder="ATRL-0001" value="ATRL-TEST-001">
+            </div>
+            
+            <button class="btn" onclick="simulateOrder()">🚀 Simulate Order</button>
+            <button class="btn" onclick="clearResult('orderResult')">Clear</button>
+            
+            <div id="orderResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Debug Panel -->
+        <div class="test-section">
+            <h2>🔧 Debug Panel</h2>
+            <p>Check browser console (F12) for detailed debugging information. Click the button below to test API connectivity:</p>
+            
+            <button class="btn" onclick="testAPIConnection()">🔍 Test API Connection</button>
+            <button class="btn" onclick="clearDebugResults()">Clear Debug</button>
+            
+            <div id="debugResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentEmailMode = 'production';
+        let currentApiEndpoint = 'api/affiliate_email_sender.php';
+        
+        function updateEmailMode() {
+            const selectedMode = document.querySelector('input[name="emailMode"]:checked').value;
+            currentEmailMode = selectedMode;
+            currentApiEndpoint = selectedMode === 'production' ? 'api/affiliate_email_sender.php' : 'api/test_affiliate_api.php';
+            
+            // Show/hide warning
+            const warningDiv = document.getElementById('modeWarning');
+            if (selectedMode === 'production') {
+                warningDiv.style.display = 'block';
+                warningDiv.className = 'result warning';
+                warningDiv.textContent = '⚠️ WARNING: Production mode will send REAL emails via PHPMailer + Brevo SMTP! Make sure you have the correct SMTP configuration in config.php.';
+            } else {
+                warningDiv.style.display = 'none';
+            }
+            
+            console.log(`🔄 Email mode changed to: ${selectedMode} (API: ${currentApiEndpoint})`);
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${type}`;
+            resultDiv.style.display = 'block';
+        }
+
+        function clearResult(elementId) {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.style.display = 'none';
+            resultDiv.textContent = '';
+        }
+
+        async function sendTestEmail(emailType) {
+            const email = document.getElementById('testEmail').value.trim();
+            const name = document.getElementById('testName').value.trim();
+            const code = document.getElementById('testCode').value.trim();
+
+            if (!email || !name || !code) {
+                showResult('emailResult', '❌ Please fill in email, name, and code fields', 'error');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const requestData = {
+                    action: emailType,
+                    email: email,
+                    name: name,
+                    affiliateCode: code,
+                    commission: emailType === 'commission' ? 150.00 : 0,
+                    orderId: 'ATRL-TEST-001',
+                    payoutAmount: emailType === 'payout' ? 500.00 : 0,
+                    payoutPeriod: emailType === 'payout' ? 'January 2024' : '',
+                    milestone: emailType === 'milestone' ? 'First 10 Sales' : '',
+                    achievement: emailType === 'milestone' ? 'You\'ve reached your first 10 successful referrals!' : ''
+                };
+
+                console.log('🔍 DEBUG: Sending request:', requestData);
+                console.log('🔍 DEBUG: Using API endpoint:', currentApiEndpoint);
+                console.log('🔍 DEBUG: Email mode:', currentEmailMode);
+
+                const response = await fetch(currentApiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                console.log('🔍 DEBUG: Response status:', response.status);
+                console.log('🔍 DEBUG: Response headers:', response.headers);
+
+                // Get raw response text first
+                const responseText = await response.text();
+                console.log('🔍 DEBUG: Raw response:', responseText);
+
+                // Try to parse as JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                    console.log('🔍 DEBUG: Parsed JSON:', result);
+                } catch (parseError) {
+                    console.error('🔍 DEBUG: JSON Parse Error:', parseError);
+                    showResult('emailResult', `❌ Server returned non-JSON response:\n\nStatus: ${response.status}\nResponse: ${responseText.substring(0, 500)}${responseText.length > 500 ? '...' : ''}`, 'error');
+                    return;
+                }
+                
+                if (result.success) {
+                    const modeText = currentEmailMode === 'production' ? 'REAL EMAIL SENT' : 'TEST EMAIL SENT (MockMailer)';
+                    const modeIcon = currentEmailMode === 'production' ? '🚀' : '🧪';
+                    
+                    showResult('emailResult', `${modeIcon} ${emailType.charAt(0).toUpperCase() + emailType.slice(1)} email sent successfully!\n\nMode: ${modeText}\nRecipient: ${email}\nName: ${name}\nCode: ${code}\n\nResponse: ${JSON.stringify(result, null, 2)}`, 'success');
+                } else {
+                    showResult('emailResult', `❌ Failed to send ${emailType} email:\n\n${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                console.error('🔍 DEBUG: Network Error:', error);
+                showResult('emailResult', `❌ Network Error: ${error.message}\n\nThis usually means the API endpoint is not accessible.`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function simulateOrder() {
+            const affiliateCode = document.getElementById('orderAffiliateCode').value.trim();
+            const orderTotal = document.getElementById('orderTotal').value;
+            const orderId = document.getElementById('orderId').value.trim();
+
+            if (!affiliateCode || !orderTotal || !orderId) {
+                showResult('orderResult', '❌ Please fill in all order fields', 'error');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                // First, try to lookup the affiliate
+                console.log('🔍 DEBUG: Starting affiliate lookup for:', affiliateCode);
+                
+                const lookupResponse = await fetch('api/test_affiliate_api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'lookup_affiliate',
+                        affiliateCode: affiliateCode
+                    })
+                });
+
+                console.log('🔍 DEBUG: Lookup response status:', lookupResponse.status);
+                
+                const lookupResponseText = await lookupResponse.text();
+                console.log('🔍 DEBUG: Lookup raw response:', lookupResponseText);
+                
+                let lookupResult;
+                try {
+                    lookupResult = JSON.parse(lookupResponseText);
+                } catch (parseError) {
+                    console.error('🔍 DEBUG: Lookup JSON Parse Error:', parseError);
+                    showResult('orderResult', `❌ Affiliate lookup failed - non-JSON response:\n\nStatus: ${lookupResponse.status}\nResponse: ${lookupResponseText.substring(0, 500)}`, 'error');
+                    return;
+                }
+                
+                if (!lookupResult.success) {
+                    showResult('orderResult', `❌ Affiliate lookup failed:\n\n${lookupResult.error}`, 'error');
+                    return;
+                }
+
+                console.log('🔍 DEBUG: Affiliate found:', lookupResult.affiliateInfo);
+
+                // Calculate commission
+                const commissionAmount = parseFloat(orderTotal) * 0.10;
+
+                // Send commission email
+                console.log('🔍 DEBUG: Sending commission email...');
+                
+                const emailResponse = await fetch(currentApiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'commission',
+                        email: lookupResult.affiliateInfo.email,
+                        name: lookupResult.affiliateInfo.name,
+                        commission: commissionAmount,
+                        orderId: orderId
+                    })
+                });
+
+                console.log('🔍 DEBUG: Email response status:', emailResponse.status);
+                
+                const emailResponseText = await emailResponse.text();
+                console.log('🔍 DEBUG: Email raw response:', emailResponseText);
+                
+                let emailResult;
+                try {
+                    emailResult = JSON.parse(emailResponseText);
+                } catch (parseError) {
+                    console.error('🔍 DEBUG: Email JSON Parse Error:', parseError);
+                    showResult('orderResult', `❌ Email sending failed - non-JSON response:\n\nStatus: ${emailResponse.status}\nResponse: ${emailResponseText.substring(0, 500)}`, 'error');
+                    return;
+                }
+                
+                if (emailResult.success) {
+                    const modeText = currentEmailMode === 'production' ? 'REAL EMAIL SENT' : 'TEST EMAIL SENT (MockMailer)';
+                    const modeIcon = currentEmailMode === 'production' ? '🚀' : '🧪';
+                    
+                    showResult('orderResult', `${modeIcon} Order simulation completed successfully!\n\nMode: ${modeText}\nAffiliate: ${lookupResult.affiliateInfo.name} (${lookupResult.affiliateInfo.email})\nOrder Total: ₹${orderTotal}\nCommission: ₹${commissionAmount} (10%)\nOrder ID: ${orderId}\n\nEmail sent successfully!`, 'success');
+                } else {
+                    showResult('orderResult', `❌ Order simulation failed - email sending error:\n\n${emailResult.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('🔍 DEBUG: Order simulation error:', error);
+                showResult('orderResult', `❌ Network Error: ${error.message}\n\nThis usually means the API endpoint is not accessible.`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function testAPIConnection() {
+            showLoading();
+            
+            try {
+                console.log('🔍 DEBUG: Testing API connection...');
+                
+                const response = await fetch('api/test_affiliate_api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'test'
+                    })
+                });
+
+                console.log('🔍 DEBUG: Test response status:', response.status);
+                console.log('🔍 DEBUG: Test response headers:', response.headers);
+
+                const responseText = await response.text();
+                console.log('🔍 DEBUG: Test raw response:', responseText);
+
+                showResult('debugResult', `🔍 API Connection Test Results:\n\nStatus: ${response.status}\nResponse Length: ${responseText.length} characters\n\nRaw Response:\n${responseText.substring(0, 1000)}${responseText.length > 1000 ? '\n... (truncated)' : ''}`, 'info');
+                
+            } catch (error) {
+                console.error('🔍 DEBUG: API Test Error:', error);
+                showResult('debugResult', `❌ API Connection Failed:\n\nError: ${error.message}\n\nThis usually means:\n- The API file doesn't exist\n- PHP is not running\n- There's a server configuration issue`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function clearDebugResults() {
+            clearResult('debugResult');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Simple Affiliate Email Test loaded');
+            console.log('🔍 DEBUG: Open browser console (F12) to see detailed debugging information');
+            updateEmailMode(); // Initialize the mode and show warnings
+        });
+    </script>
+</body>
+</html>

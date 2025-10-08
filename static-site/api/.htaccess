@@ -1,0 +1,24 @@
+# API .htaccess - Enable routing for order_manager.php endpoints
+RewriteEngine On
+
+# CORS headers for all responses
+<IfModule mod_headers.c>
+   Header always set Access-Control-Allow-Origin "*"
+   Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, PUT"
+   Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+   Header always set Access-Control-Max-Age "86400"
+</IfModule>
+
+# Respond to preflight OPTIONS before PHP executes
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ - [R=204,L]
+
+# Route order_manager.php endpoints
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^order_manager\.php/(.*)$ order_manager.php [QSA,L]
+
+# Ensure PHP files are executed
+<Files "*.php">
+    SetHandler application/x-httpd-php
+</Files>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚧 ATTRAL - Under Maintenance</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="ATTRAL website is currently under maintenance">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        
+        .maintenance-container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 20px;
+        }
+        
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #4a5568;
+            font-size: 18px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .status {
+            background: #fef5e7;
+            border: 2px solid #f6ad55;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        
+        .status-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .status-text {
+            color: #744210;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            width: 75%;
+            border-radius: 10px;
+            animation: progress 2s ease-in-out;
+        }
+        
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 75%; }
+        }
+        
+        .contact-info {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .contact-info h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .contact-info p {
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+        
+        .contact-info a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .admin-access {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e6fffa;
+            border-radius: 12px;
+            border: 2px solid #38b2ac;
+        }
+        
+        .admin-access h3 {
+            color: #234e52;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .admin-access p {
+            color: #285e61;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .admin-access a {
+            display: inline-block;
+            background: #38b2ac;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .admin-access a:hover {
+            background: #319795;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            .maintenance-container {
+                padding: 40px 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="maintenance-container">
+        <div class="logo">⚡</div>
+        <h1>ATTRAL</h1>
+        <p class="subtitle">
+            We're currently performing scheduled maintenance to improve your experience.
+            <br><br>
+            Our team is working hard to bring you an enhanced platform with better performance and new features.
+        </p>
+        
+        <div class="status">
+            <div class="status-icon">🚧</div>
+            <div class="status-text">Maintenance in Progress</div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <small style="color: #744210;">Estimated completion: Soon</small>
+        </div>
+        
+        <div class="contact-info">
+            <h3>📞 Need Immediate Assistance?</h3>
+            <p><strong>Email:</strong> <a href="mailto:info@attral.in">info@attral.in</a></p>
+            <p><strong>Phone:</strong> <a href="tel:+91-XXXXX-XXXXX">+91-XXXXX-XXXXX</a></p>
+            <p><strong>Business Hours:</strong> Monday - Friday, 9 AM - 6 PM IST</p>
+        </div>
+        
+        <div class="admin-access">
+            <h3>🔐 Admin Access</h3>
+            <p>If you're an administrator, you can access the testing environment:</p>
+            <a href="/admin-login.html">Admin Login</a>
+        </div>
+        
+        <div class="footer">
+            <p>© 2024 ATTRAL Electronics. All rights reserved.</p>
+            <p>Premium GaN Chargers for Modern Life</p>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-refresh every 30 seconds to check if site is back online
+        setTimeout(function() {
+            window.location.reload();
+        }, 30000);
+        
+        // Show current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            console.log('Last checked:', timeString);
+        }
+        
+        updateTime();
+        setInterval(updateTime, 10000);
+    </script>
+</body>
+</html>

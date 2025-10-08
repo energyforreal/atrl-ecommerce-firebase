@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Orders | ATTRAL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  
+  <style>
+    .orders-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .orders-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .orders-header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+    
+    .auth-required {
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .auth-required h3 {
+      color: #92400e;
+      margin-bottom: 1rem;
+    }
+    
+    .auth-required p {
+      color: #92400e;
+      margin-bottom: 1.5rem;
+    }
+    
+    .order-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .order-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .order-number {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    
+    .order-date {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+    
+    .order-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #d1fae5; color: #065f46; }
+    .status-processing { background: #dbeafe; color: #1e40af; }
+    .status-shipped { background: #e0e7ff; color: #3730a3; }
+    .status-delivered { background: #d1fae5; color: #065f46; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    
+    .order-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .detail-label {
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .detail-value {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+    
+    .order-timeline {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .timeline-title {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.75rem;
+      font-size: 0.875rem;
+    }
+    
+    .timeline-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      font-size: 0.875rem;
+    }
+    
+    .timeline-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    
+    .timeline-icon.completed {
+      background: #10b981;
+      color: white;
+    }
+    
+    .timeline-icon.pending {
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
+    
+    .order-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #5a67d8;
+    }
+    
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #6b7280;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #6b7280;
+    }
+    
+    .empty-state h3 {
+      color: #374151;
+      margin-bottom: 1rem;
+    }
+    
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #fca5a5;
+      margin-bottom: 1rem;
+    }
+    
+    .refresh-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+    
+    .refresh-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+      .orders-container {
+        padding: 1rem;
+      }
+      
+      .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .order-details {
+        grid-template-columns: 1fr;
+      }
+      
+      .order-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" /></a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="account.html">My Account</a>
+        <a href="affiliates.html">Affiliate Central</a>
+        <a href="contact.html">Contact Us</a>
+        <div class="dropdown">
+          <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false" aria-label="More menu">More ▾</a>
+          <div class="dropdown-menu" role="menu" aria-labelledby="dropdown-toggle">
+            <a href="about.html" role="menuitem">About Us</a>
+            <a href="blog.html" target="_blank" rel="noopener" role="menuitem">Blog</a>
+            <a href="privacy.html" role="menuitem">Privacy</a>
+            <a href="terms.html" role="menuitem">Terms</a>
+          </div>
+        </div>
+        <a href="cart.html" class="cart-link">Cart <span id="cart-count" class="badge">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="orders-container">
+      <!-- Header -->
+      <div class="orders-header">
+        <h1>📦 My Orders</h1>
+        <p>Track and manage your orders</p>
+      </div>
+
+      <!-- Authentication Required -->
+      <div id="auth-required" class="auth-required" style="display: none;">
+        <h3>🔐 Authentication Required</h3>
+        <p>Please sign in to view your orders. Your orders are securely stored in Firestore and only accessible to you.</p>
+        <a href="account.html" class="btn btn-primary">Sign In / Sign Up</a>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="loading">
+        <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+        Loading your orders from Firestore...
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="error" style="display: none;">
+        Failed to load orders. Please try again.
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state" style="display: none;">
+        <h3>📭 No Orders Yet</h3>
+        <p>You haven't placed any orders yet. Start shopping to see your orders here!</p>
+        <a href="shop.html" class="btn btn-primary">Start Shopping</a>
+      </div>
+
+      <!-- Orders List -->
+      <div id="orders-list" style="display: none;">
+        <button class="refresh-btn" onclick="loadMyOrders()">🔄 Refresh Orders</button>
+        <div id="orders-container"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About ATTRAL</h4>
+          <p>Smart Power. Smarter Living. We provide next-gen consumer electronics to power your lifestyle with cutting-edge GaN technology.</p>
+          <div class="social-links">
+            <a href="https://facebook.com/attral" target="_blank" rel="noopener" title="Follow us on Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://instagram.com/attral" target="_blank" rel="noopener" title="Follow us on Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.83-9.281H7.83c-.49 0-.89.4-.89.89v7.83c0 .49.4.89.89.89h8.449c.49 0 .89-.4.89-.89v-7.83c0-.49-.4-.89-.89-.89z"/>
+              </svg>
+            </a>
+            <a href="https://twitter.com/attral" target="_blank" rel="noopener" title="Follow us on Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </a>
+            <a href="https://linkedin.com/company/attral" target="_blank" rel="noopener" title="Connect on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <p><a href="index.html">Home</a></p>
+          <p><a href="shop.html">Shop</a></p>
+          <p><a href="about.html">About Us</a></p>
+          <p><a href="contact.html">Contact</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <p><a href="account.html">My Account</a></p>
+          <p><a href="cart.html">Shopping Cart</a></p>
+          <p><a href="affiliates.html">Affiliate Program</a></p>
+          <p><a href="blog.html" target="_blank" rel="noopener">Blog</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Contact Info</h4>
+          <p>📧 info@attral.in</p>
+          <p>📱 +91 8903479870</p>
+          <p>📍 Phase 2 Sathuvachari<br>Vellore - 632009<br>Tamil Nadu, India</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="year"></span> ATTRAL. All rights reserved.</p>
+        <nav>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dropdown.js"></script>
+  
+  <script>
+    let currentUser = null;
+    let userOrders = [];
+
+    // Wait for Firebase to be ready
+    async function waitForFirebase() {
+      let attempts = 0;
+      const maxAttempts = 50;
+      
+      while (attempts < maxAttempts) {
+        if (window.AttralFirebase && window.AttralFirebase.auth && window.AttralFirebase.db) {
+          console.log('✅ Firebase is ready');
+          return;
+        }
+        attempts++;
+        console.log(`⏳ Waiting for Firebase... attempt ${attempts}/${maxAttempts}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      throw new Error('Firebase failed to load');
+    }
+
+    // Load user orders from Firestore
+    async function loadMyOrders() {
+      try {
+        showLoading(true);
+        hideStates();
+        
+        // Wait for Firebase
+        await waitForFirebase();
+        
+        // Get current user
+        const user = window.AttralFirebase.auth.currentUser;
+        if (!user || user.isAnonymous) {
+          showAuthRequired();
+          return;
+        }
+        
+        currentUser = user;
+        console.log('👤 Current user:', user.uid, user.email);
+        
+        // Load orders from Firestore
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        const response = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/user/${user.uid}?limit=50`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          userOrders = data.orders;
+          displayOrders(userOrders);
+          
+          if (userOrders.length === 0) {
+            showEmptyState();
+          } else {
+            showOrdersList();
+          }
+        } else {
+          throw new Error(data.error || 'Failed to load orders');
+        }
+        
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        showError(`Failed to load orders: ${error.message}`);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Display orders
+    function displayOrders(orders) {
+      const container = document.getElementById('orders-container');
+      container.innerHTML = '';
+      
+      orders.forEach(order => {
+        const orderCard = createOrderCard(order);
+        container.appendChild(orderCard);
+      });
+    }
+
+    // Create order card
+    function createOrderCard(order) {
+      const card = document.createElement('div');
+      card.className = 'order-card';
+      
+      card.innerHTML = `
+        <div class="order-header">
+          <div>
+            <div class="order-number">${order.order_number}</div>
+            <div class="order-date">${formatDate(order.created_at)}</div>
+          </div>
+          <span class="order-status status-${order.status}">
+            ${getStatusIcon(order.status)} ${order.status.toUpperCase()}
+          </span>
+        </div>
+        
+        <div class="order-details">
+          <div class="detail-item">
+            <div class="detail-label">Amount</div>
+            <div class="detail-value">₹${order.amount.toLocaleString()}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Status</div>
+            <div class="detail-value">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Order Date</div>
+            <div class="detail-value">${formatDate(order.created_at)}</div>
+          </div>
+        </div>
+        
+        <div class="order-actions">
+          <button class="btn btn-primary" onclick="viewOrderDetails('${order.id}')">
+            👁️ View Details
+          </button>
+          <button class="btn btn-secondary" onclick="trackOrder('${order.id}')">
+            📍 Track Order
+          </button>
+        </div>
+      `;
+      
+      return card;
+    }
+
+    // View order details
+    async function viewOrderDetails(orderId) {
+      try {
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        const response = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/status?order_id=${orderId}&user_id=${currentUser.uid}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            showOrderDetailsModal(data.order);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+        alert('Failed to load order details');
+      }
+    }
+
+    // Show order details modal
+    function showOrderDetailsModal(order) {
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+      
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto;">
+          <h3 style="margin-bottom: 1rem;">Order Details: ${order.order_number}</h3>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <div style="background: #f8fafc; padding: 0.75rem; border-radius: 6px;">
+              <div style="font-weight: 600; color: #374151; font-size: 0.875rem;">Order Number</div>
+              <div style="color: #6b7280; font-size: 0.875rem;">${order.order_number}</div>
+            </div>
+            <div style="background: #f8fafc; padding: 0.75rem; border-radius: 6px;">
+              <div style="font-weight: 600; color: #374151; font-size: 0.875rem;">Status</div>
+              <div style="color: #6b7280; font-size: 0.875rem;">
+                <span class="order-status status-${order.status}">${order.status}</span>
+              </div>
+            </div>
+            <div style="background: #f8fafc; padding: 0.75rem; border-radius: 6px;">
+              <div style="font-weight: 600; color: #374151; font-size: 0.875rem;">Amount</div>
+              <div style="color: #6b7280; font-size: 0.875rem;">₹${order.pricing?.total?.toLocaleString() || 0}</div>
+            </div>
+            <div style="background: #f8fafc; padding: 0.75rem; border-radius: 6px;">
+              <div style="font-weight: 600; color: #374151; font-size: 0.875rem;">Created</div>
+              <div style="color: #6b7280; font-size: 0.875rem;">${formatDate(order.created_at)}</div>
+            </div>
+          </div>
+          
+          <button class="btn btn-secondary" onclick="this.closest('.modal').remove()" style="margin-top: 1rem;">
+            Close
+          </button>
+        </div>
+      `;
+      
+      modal.className = 'modal';
+      document.body.appendChild(modal);
+      
+      // Close on background click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+
+    // Track order
+    function trackOrder(orderId) {
+      window.location.href = `order-success.html?orderId=${orderId}`;
+    }
+
+    // Utility functions
+    function getStatusIcon(status) {
+      const icons = {
+        pending: '⏳',
+        confirmed: '✅',
+        processing: '🔄',
+        shipped: '📦',
+        delivered: '🚚',
+        cancelled: '❌'
+      };
+      return icons[status] || '❓';
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function showLoading(show) {
+      document.getElementById('loading-state').style.display = show ? 'block' : 'none';
+    }
+
+    function showAuthRequired() {
+      hideStates();
+      document.getElementById('auth-required').style.display = 'block';
+    }
+
+    function showError(message) {
+      hideStates();
+      const errorDiv = document.getElementById('error-state');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+
+    function showEmptyState() {
+      hideStates();
+      document.getElementById('empty-state').style.display = 'block';
+    }
+
+    function showOrdersList() {
+      hideStates();
+      document.getElementById('orders-list').style.display = 'block';
+    }
+
+    function hideStates() {
+      document.getElementById('auth-required').style.display = 'none';
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('error-state').style.display = 'none';
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('orders-list').style.display = 'none';
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('year').textContent = new Date().getFullYear();
+      
+      if (window.Attral) {
+        window.Attral.initHeaderCartCount();
+      }
+      
+      // Load orders on page load
+      loadMyOrders();
+    });
+  </script>
+</body>
+</html>

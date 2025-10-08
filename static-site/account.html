@@ -1,0 +1,2449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account | Attral Store</title>
+  <meta name="description" content="Manage your Attral account and view your orders." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* Full-Screen Layout Reset */
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      overflow-x: hidden;
+    }
+    
+    /* Account Page Specific Overrides */
+    body.account-page {
+      width: 100vw !important;
+      max-width: none !important;
+    }
+    
+    .account-page .container,
+    .account-page .site-header .container,
+    .account-page .site-footer .container {
+      max-width: none !important;
+      width: 100% !important;
+      padding: 0 20px !important;
+    }
+    
+    .account-page .account-main .container {
+      max-width: none !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    .container {
+      max-width: none !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    .account-main .container {
+      max-width: none !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    .account-hero .container {
+      max-width: none !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    /* Enhanced Account Page Styles */
+    .account-hero {
+      padding: 100px 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .account-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/><circle cx="30" cy="30" r="0.5" fill="white" opacity="0.05"/><circle cx="70" cy="70" r="0.5" fill="white" opacity="0.05"/><circle cx="50" cy="20" r="0.3" fill="white" opacity="0.03"/><circle cx="20" cy="80" r="0.3" fill="white" opacity="0.03"/><circle cx="80" cy="40" r="0.3" fill="white" opacity="0.03"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+      opacity: 0.4;
+      pointer-events: none;
+      animation: heroFloat 20s ease-in-out infinite;
+    }
+    
+    .account-hero::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      animation: heroGlow 15s ease-in-out infinite;
+      pointer-events: none;
+    }
+    
+    .account-hero-content {
+      text-align: center;
+      position: relative;
+      z-index: 3;
+    }
+    
+    .account-hero h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      color: white;
+      margin: 0 0 24px;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      animation: heroTitle 1s ease-out;
+    }
+    
+    .account-hero p {
+      font-size: 1.5rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+      font-weight: 500;
+      animation: heroSubtitle 1s ease-out 0.2s both;
+    }
+    
+    @keyframes heroFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+    
+    @keyframes heroGlow {
+      0%, 100% { transform: rotate(0deg) scale(1); opacity: 0.3; }
+      50% { transform: rotate(180deg) scale(1.1); opacity: 0.1; }
+    }
+    
+    @keyframes heroTitle {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes heroSubtitle {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .account-main {
+      padding: 0 !important;
+      background: linear-gradient(145deg, #f8fafc, #ffffff);
+      position: relative;
+      min-height: 100vh;
+      width: 100vw !important;
+      overflow-x: hidden;
+      margin: 0 !important;
+      max-width: none !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+    }
+    
+    .account-main::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="rgba(102,126,234,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+      opacity: 0.3;
+      pointer-events: none;
+    }
+    
+    .auth-card {
+      background: linear-gradient(145deg, #ffffff, #f8fafc);
+      border: 1px solid rgba(102, 126, 234, 0.1);
+      border-radius: 24px;
+      padding: 40px;
+      margin: 0 auto;
+      max-width: 500px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      animation: cardSlideIn 0.8s ease-out;
+    }
+    
+    @media (min-width: 900px) {
+      .auth-card {
+        border-radius: 16px;
+        padding: 50px 60px;
+        max-width: 600px;
+      }
+    }
+    
+    .dashboard-container {
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      backdrop-filter: none;
+      animation: none;
+      width: 100vw !important;
+      min-height: 100vh;
+      position: relative;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+    }
+    
+    .dashboard-container::before,
+    .dashboard-container::after {
+      display: none;
+    }
+    
+    .dashboard-container .tab-content {
+      max-width: 100%;
+      margin: 0;
+    }
+    
+    .dashboard-container .tab-panel {
+      width: 100%;
+    }
+    
+    .dashboard-content-wrapper {
+      max-width: 95vw;
+      margin: 0 auto;
+      padding: 0 40px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .auth-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+      opacity: 0.9;
+    }
+    
+    .auth-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+      animation: cardGlow 10s ease-in-out infinite;
+      pointer-events: none;
+    }
+    
+    @keyframes cardSlideIn {
+      from { opacity: 0; transform: translateY(50px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    @keyframes cardGlow {
+      0%, 100% { transform: rotate(0deg) scale(1); opacity: 0.3; }
+      50% { transform: rotate(180deg) scale(1.1); opacity: 0.1; }
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .auth-header h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin: 0 0 12px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auth-header p {
+      color: #6b7280;
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 500;
+    }
+    
+    .auth-form {
+      max-width: 400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .form-row {
+      margin-bottom: 28px;
+      position: relative;
+    }
+    
+    .form-row label {
+      display: block;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    .form-row:focus-within label {
+      color: #667eea;
+      transform: translateX(4px);
+    }
+    
+    .auth-input {
+      width: 100%;
+      padding: 20px 24px;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 500;
+      background: linear-gradient(145deg, #ffffff, #f8fafc);
+      color: #1f2937;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      position: relative;
+    }
+    
+    .auth-input:hover {
+      border-color: #d1d5db;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+    
+    .auth-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 8px 20px rgba(102, 126, 234, 0.2);
+      transform: translateY(-4px);
+      background: #ffffff;
+    }
+    
+    .auth-input::placeholder {
+      color: #9ca3af;
+      font-weight: 400;
+      transition: all 0.3s ease;
+    }
+    
+    .auth-input:focus::placeholder {
+      color: #d1d5db;
+      transform: translateY(-2px);
+    }
+    
+    .auth-buttons {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    
+    .auth-btn {
+      flex: 1;
+      min-width: 160px;
+      padding: 20px 32px;
+      border: none;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .auth-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    .auth-btn:hover::before {
+      left: 100%;
+    }
+    
+    .auth-btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+      background-size: 200% 200%;
+      color: white;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+    
+    .auth-btn-primary:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 16px 40px rgba(102, 126, 234, 0.5);
+      background-position: 100% 0;
+    }
+    
+    .auth-btn-primary:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+    
+    .auth-btn-secondary {
+      background: transparent;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+    
+    .auth-btn-secondary:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 16px 40px rgba(102, 126, 234, 0.3);
+    }
+    
+    .auth-btn-secondary:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+    
+    .google-btn {
+      width: 100%;
+      padding: 20px 24px;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      background: white;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .google-btn.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    
+    .google-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    .google-btn:hover {
+      border-color: #667eea;
+      background: #f8fafc;
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
+    }
+    
+    .google-btn:hover::before {
+      left: 100%;
+    }
+    
+    .google-icon {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.3s ease;
+    }
+    
+    .google-btn:hover .google-icon {
+      transform: scale(1.1);
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 32px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+      border-radius: 20px;
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.1);
+    }
+    
+    .user-info::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    }
+    
+    .user-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 28px;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .user-avatar:hover {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+    }
+    
+    .user-details h3 {
+      margin: 0 0 8px;
+      color: #1f2937;
+      font-size: 24px;
+      font-weight: 800;
+    }
+    
+    .user-details p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .user-stats {
+      margin-top: 16px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #9ca3af;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .stat-value {
+      font-size: 16px;
+      color: #1f2937;
+      font-weight: 700;
+    }
+    
+    .user-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-left: auto;
+    }
+    
+    .password-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: #6b7280;
+      transition: all 0.3s ease;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    
+    .password-toggle:hover {
+      color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .password-strength {
+      margin-top: 8px;
+    }
+    
+    .strength-bar {
+      width: 100%;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: all 0.3s ease;
+      border-radius: 2px;
+    }
+    
+    .strength-fill.weak { background: #ef4444; width: 25%; }
+    .strength-fill.fair { background: #f59e0b; width: 50%; }
+    .strength-fill.good { background: #10b981; width: 75%; }
+    .strength-fill.strong { background: #059669; width: 100%; }
+    
+    .strength-text {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+    
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: #374151;
+      font-weight: 500;
+    }
+    
+    .checkbox-container input[type="checkbox"] {
+      display: none;
+    }
+    
+    .checkmark {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #d1d5db;
+      border-radius: 4px;
+      margin-right: 8px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .checkbox-container input[type="checkbox"]:checked + .checkmark {
+      background: #667eea;
+      border-color: #667eea;
+    }
+    
+    .checkbox-container input[type="checkbox"]:checked + .checkmark::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .forgot-password {
+      color: #667eea;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .forgot-password:hover {
+      color: #5a67d8;
+      text-decoration: underline;
+    }
+    
+    .field-error {
+      color: #ef4444;
+      font-size: 12px;
+      margin-top: 4px;
+      font-weight: 500;
+      display: none;
+    }
+    
+    .field-error.show {
+      display: block;
+    }
+    
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+    
+    .btn-text, .loading-spinner {
+      display: inline-block;
+    }
+    
+    .auth-btn.loading .btn-text {
+      display: none;
+    }
+    
+    .auth-btn.loading .loading-spinner {
+      display: inline-block;
+    }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 0;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    .modal-header {
+      padding: 24px 32px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-header h3 {
+      margin: 0;
+      color: #1f2937;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    
+    .modal-close:hover {
+      color: #374151;
+      background: #f3f4f6;
+    }
+    
+    .modal-body {
+      padding: 32px;
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    /* Dashboard Styles */
+    .dashboard-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      border-radius: 0;
+      padding: 60px 5vw;
+      margin: 0;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+      width: 100vw !important;
+      min-height: 40vh;
+      margin-left: calc(-50vw + 50%) !important;
+      margin-right: calc(-50vw + 50%) !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+    }
+    
+    @media (min-width: 1024px) {
+      .dashboard-header {
+        padding: 80px 8vw;
+        min-height: 50vh;
+      }
+      
+      .dashboard-content-wrapper {
+        max-width: 90vw;
+        padding: 0 60px;
+      }
+      
+      .welcome-section {
+        gap: 60px;
+        max-width: 60%;
+      }
+      
+      .user-avatar-large {
+        width: 140px;
+        height: 140px;
+        font-size: 56px;
+      }
+      
+      .welcome-text h2 {
+        font-size: 44px;
+      }
+      
+      .welcome-text p {
+        font-size: 22px;
+      }
+    }
+    
+    @media (min-width: 1600px) {
+      .dashboard-header {
+        padding: 100px 10vw;
+        min-height: 60vh;
+      }
+      
+      .dashboard-content-wrapper {
+        max-width: 85vw;
+        padding: 0 80px;
+      }
+      
+      .welcome-section {
+        gap: 80px;
+        max-width: 70%;
+      }
+      
+      .user-avatar-large {
+        width: 160px;
+        height: 160px;
+        font-size: 64px;
+      }
+      
+      .welcome-text h2 {
+        font-size: 52px;
+      }
+      
+      .welcome-text p {
+        font-size: 26px;
+      }
+    }
+    
+    .dashboard-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      animation: dashboardGlow 15s ease-in-out infinite;
+    }
+    
+    @keyframes dashboardGlow {
+      0%, 100% { transform: rotate(0deg) scale(1); opacity: 0.3; }
+      50% { transform: rotate(180deg) scale(1.1); opacity: 0.1; }
+    }
+    
+    .welcome-section {
+      display: flex;
+      align-items: center;
+      gap: 60px;
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      max-width: 800px;
+    }
+    
+    .user-avatar-large {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      backdrop-filter: blur(10px);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .user-avatar-large:hover {
+      transform: scale(1.1) rotate(5deg);
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .welcome-text h2 {
+      margin: 0 0 16px;
+      font-size: 42px;
+      font-weight: 800;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      line-height: 1.2;
+    }
+    
+    .welcome-text p {
+      margin: 0 0 20px;
+      font-size: 20px;
+      opacity: 0.9;
+      line-height: 1.4;
+    }
+    
+    .member-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .quick-actions {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 2;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+    }
+    
+    .quick-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 18px 28px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      font-size: 16px;
+    }
+    
+    .quick-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .quick-btn.danger {
+      background: rgba(239, 68, 68, 0.8);
+      border-color: rgba(239, 68, 68, 0.9);
+    }
+    
+    .quick-btn.danger:hover {
+      background: rgba(239, 68, 68, 1);
+    }
+    
+    .btn-icon {
+      font-size: 18px;
+    }
+    
+    .btn-text {
+      font-size: 14px;
+    }
+    
+    /* Dashboard Stats */
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      margin-bottom: 50px;
+    }
+    
+    @media (min-width: 1024px) {
+      .dashboard-stats {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 40px;
+        margin-bottom: 60px;
+      }
+    }
+    
+    @media (min-width: 1400px) {
+      .dashboard-stats {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 48px;
+        margin-bottom: 80px;
+      }
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+    }
+    
+    .stat-icon {
+      font-size: 40px;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 16px;
+      color: white;
+    }
+    
+    .stat-content {
+      flex: 1;
+    }
+    
+    .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+    
+    .stat-label {
+      font-size: 16px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+    
+    /* Dashboard Tabs */
+    .dashboard-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+      background: white;
+      padding: 12px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      overflow-x: auto;
+      width: 100%;
+    }
+    
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 16px 28px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      color: #6b7280;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 16px;
+    }
+    
+    .tab-btn:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+    }
+    
+    .tab-btn.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Tab Content */
+    .tab-content {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .tab-panel {
+      display: none;
+      padding: 50px;
+    }
+    
+    .tab-panel.active {
+      display: block;
+    }
+    
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 32px;
+      width: 100%;
+    }
+    
+    @media (min-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 40px;
+      }
+    }
+    
+    @media (min-width: 1400px) {
+      .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+        gap: 48px;
+      }
+    }
+    
+    .dashboard-card {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 36px;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .dashboard-card h3 {
+      margin: 0 0 28px;
+      color: #1f2937;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    /* Empty States */
+    .empty-state {
+      text-align: center;
+      padding: 60px 40px;
+      color: #6b7280;
+    }
+    
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 24px;
+      opacity: 0.5;
+    }
+    
+    .empty-state p {
+      margin: 0 0 28px;
+      font-size: 20px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 16px;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: #667eea;
+      border: 2px solid #667eea;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: #667eea;
+      color: white;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+    }
+    
+    /* Quick Actions Grid */
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      width: 100%;
+    }
+    
+    .action-btn {
+      background: white;
+      border: 2px solid #e5e7eb;
+      padding: 24px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .action-btn:hover {
+      border-color: #667eea;
+      background: #f8fafc;
+      transform: translateY(-2px);
+    }
+    
+    .action-icon {
+      font-size: 32px;
+    }
+    
+    .action-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+    }
+    
+    /* Activity Feed */
+    .activity-feed {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    
+    .activity-icon {
+      font-size: 20px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f9ff;
+      border-radius: 8px;
+    }
+    
+    .activity-content p {
+      margin: 0 0 4px;
+      font-size: 14px;
+      color: #374151;
+    }
+    
+    .activity-time {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    
+    /* Orders List */
+    .orders-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .orders-header h3 {
+      margin: 0;
+      color: #1f2937;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    .order-filters select {
+      padding: 8px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+    }
+    
+    /* Order Cards */
+    .order-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    .order-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .order-info {
+      flex: 1;
+    }
+    
+    .order-id {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    
+    .order-date {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    
+    .order-amount {
+      font-weight: 600;
+      color: #059669;
+    }
+    
+    .order-status {
+      font-weight: 600;
+      font-size: 14px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Profile Form */
+    .profile-form {
+      max-width: 600px;
+    }
+    
+    .profile-form .form-row {
+      margin-bottom: 20px;
+    }
+    
+    .profile-form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #374151;
+    }
+    
+    .profile-form input,
+    .profile-form select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    .profile-form input:focus,
+    .profile-form select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .profile-form input[readonly] {
+      background: #f9fafb;
+      color: #6b7280;
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    
+    /* Settings */
+    .settings-grid {
+      max-width: 800px;
+    }
+    
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+    
+    .setting-info h4 {
+      margin: 0 0 4px;
+      color: #1f2937;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .setting-info p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
+    
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    .toggle input:checked + .toggle-slider {
+      background-color: #667eea;
+    }
+    
+    .toggle input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 0;
+        max-width: 100vw;
+      }
+      
+      .dashboard-content-wrapper {
+        padding: 0 20px;
+        max-width: 100vw;
+      }
+      
+      .dashboard-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 20px;
+        margin: 0;
+        gap: 30px;
+        width: 100vw;
+        min-height: 35vh;
+      }
+      
+      .welcome-section {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .quick-actions {
+        justify-content: center;
+      }
+      
+      .dashboard-stats {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+      }
+      
+      .stat-card {
+        padding: 16px;
+      }
+      
+      .dashboard-tabs {
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      
+      .tab-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+      
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      
+      .dashboard-stats {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      
+      .tab-panel {
+        padding: 30px;
+      }
+      
+      .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .form-actions {
+        flex-direction: column;
+      }
+      
+      .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+    }
+    
+    
+    /* Enhanced Responsive Design */
+    @media (max-width: 768px) {
+      .account-hero {
+        padding: 80px 0;
+      }
+      
+      .account-hero h1 {
+        font-size: 3rem;
+      }
+      
+      .account-hero p {
+        font-size: 1.25rem;
+      }
+      
+      .account-main {
+        padding: 60px 0;
+      }
+      
+      .auth-card {
+        padding: 40px 30px;
+        margin: 0 20px;
+      }
+      
+      .dashboard-container {
+        padding: 0;
+        max-width: 100vw;
+      }
+      
+      .dashboard-content-wrapper {
+        padding: 0 15px;
+        max-width: 100vw;
+      }
+      
+      .dashboard-header {
+        padding: 30px 15px;
+        min-height: 30vh;
+      }
+      
+      .auth-header h2 {
+        font-size: 2rem;
+      }
+      
+      .auth-buttons {
+        flex-direction: column;
+        gap: 16px;
+      }
+      
+      .auth-btn {
+        min-width: auto;
+        padding: 18px 24px;
+      }
+      
+      .user-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+        padding: 24px;
+      }
+      
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+      }
+      
+      .user-details h3 {
+        font-size: 20px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .account-hero {
+        padding: 60px 0;
+      }
+      
+      .account-hero h1 {
+        font-size: 2.5rem;
+      }
+      
+      .account-hero p {
+        font-size: 1.125rem;
+      }
+      
+      .auth-card {
+        padding: 30px 20px;
+        margin: 0 16px;
+        border-radius: 24px;
+      }
+      
+      .auth-header h2 {
+        font-size: 1.75rem;
+      }
+      
+      .auth-input {
+        padding: 16px 20px;
+        font-size: 16px;
+      }
+      
+      .auth-btn, .google-btn {
+        padding: 16px 20px;
+        font-size: 14px;
+      }
+      
+      .user-info {
+        padding: 20px;
+      }
+      
+      .user-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+    }
+    
+    /* Loading States */
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+      position: relative;
+    }
+    
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Success Animation */
+    .success-animation {
+      animation: successPulse 0.6s ease-out;
+    }
+    
+    @keyframes successPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="account-page">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" /></a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="account.html" class="active">Sign In</a>
+        <a href="affiliates.html">Affiliate Central</a>
+        <a href="contact.html">Contact Us</a>
+        <div class="dropdown">
+          <a href="#" class="dropdown-toggle">More ▾</a>
+          <div class="dropdown-menu">
+            <a href="about.html">About Us</a>
+            <a href="blog.html" target="_blank" rel="noopener">Blog</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+          </div>
+        </div>
+        <a href="my-orders.html" class="cart-link">My Orders</a>
+        <a href="cart.html" class="cart-link">Cart <span id="cart-count" class="badge">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="account-hero">
+    <div class="container">
+      <div class="account-hero-content">
+        <h1>👤 Your Account</h1>
+        <p>Manage your profile, view orders, and track your purchases</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="account-main">
+    <div class="container">
+      <!-- Authentication Section -->
+      <div id="auth-section" class="auth-card">
+        <div id="auth-when-logged-out">
+          <div class="auth-header">
+            <h2>🔐 Welcome Back</h2>
+            <p>Sign in to access your account and view your orders</p>
+          </div>
+          
+          <form id="email-signin" class="auth-form" onsubmit="return false;">
+            <div class="form-row">
+              <label for="email">📧 Email Address</label>
+              <input id="email" class="auth-input" type="email" required placeholder="Enter your email" />
+              <div class="field-error" id="email-error"></div>
+            </div>
+            <div class="form-row">
+              <label for="password">🔒 Password</label>
+              <div class="password-container">
+                <input id="password" class="auth-input" type="password" required placeholder="Enter your password" />
+                <button type="button" class="password-toggle" id="password-toggle">👁️</button>
+              </div>
+              <div class="password-strength" id="password-strength">
+                <div class="strength-bar">
+                  <div class="strength-fill" id="strength-fill"></div>
+                </div>
+                <div class="strength-text" id="strength-text">Password strength</div>
+              </div>
+              <div class="field-error" id="password-error"></div>
+            </div>
+            <div class="form-options">
+              <label class="checkbox-container">
+                <input type="checkbox" id="remember-me">
+                <span class="checkmark"></span>
+                <span class="checkbox-text">Remember me</span>
+              </label>
+              <a href="#" class="forgot-password" id="forgot-password-link">Forgot password?</a>
+            </div>
+            <div class="auth-buttons">
+              <button id="signin-btn" class="auth-btn auth-btn-primary" type="submit">
+                <span class="btn-text">🚀 Sign In</span>
+                <div class="loading-spinner" style="display: none;">⏳</div>
+              </button>
+              <button id="signup-btn" class="auth-btn auth-btn-secondary" type="button">
+                <span class="btn-text">✨ Create Account</span>
+                <div class="loading-spinner" style="display: none;">⏳</div>
+              </button>
+            </div>
+          </form>
+          
+          <div style="text-align: center; margin: 20px 0; color: var(--muted);">or</div>
+          
+          <button id="google-btn" class="google-btn">
+            <svg class="google-icon" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+        </div>
+        
+        <div id="auth-when-logged-in" style="display:none;">
+          <div class="auth-header">
+            <h2>✅ Successfully Signed In!</h2>
+            <p>Redirecting you to your dashboard...</p>
+          </div>
+          <div style="text-align: center; padding: 40px;">
+            <div class="loading-spinner" style="width: 40px; height: 40px; margin: 0 auto 20px;"></div>
+            <p>If you are not redirected automatically, <a href="user-dashboard.html" style="color: #667eea; text-decoration: none;">click here</a>.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About ATTRAL</h4>
+          <p>Smart Power. Smarter Living. We provide next-gen consumer electronics to power your lifestyle with cutting-edge GaN technology.</p>
+          <div class="social-links">
+            <a href="https://facebook.com/attral" target="_blank" rel="noopener" title="Follow us on Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://instagram.com/attral" target="_blank" rel="noopener" title="Follow us on Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.83-9.281H7.83c-.49 0-.89.4-.89.89v7.83c0 .49.4.89.89.89h8.449c0 .49.4.89.89.89v-7.83c0-.49-.4-.89-.89-.89z"/>
+              </svg>
+            </a>
+            <a href="https://twitter.com/attral" target="_blank" rel="noopener" title="Follow us on Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </a>
+            <a href="https://linkedin.com/company/attral" target="_blank" rel="noopener" title="Connect on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <p><a href="index.html">Home</a></p>
+          <p><a href="shop.html">Shop</a></p>
+          <p><a href="about.html">About Us</a></p>
+          <p><a href="contact.html">Contact</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <p><a href="account.html">My Account</a></p>
+          <p><a href="cart.html">Shopping Cart</a></p>
+          <p><a href="affiliates.html">Affiliate Program</a></p>
+          <p><a href="blog.html" target="_blank" rel="noopener">Blog</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Contact Info</h4>
+          <p>📧 info@attral.in</p>
+          <p>📱 +91 8903479870</p>
+          <p>📍 Phase 2 Sathuvachari<br>Vellore - 632009<br>Tamil Nadu, India</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="year"></span> ATTRAL. All rights reserved.</p>
+        <nav>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/dropdown.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    if (window.Attral && typeof window.Attral.initHeaderCartCount === 'function') {
+      window.Attral.initHeaderCartCount();
+    }
+
+    function qs(id){ return document.getElementById(id); }
+    
+    function setButtonLoading(button, loading) {
+      if (loading) {
+        button.classList.add('loading');
+        button.disabled = true;
+      } else {
+        button.classList.remove('loading');
+        button.disabled = false;
+      }
+    }
+
+    function setLoggedInUI(user){
+      qs('auth-when-logged-out').style.display = 'none';
+      qs('auth-when-logged-in').style.display = '';
+      
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        window.location.href = 'user-dashboard.html';
+      }, 2000);
+    }
+    
+    
+    function setLoggedOutUI(){
+      qs('auth-when-logged-out').style.display = '';
+      qs('auth-when-logged-in').style.display = 'none';
+    }
+
+    (function initAuth(){
+      // Wait for Firebase to load
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+      
+      function checkFirebase() {
+        attempts++;
+        const fb = window.AttralFirebase;
+        
+        if (fb && fb.auth) {
+          console.log('Firebase initialized successfully:', fb);
+          console.log('Auth available:', !!fb.auth);
+          console.log('Database available:', !!fb.db);
+          initializeAuth();
+        } else if (attempts < maxAttempts) {
+          console.log(`Waiting for Firebase... attempt ${attempts}/${maxAttempts}`);
+          setTimeout(checkFirebase, 100);
+        } else {
+          console.error('Firebase failed to load after maximum attempts');
+          showNotification('Firebase not configured. Please check your configuration.', 'error');
+          showFallbackUI();
+        }
+      }
+      
+      function showFallbackUI() {
+        // Show a fallback message instead of the error notification
+        const authSection = qs('auth-section');
+        if (authSection) {
+          authSection.innerHTML = `
+            <div class="auth-header">
+              <h2>⚠️ Service Temporarily Unavailable</h2>
+              <p>We're experiencing technical difficulties. Please try again later.</p>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+              <p>For immediate assistance, please contact us at:</p>
+              <p>📧 info@attral.in | 📱 +91 8903479870</p>
+            </div>
+          `;
+        }
+      }
+      
+      function initializeAuth() {
+        const fb = window.AttralFirebase;
+      
+      // Auth state change handler
+      fb.auth.onAuthStateChanged(function(user){
+        if (user && !user.isAnonymous) { 
+          setLoggedInUI(user); 
+        } else { 
+          setLoggedOutUI(); 
+        }
+      });
+      
+      // Email sign-in handler
+      qs('email-signin').addEventListener('submit', function(e){
+        e.preventDefault();
+        const email = qs('email').value.trim();
+        const password = qs('password').value;
+        
+        // Validate form
+        if (!validateEmail(email) || !validatePassword(password)) {
+          return;
+        }
+        
+        // Show loading state
+        setButtonLoading(qs('signin-btn'), true);
+        
+        fb.auth.signInWithEmailAndPassword(email, password)
+          .then(function(userCredential) {
+            console.log('Sign in successful:', userCredential.user);
+            showNotification('Welcome back! 🎉', 'success');
+          })
+          .catch(function(error) {
+            console.error('Sign in error:', error);
+            showNotification('Sign in failed: ' + error.message, 'error');
+          })
+          .finally(function() {
+            setButtonLoading(qs('signin-btn'), false);
+          });
+      });
+      
+      // Sign up handler
+      qs('signup-btn').addEventListener('click', function(){
+        const email = qs('email').value.trim();
+        const password = qs('password').value;
+        
+        // Validate form
+        if (!validateEmail(email) || !validatePassword(password)) {
+          return;
+        }
+        
+        // Show loading state
+        setButtonLoading(qs('signup-btn'), true);
+        
+        fb.auth.createUserWithEmailAndPassword(email, password)
+          .then(function(userCredential) {
+            console.log('Sign up successful:', userCredential.user);
+            showNotification('Account created successfully! 🎉', 'success');
+            
+            // Save additional user data if needed
+            if (window.AttralFirebase?.db) {
+              const userData = {
+                email: email,
+                createdAt: new Date(),
+                lastLogin: new Date()
+              };
+              window.AttralFirebase.db.collection('users').doc(userCredential.user.uid).set(userData, { merge: true });
+            }
+
+            // 📧 Send welcome email
+            if (window.AttralEmailService) {
+              window.AttralEmailService.sendWelcomeEmail(email, email.split('@')[0])
+                .then(() => console.log('✅ Welcome email sent'))
+                .catch(err => console.warn('⚠️ Welcome email failed:', err));
+            }
+          })
+          .catch(function(error) {
+            console.error('Sign up error:', error);
+            showNotification('Sign up failed: ' + error.message, 'error');
+          })
+          .finally(function() {
+            setButtonLoading(qs('signup-btn'), false);
+          });
+      });
+      
+      // Google sign-in handler
+      qs('google-btn').addEventListener('click', function(){
+        // Show loading state
+        setButtonLoading(qs('google-btn'), true);
+        
+        if (typeof firebase === 'undefined' || !firebase.auth) {
+          showNotification('Google auth not available. Please try again later.', 'error');
+          setButtonLoading(qs('google-btn'), false);
+          return;
+        }
+        const provider = new firebase.auth.GoogleAuthProvider();
+        
+        // Add additional scopes if needed
+        provider.addScope('email');
+        provider.addScope('profile');
+        
+        fb.auth.signInWithPopup(provider)
+          .then(function(result) {
+            console.log('Google sign-in successful:', result.user);
+            showNotification('Welcome! Google sign-in successful! 🎉', 'success');
+          })
+          .catch(function(error) {
+            console.error('Google sign-in error:', error);
+            
+            // Handle specific error cases
+            if (error.code === 'auth/popup-closed-by-user') {
+              showNotification('Sign-in popup was closed. Please try again.', 'error');
+            } else if (error.code === 'auth/cancelled-popup-request') {
+              // Multiple popups detected, ignore
+              console.log('Multiple popup requests detected');
+            } else {
+              showNotification('Google sign-in failed: ' + error.message, 'error');
+            }
+          })
+          .finally(function() {
+            setButtonLoading(qs('google-btn'), false);
+          });
+      });
+      
+      // Sign out handler
+      var signoutBtn = qs('signout-btn');
+      if (signoutBtn) {
+        signoutBtn.addEventListener('click', function(){ 
+          fb.auth.signOut()
+            .then(function() {
+              console.log('Sign out successful');
+            })
+            .catch(function(error) {
+              console.error('Sign out error:', error);
+            });
+        });
+      }
+      
+      // Enhanced form validation
+      setupFormValidation();
+      
+      // Password strength checker
+      setupPasswordStrength();
+      
+      // Password toggle
+      setupPasswordToggle();
+      
+      // Profile modal handlers
+      setupProfileModal();
+      
+      // Forgot password handler
+      setupForgotPassword();
+      
+      // Test Firebase integration
+      testFirebaseIntegration();
+      }
+      
+      // Start checking for Firebase
+      checkFirebase();
+    })();
+    
+    
+    
+    function testFirebaseIntegration() {
+      const fb = window.AttralFirebase;
+      if (!fb) return;
+      
+      // Test auth methods
+      console.log('Testing Firebase Auth methods:');
+      console.log('- signInWithEmailAndPassword:', typeof fb.auth.signInWithEmailAndPassword);
+      console.log('- createUserWithEmailAndPassword:', typeof fb.auth.createUserWithEmailAndPassword);
+      console.log('- signInWithPopup:', typeof fb.auth.signInWithPopup);
+      console.log('- signOut:', typeof fb.auth.signOut);
+      console.log('- sendPasswordResetEmail:', typeof fb.auth.sendPasswordResetEmail);
+      
+      // Test Firestore methods
+      if (fb.db) {
+        console.log('Testing Firestore methods:');
+        console.log('- collection:', typeof fb.db.collection);
+        console.log('- doc:', typeof fb.db.doc);
+      }
+      
+      // Test analytics
+      if (fb.analytics) {
+        console.log('Analytics available:', !!fb.analytics);
+      }
+    }
+    
+    function setupFormValidation() {
+      const emailInput = qs('email');
+      const passwordInput = qs('password');
+      
+      // Real-time email validation
+      emailInput.addEventListener('blur', function() {
+        validateEmail(this.value);
+      });
+      
+      // Real-time password validation
+      passwordInput.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+        validatePassword(this.value);
+      });
+    }
+    
+    function validateEmail(email) {
+      const emailError = qs('email-error');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (!email) {
+        showFieldError(emailError, 'Email is required');
+        return false;
+      } else if (!emailRegex.test(email)) {
+        showFieldError(emailError, 'Please enter a valid email address');
+        return false;
+      } else {
+        hideFieldError(emailError);
+        return true;
+      }
+    }
+    
+    function validatePassword(password) {
+      const passwordError = qs('password-error');
+      
+      if (!password) {
+        showFieldError(passwordError, 'Password is required');
+        return false;
+      } else if (password.length < 6) {
+        showFieldError(passwordError, 'Password must be at least 6 characters');
+        return false;
+      } else {
+        hideFieldError(passwordError);
+        return true;
+      }
+    }
+    
+    function showFieldError(errorElement, message) {
+      errorElement.textContent = message;
+      errorElement.classList.add('show');
+    }
+    
+    function hideFieldError(errorElement) {
+      errorElement.classList.remove('show');
+    }
+    
+    function setupPasswordStrength() {
+      const passwordInput = qs('password');
+      const strengthFill = qs('strength-fill');
+      const strengthText = qs('strength-text');
+      
+      passwordInput.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+      });
+    }
+    
+    function checkPasswordStrength(password) {
+      const strengthFill = qs('strength-fill');
+      const strengthText = qs('strength-text');
+      
+      if (!password) {
+        strengthFill.className = 'strength-fill';
+        strengthText.textContent = 'Password strength';
+        return;
+      }
+      
+      let score = 0;
+      let feedback = [];
+      
+      // Length check
+      if (password.length >= 8) score += 1;
+      else feedback.push('at least 8 characters');
+      
+      // Lowercase check
+      if (/[a-z]/.test(password)) score += 1;
+      else feedback.push('lowercase letters');
+      
+      // Uppercase check
+      if (/[A-Z]/.test(password)) score += 1;
+      else feedback.push('uppercase letters');
+      
+      // Number check
+      if (/\d/.test(password)) score += 1;
+      else feedback.push('numbers');
+      
+      // Special character check
+      if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
+      else feedback.push('special characters');
+      
+      // Update UI
+      strengthFill.className = 'strength-fill';
+      
+      if (score <= 1) {
+        strengthFill.classList.add('weak');
+        strengthText.textContent = 'Weak password';
+      } else if (score <= 2) {
+        strengthFill.classList.add('fair');
+        strengthText.textContent = 'Fair password';
+      } else if (score <= 3) {
+        strengthFill.classList.add('good');
+        strengthText.textContent = 'Good password';
+      } else {
+        strengthFill.classList.add('strong');
+        strengthText.textContent = 'Strong password';
+      }
+    }
+    
+    function setupPasswordToggle() {
+      const passwordInput = qs('password');
+      const toggleBtn = qs('password-toggle');
+      
+      toggleBtn.addEventListener('click', function() {
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          this.textContent = '🙈';
+        } else {
+          passwordInput.type = 'password';
+          this.textContent = '👁️';
+        }
+      });
+    }
+    
+    function setupProfileModal() {
+      const editBtn = qs('edit-profile-btn');
+      const modal = qs('profile-modal');
+      const closeBtn = qs('modal-close');
+      const cancelBtn = qs('cancel-profile');
+      const profileForm = qs('profile-form');
+      if (!editBtn || !modal || !closeBtn || !cancelBtn || !profileForm) { return; }
+      
+      // Open modal
+      editBtn.addEventListener('click', function() {
+        loadUserProfile();
+        modal.style.display = 'flex';
+      });
+      
+      // Close modal
+      closeBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+      
+      // Close on backdrop click
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+      });
+      
+      // Profile form submission
+      profileForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveUserProfile();
+      });
+      
+      function closeModal() {
+        modal.style.display = 'none';
+      }
+      
+      function loadUserProfile() {
+        const user = window.AttralFirebase?.auth?.currentUser;
+        if (user) {
+          qs('profile-name').value = user.displayName || '';
+          qs('profile-phone').value = user.phoneNumber || '';
+          qs('profile-address').value = user.address || '';
+        }
+      }
+      
+      function saveUserProfile() {
+        const user = window.AttralFirebase?.auth?.currentUser;
+        if (!user) return;
+        
+        const profileData = {
+          displayName: qs('profile-name').value,
+          phoneNumber: qs('profile-phone').value,
+          address: qs('profile-address').value,
+          updatedAt: new Date()
+        };
+        
+        // Update Firebase user profile
+        user.updateProfile({
+          displayName: profileData.displayName
+        }).then(() => {
+          // Save additional data to Firestore
+          if (window.AttralFirebase?.db) {
+            window.AttralFirebase.db.collection('users').doc(user.uid).set(profileData, { merge: true });
+          }
+          
+          // Update UI
+          qs('user-name').textContent = profileData.displayName || user.email?.split('@')[0] || 'User';
+          closeModal();
+          showNotification('Profile updated successfully!', 'success');
+        }).catch(error => {
+          console.error('Error updating profile:', error);
+          showNotification('Failed to update profile', 'error');
+        });
+      }
+    }
+    
+    function setupForgotPassword() {
+      const forgotLink = qs('forgot-password-link');
+      
+      forgotLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        const email = qs('email').value.trim();
+        
+        if (!email) {
+          showNotification('Please enter your email address first', 'error');
+          qs('email').focus();
+          return;
+        }
+        
+        if (window.AttralFirebase?.auth) {
+          window.AttralFirebase.auth.sendPasswordResetEmail(email)
+            .then(() => {
+              showNotification('Password reset email sent! Check your inbox.', 'success');
+            })
+            .catch(error => {
+              console.error('Password reset error:', error);
+              showNotification('Failed to send reset email: ' + error.message, 'error');
+            });
+        }
+      });
+    }
+    
+    function showNotification(message, type = 'info') {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 24px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 1001;
+        animation: slideInRight 0.3s ease-out;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      `;
+      
+      if (type === 'success') {
+        notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+      } else if (type === 'error') {
+        notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+      } else {
+        notification.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+      }
+      
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 5000);
+    }
+    
+    // Add notification animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
+
+
+

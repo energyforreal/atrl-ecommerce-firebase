@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATTRAL Invoice Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #374151;
+        }
+        input[type="email"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="email"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .result.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .result.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .features {
+            background: #f0f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .features h3 {
+            margin-top: 0;
+            color: #0c4a6e;
+        }
+        .features ul {
+            color: #1e40af;
+            margin-bottom: 0;
+        }
+        .test-data {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 ATTRAL Invoice System Test</h1>
+        
+        <div class="info">
+            <strong>🧪 Test Invoice Generation with PDF Attachment</strong><br>
+            This test will generate a professional PDF invoice and send it as an email attachment via PHPMailer SMTP.
+        </div>
+        
+        <form id="invoiceTestForm">
+            <div class="form-group">
+                <label for="email">Test Email Address:</label>
+                <input type="email" id="email" name="email" value="attralsolar@gmail.com" required>
+                <small style="color: #6b7280;">Enter the email address where you want to receive the test invoice</small>
+            </div>
+            
+            <button type="submit" class="btn" id="sendBtn">
+                📄 Generate & Send Test Invoice
+            </button>
+        </form>
+        
+        <div class="test-data">
+            <strong>Test Order Details:</strong><br>
+            • Product: ATTRAL GaN 65W Fast Charger<br>
+            • Price: ₹2,499.00<br>
+            • Customer: Test Customer<br>
+            • Order ID: TEST_[timestamp]<br>
+            • Payment: Razorpay (Simulated)
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Generating PDF invoice and sending email...</p>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="features">
+            <h3>✅ What This Test Verifies:</h3>
+            <ul>
+                <li>FPDF invoice generation</li>
+                <li>PDF file saving to server</li>
+                <li>PDF attachment to email</li>
+                <li>PHPMailer SMTP delivery</li>
+                <li>Professional email template</li>
+                <li>Complete invoice workflow</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('invoiceTestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const sendBtn = document.getElementById('sendBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            // Show loading state
+            sendBtn.disabled = true;
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            
+            try {
+                const response = await fetch('api/test_invoice_with_attachment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                loading.style.display = 'none';
+                
+                // Show result
+                result.style.display = 'block';
+                result.className = 'result ' + (data.success ? 'success' : 'error');
+                
+                if (data.success) {
+                    result.innerHTML = `
+                        <strong>✅ Invoice Test Successful!</strong><br>
+                        <strong>Order ID:</strong> ${data.details?.order_id || 'N/A'}<br>
+                        <strong>Test Email:</strong> ${data.details?.test_email || email}<br>
+                        <strong>PDF Generated:</strong> ${data.details?.pdf_generated ? 'Yes' : 'No'}<br>
+                        <strong>Email Sent:</strong> ${data.details?.email_sent ? 'Yes' : 'No'}<br>
+                        <strong>Attachment Included:</strong> ${data.details?.attachment_included ? 'Yes' : 'No'}<br>
+                        <strong>Timestamp:</strong> ${data.details?.timestamp || new Date().toLocaleString()}<br><br>
+                        Check your email inbox for the test invoice with PDF attachment!
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <strong>❌ Invoice Test Failed</strong><br>
+                        <strong>Error:</strong> ${data.error || 'Unknown error'}<br>
+                        <strong>Order ID:</strong> ${data.details?.order_id || 'N/A'}<br>
+                        <strong>Test Email:</strong> ${data.details?.test_email || email}<br>
+                        Please check your server logs for more details.
+                    `;
+                }
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <strong>❌ Network Error</strong><br>
+                    <strong>Error:</strong> ${error.message}<br>
+                    Please check your internet connection and try again.
+                `;
+            } finally {
+                sendBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

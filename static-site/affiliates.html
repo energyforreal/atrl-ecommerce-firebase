@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Affiliates | Attral Store</title>
+  <meta name="description" content="Join the Attral affiliate program and earn commissions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* Affiliate Page Specific Styles */
+    .auth-hint {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 20px;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    .affiliate-visual {
+      background: linear-gradient(135deg, var(--card) 0%, var(--card-light) 100%);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .affiliate-visual::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--brand), var(--accent));
+      opacity: 0.8;
+    }
+    
+    .earning-card {
+      background: linear-gradient(135deg, var(--brand), var(--accent));
+      color: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 8px 25px var(--shadow);
+    }
+    
+    .earning-icon {
+      font-size: 48px;
+      animation: pulse 2s infinite;
+    }
+    
+    .earning-text h3 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    .earning-text p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 16px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    
+    .stat-item {
+      text-align: center;
+      padding: 20px;
+      background: var(--bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      transition: all 0.3s ease;
+    }
+    
+    .stat-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      border-color: var(--brand);
+    }
+    
+    .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--brand);
+      margin-bottom: 8px;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .benefits-section {
+      padding: 80px 0;
+      background: var(--bg-secondary);
+    }
+    
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+    }
+    
+    .benefit-card {
+      padding: 30px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .benefit-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      display: block;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .benefit-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin: 0 0 16px;
+    }
+    
+    .benefit-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+    
+    .cta-section {
+      padding: 80px 0;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%);
+      color: white;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+      opacity: 0.3;
+    }
+    
+    .cta-content {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .cta-content h2 {
+      font-size: 42px;
+      font-weight: 800;
+      margin: 0 0 16px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .cta-content p {
+      font-size: 20px;
+      margin: 0 0 40px;
+      opacity: 0.9;
+    }
+    
+    .cta-actions {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .cta-section .btn-primary {
+      background: white;
+      color: var(--brand);
+      border-color: white;
+    }
+    
+    .cta-section .btn-primary:hover {
+      background: var(--bg);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+    }
+    
+    .cta-section .btn-ghost {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border-color: rgba(255,255,255,0.3);
+      backdrop-filter: blur(10px);
+    }
+    
+    .cta-section .btn-ghost:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: white;
+      transform: translateY(-3px);
+    }
+    
+    /* Enhanced Hero CTA Button Styles */
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 32px;
+    }
+    
+    .hero-cta-primary {
+      background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%);
+      border: 2px solid transparent;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      padding: 16px 32px;
+      border-radius: 50px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      min-width: 180px;
+    }
+    
+    .hero-cta-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .hero-cta-primary:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+      border-color: rgba(255,255,255,0.3);
+    }
+    
+    .hero-cta-primary:hover::before {
+      left: 100%;
+    }
+    
+    .hero-cta-primary:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+    
+    .hero-cta-secondary {
+      background: white;
+      border: 2px solid #e5e7eb;
+      color: #374151;
+      font-weight: 600;
+      font-size: 18px;
+      padding: 16px 32px;
+      border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      min-width: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    
+    .hero-cta-secondary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .hero-cta-secondary:hover {
+      background: #f8fafc;
+      border-color: #d1d5db;
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+    }
+    
+    .hero-cta-secondary:hover::before {
+      opacity: 1;
+    }
+    
+    .hero-cta-secondary:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+    
+    .hero-cta-primary span,
+    .hero-cta-secondary span {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* Signed-in state styles */
+    .hero-text .highlight {
+      background: linear-gradient(135deg, var(--brand), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+    }
+
+    .shipping-notice {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 1px solid #f59e0b;
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin: 24px 0;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    }
+
+    .shipping-notice p {
+      margin: 0;
+      color: #92400e;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .affiliate-visual {
+        padding: 30px 20px;
+      }
+      
+      .earning-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+      }
+      
+      .earning-icon {
+        font-size: 40px;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      
+      .benefits-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .cta-content h2 {
+        font-size: 32px;
+      }
+      
+      .cta-content p {
+        font-size: 18px;
+      }
+      
+      .cta-actions {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .hero-actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .hero-cta-primary,
+      .hero-cta-secondary {
+        min-width: 200px;
+        font-size: 16px;
+        padding: 14px 28px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .affiliate-visual {
+        padding: 20px 15px;
+      }
+      
+      .earning-text h3 {
+        font-size: 20px;
+      }
+      
+      .earning-text p {
+        font-size: 14px;
+      }
+      
+      .stat-number {
+        font-size: 28px;
+      }
+      
+      .benefit-icon {
+        font-size: 40px;
+      }
+      
+      .cta-content h2 {
+        font-size: 28px;
+      }
+      
+      .hero-cta-primary,
+      .hero-cta-secondary {
+        min-width: 180px;
+        font-size: 15px;
+        padding: 12px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" /></a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="account.html">My Account</a>
+        <a href="affiliates.html" class="active">Affiliate Central</a>
+        <a href="contact.html">Contact Us</a>
+        <div class="dropdown">
+          <a href="#" class="dropdown-toggle">More ▾</a>
+          <div class="dropdown-menu">
+            <a href="about.html">About Us</a>
+            <a href="blog.html" target="_blank" rel="noopener">Blog</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+          </div>
+        </div>
+        <a href="cart.html" class="cart-link">Cart <span id="cart-count" class="badge">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1>🚀 Join Our <span class="highlight">Affiliate Program</span></h1>
+          <p class="hero-subtitle">Turn your influence into income! Earn competitive commissions by sharing Attral's innovative products with your audience.</p>
+          
+          <div class="shipping-notice">
+            <p>✨ Start earning today - No upfront costs, instant approval!</p>
+          </div>
+          
+          <div class="hero-actions">
+            <button id="affiliate-signin" class="btn btn-primary btn-large hero-cta-primary">
+              <span>🚀 Get Started</span>
+            </button>
+            <button id="affiliate-google" class="btn btn-ghost btn-large hero-cta-secondary">
+              <span>
+                <svg width="20" height="20" viewBox="0 0 24 24" style="margin-right: 8px;">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Continue with Google
+              </span>
+            </button>
+          </div>
+          
+          <p id="affiliate-hint" class="auth-hint">New here? Signing in creates your affiliate profile automatically.</p>
+        </div>
+        
+        <div class="hero-media">
+          <div class="hero-image">
+            <div class="affiliate-visual">
+              <div class="earning-card">
+                <div class="earning-icon">💰</div>
+                <div class="earning-text">
+                  <h3>Earn Up to ₹300</h3>
+                  <p>On every sale you refer</p>
+                </div>
+              </div>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-number">30</div>
+                  <div class="stat-label">Day Cookie</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">24/7</div>
+                  <div class="stat-label">Dashboard</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">∞</div>
+                  <div class="stat-label">Potential</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits Section -->
+  <section class="benefits-section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Why Choose Our Affiliate Program?</h2>
+      </div>
+      
+      <div class="benefits-grid">
+        <div class="benefit-card card-tech">
+          <div class="benefit-icon">💎</div>
+          <h3>Premium Commissions</h3>
+          <p>Earn up to ₹300 commission on every sale you refer.</p>
+        </div>
+        
+        <div class="benefit-card card-tech">
+          <div class="benefit-icon">⏰</div>
+          <h3>30-Day Lock Period</h3>
+          <p>After the lock period, commissions are marked as approved and available for payout.</p>
+        </div>
+        
+        <div class="benefit-card card-tech">
+          <div class="benefit-icon">📊</div>
+          <h3>Real-Time Dashboard</h3>
+          <p>Track your performance, earnings, and referrals with our comprehensive analytics platform.</p>
+        </div>
+        
+        <div class="benefit-card card-tech">
+          <div class="benefit-icon">🎯</div>
+          <h3>Marketing Support</h3>
+          <p>Access banners, product images, and marketing materials to help you succeed.</p>
+        </div>
+        
+        <div class="benefit-card card-tech">
+          <div class="benefit-icon">⚡</div>
+          <h3>Fast Payouts</h3>
+          <p>Get paid monthly via bank transfer or UPI.</p>
+        </div>
+        
+        <div class="benefit-card card-tech">
+          <div class="benefit-icon">🌟</div>
+          <h3>Quality Products</h3>
+          <p>Promote innovative GaN technology products that customers love and trust.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <h2>Ready to Start Earning?</h2>
+        <p>Join thousands of successful affiliates who are already earning with Attral</p>
+        <div class="cta-actions">
+          <button id="affiliate-signin-cta" class="btn btn-primary btn-large">
+            <span>🚀 Get Started Now</span>
+          </button>
+          <button id="affiliate-google-cta" class="btn btn-ghost btn-large">
+            <span>
+              <svg width="20" height="20" viewBox="0 0 24 24" style="margin-right: 8px;">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Sign in with Google
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About ATTRAL</h4>
+          <p>Smart Power. Smarter Living. We provide next-gen consumer electronics to power your lifestyle with cutting-edge GaN technology.</p>
+          <div class="social-links">
+            <a href="https://facebook.com/attral" target="_blank" rel="noopener" title="Follow us on Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://instagram.com/attral" target="_blank" rel="noopener" title="Follow us on Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.83-9.281H7.83c-.49 0-.89.4-.89.89v7.83c0 .49.4.89.89.89h8.449c0 .49.4.89.89.89v-7.83c0-.49-.4-.89-.89-.89z"/>
+              </svg>
+            </a>
+            <a href="https://twitter.com/attral" target="_blank" rel="noopener" title="Follow us on Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </a>
+            <a href="https://linkedin.com/company/attral" target="_blank" rel="noopener" title="Connect on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <p><a href="index.html">Home</a></p>
+          <p><a href="shop.html">Shop</a></p>
+          <p><a href="about.html">About Us</a></p>
+          <p><a href="contact.html">Contact</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <p><a href="account.html">My Account</a></p>
+          <p><a href="cart.html">Shopping Cart</a></p>
+          <p><a href="affiliates.html">Affiliate Program</a></p>
+          <p><a href="blog.html" target="_blank" rel="noopener">Blog</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Contact Info</h4>
+          <p>📧 info@attral.in</p>
+          <p>📱 +91 8903479870</p>
+          <p>📍 Phase 2 Sathuvachari<br>Vellore - 632009<br>Tamil Nadu, India</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="year"></span> ATTRAL. All rights reserved.</p>
+        <nav>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/auth-manager.js"></script>
+  <script src="js/dropdown.js"></script>
+  <script>
+    // Initialize year and cart count
+    document.getElementById('year').textContent = new Date().getFullYear();
+    if (window.Attral && window.Attral.initHeaderCartCount) {
+      window.Attral.initHeaderCartCount();
+    }
+
+    // Ensure affiliate profile via callable Cloud Function
+    function ensureAffiliateProfile(user) {
+      console.log('Ensuring affiliate profile via Cloud Function for user:', user.uid);
+      const fb = window.AttralFirebase;
+      if (!fb || !fb.functions || !fb.db) {
+        console.warn('Firebase Functions/Firestore not available');
+        return Promise.reject('Firebase not available');
+      }
+      const docRef = fb.db.collection('affiliates').doc(user.uid);
+      return docRef.get().then((snap)=>{
+        if (snap.exists) { return snap.data(); }
+        return fb.callFunction('createAffiliateProfile', {}).then((aff)=>{
+          const base = (window.ATTRAL_PUBLIC && window.ATTRAL_PUBLIC.AFFILIATE_BASE_URL) || window.location.origin;
+          const pathBase = base.replace(/\/$/, '');
+          const affiliateLink = aff.affiliateLink || `${pathBase}/index.html?ref=${encodeURIComponent(aff.code)}`;
+          return docRef.set({ affiliateLink }, { merge: true }).catch(()=>{}).then(()=>{
+            // 🎉 Send welcome email after affiliate profile creation
+            sendWelcomeEmailToNewAffiliate(user.uid, aff);
+            return { ...aff, affiliateLink };
+          });
+        });
+      });
+    }
+
+    function goDashboard() {
+      console.log('Redirecting to affiliate dashboard...');
+      window.location.href = 'affiliate-dashboard.html';
+    }
+
+    // 🎉 Send welcome email to new affiliate
+    function sendWelcomeEmailToNewAffiliate(affiliateId, affiliateData) {
+      console.log('Sending welcome email to new affiliate:', affiliateId);
+      
+      fetch('api/send_affiliate_welcome_on_signup.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          affiliateId: affiliateId
+        })
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          console.log('✅ Welcome email sent successfully to:', result.email);
+        } else {
+          console.warn('⚠️ Welcome email failed:', result.error);
+        }
+      })
+      .catch(error => {
+        console.error('❌ Welcome email error:', error);
+      });
+    }
+
+    // Enhanced authentication handlers with better error handling
+    function handleEmailSignIn() {
+      console.log('Email sign-in clicked');
+      
+      // Check if Firebase is available
+      const fb = window.AttralFirebase;
+      if (!fb || !fb.auth) {
+        console.error('Firebase not available for email sign-in');
+        alert('Authentication service is not available. Please refresh the page and try again.');
+        return;
+      }
+
+      // Check if user is already signed in
+      const currentUser = fb.auth.currentUser;
+      if (currentUser && !currentUser.isAnonymous) {
+        console.log('User already signed in, proceeding to dashboard');
+        ensureAffiliateProfile(currentUser).then(() => {
+          goDashboard();
+        }).catch(error => {
+          console.error('Error ensuring affiliate profile:', error);
+          alert('Error setting up your affiliate profile. Please try again.');
+        });
+        return;
+      }
+
+      const email = prompt('Enter your email address:');
+      if (!email) return;
+      
+      const password = prompt('Enter your password:');
+      if (!password) return;
+
+      // Show loading state
+      const button = event.target.closest('button');
+      const originalText = button.innerHTML;
+      button.innerHTML = '<span>⏳ Signing in...</span>';
+      button.disabled = true;
+
+      fb.auth.signInWithEmailAndPassword(email, password)
+        .then(function(userCredential) {
+          console.log('Email sign-in successful:', userCredential.user);
+          return ensureAffiliateProfile(userCredential.user);
+        })
+        .then(function() {
+          goDashboard();
+        })
+        .catch(function(error) {
+          console.error('Email sign-in failed:', error);
+          let errorMessage = 'Sign in failed. ';
+          if (error.code === 'auth/user-not-found') {
+            errorMessage += 'No account found with this email.';
+          } else if (error.code === 'auth/wrong-password') {
+            errorMessage += 'Incorrect password.';
+          } else if (error.code === 'auth/invalid-email') {
+            errorMessage += 'Invalid email address.';
+          } else {
+            errorMessage += error.message;
+          }
+          alert(errorMessage);
+          button.innerHTML = originalText;
+          button.disabled = false;
+        });
+    }
+
+    function handleGoogleSignIn() {
+      console.log('Google sign-in clicked');
+      
+      // Check if Firebase is available
+      const fb = window.AttralFirebase;
+      if (!fb || !fb.auth) {
+        console.error('Firebase not available for Google sign-in');
+        alert('Authentication service is not available. Please refresh the page and try again.');
+        return;
+      }
+
+      // Check if user is already signed in
+      const currentUser = fb.auth.currentUser;
+      if (currentUser && !currentUser.isAnonymous) {
+        console.log('User already signed in, proceeding to dashboard');
+        ensureAffiliateProfile(currentUser).then(() => {
+          goDashboard();
+        }).catch(error => {
+          console.error('Error ensuring affiliate profile:', error);
+          alert('Error setting up your affiliate profile. Please try again.');
+        });
+        return;
+      }
+
+      // Show loading state
+      const button = event.target.closest('button');
+      const originalText = button.innerHTML;
+      button.innerHTML = '<span>⏳ Connecting...</span>';
+      button.disabled = true;
+
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+
+      fb.auth.signInWithPopup(provider)
+        .then(function(result) {
+          console.log('Google sign-in successful:', result.user);
+          return ensureAffiliateProfile(result.user);
+        })
+        .then(function() {
+          goDashboard();
+        })
+        .catch(function(error) {
+          console.error('Google sign-in failed:', error);
+          let errorMessage = 'Google sign-in failed. ';
+          if (error.code === 'auth/popup-closed-by-user') {
+            errorMessage = 'Sign-in cancelled.';
+          } else if (error.code === 'auth/popup-blocked') {
+            errorMessage = 'Popup blocked. Please allow popups for this site.';
+          } else {
+            errorMessage += error.message;
+          }
+          alert(errorMessage);
+          button.innerHTML = originalText;
+          button.disabled = false;
+        });
+    }
+
+    // Setup button handlers with proper error handling
+    function setupButtonHandlers() {
+      console.log('Setting up button handlers...');
+      
+      // Get all buttons
+      const primaryButtons = document.querySelectorAll('#affiliate-signin, #affiliate-signin-cta');
+      const googleButtons = document.querySelectorAll('#affiliate-google, #affiliate-google-cta');
+      
+      // Attach email sign-in handlers
+      primaryButtons.forEach(button => {
+        if (button) {
+          button.addEventListener('click', handleEmailSignIn);
+          console.log('Email sign-in handler attached to:', button.id);
+        }
+      });
+      
+      // Attach Google sign-in handlers
+      googleButtons.forEach(button => {
+        if (button) {
+          button.addEventListener('click', handleGoogleSignIn);
+          console.log('Google sign-in handler attached to:', button.id);
+        }
+      });
+    }
+
+    // Check for existing authentication and redirect if needed
+    function checkExistingAuth() {
+      console.log('Checking existing authentication...');
+      
+      if (!window.AuthManager) {
+        console.warn('AuthManager not available, waiting...');
+        setTimeout(checkExistingAuth, 500);
+        return;
+      }
+
+      // Use unified auth manager
+      window.AuthManager.addAuthStateListener(function(user) {
+        if (user && !user.isAnonymous) {
+          console.log('User already signed in:', user.email);
+          showSignedInState(user);
+          
+          // Auto-redirect to dashboard after a short delay
+          setTimeout(() => {
+            ensureAffiliateProfile(user).then(() => {
+              console.log('Redirecting to dashboard...');
+              goDashboard();
+            }).catch(error => {
+              console.error('Error ensuring affiliate profile:', error);
+              // Still redirect even if profile creation fails
+              goDashboard();
+            });
+          }, 2000);
+        } else {
+          console.log('No user signed in, showing sign-in state');
+          showSignInState();
+        }
+      });
+    }
+
+    // Show signed in state
+    function showSignedInState(user) {
+      const heroText = document.querySelector('.hero-text');
+      if (heroText) {
+        heroText.innerHTML = `
+          <h1>🎉 Welcome back, <span class="highlight">${user.displayName || user.email?.split('@')[0] || 'Affiliate'}</span>!</h1>
+          <p class="hero-subtitle">You're already signed in! Setting up your affiliate profile and redirecting to your dashboard...</p>
+          
+          <div class="shipping-notice">
+            <p>✨ Setting up your affiliate profile - Redirecting in a moment!</p>
+          </div>
+          
+          <div class="hero-actions">
+            <button id="go-dashboard-now" class="btn btn-primary btn-large hero-cta-primary">
+              <span>📊 Go to Dashboard Now</span>
+            </button>
+            <button id="sign-out-affiliate" class="btn btn-ghost btn-large hero-cta-secondary">
+              <span>🚪 Sign Out</span>
+            </button>
+          </div>
+          
+          <p id="affiliate-hint" class="auth-hint">Your affiliate profile is being prepared!</p>
+        `;
+        
+        // Setup new button handlers
+        document.getElementById('go-dashboard-now')?.addEventListener('click', () => {
+          ensureAffiliateProfile(user).then(() => {
+            goDashboard();
+          }).catch(error => {
+            console.error('Error ensuring affiliate profile:', error);
+            goDashboard();
+          });
+        });
+        
+        document.getElementById('sign-out-affiliate')?.addEventListener('click', () => {
+          const fb = window.AttralFirebase;
+          if (fb && fb.auth) {
+            fb.auth.signOut().then(() => {
+              location.reload();
+            });
+          }
+        });
+      }
+    }
+
+    // Show sign in state
+    function showSignInState() {
+      console.log('Showing sign in state');
+      // Keep original content - no changes needed
+    }
+
+    // Initialize when DOM is ready
+    function init() {
+      console.log('Initializing affiliate page...');
+      
+      // Check for existing authentication first
+      checkExistingAuth();
+      
+      // Setup button handlers after a short delay to ensure Firebase is ready
+      setTimeout(() => {
+        setupButtonHandlers();
+      }, 1000);
+    }
+
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="page-title">Product Details | ATTRAL</title>
+  <meta name="description" id="page-description" content="View detailed information about our premium electronics products." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/product.css" />
+  
+  <!-- Product Detail Page Styles -->
+  <style>
+    /* Product Detail Hero */
+    .product-detail-hero {
+      background: linear-gradient(135deg, #f8fafc, #ffffff);
+      padding: 2rem 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+    
+    .breadcrumb a {
+      color: #667eea;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .breadcrumb a:hover {
+      color: #ff6b35;
+    }
+    
+    .breadcrumb-separator {
+      color: #d1d5db;
+    }
+    
+    /* Product Detail Main */
+    .product-detail-main {
+      padding: 4rem 0;
+      background: white;
+    }
+    
+    .product-detail-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+    
+    /* Product Images */
+    .product-images {
+      position: sticky;
+      top: 2rem;
+    }
+    
+    .main-image-container {
+      position: relative;
+      margin-bottom: 1rem;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f8fafc;
+    }
+    
+    .main-image {
+      width: 100%;
+      height: 500px;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .main-image:hover {
+      transform: scale(1.05);
+    }
+    
+    .image-actions {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .image-action-btn {
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .image-action-btn:hover {
+      background: white;
+      transform: scale(1.1);
+    }
+    
+    .thumbnail-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+    
+    .thumbnail {
+      width: 100%;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .thumbnail:hover {
+      transform: scale(1.05);
+      border-color: #667eea;
+    }
+    
+    .thumbnail.active {
+      border-color: #ff6b35;
+      transform: scale(1.05);
+    }
+    
+    /* Product Info */
+    .product-info {
+      padding-left: 1rem;
+    }
+    
+    .product-category {
+      font-size: 0.875rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+    
+    .product-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+    
+    .product-price {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #ff6b35;
+      margin-bottom: 1.5rem;
+    }
+    
+    .product-description {
+      font-size: 1.125rem;
+      color: #6b7280;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    
+    .product-actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .btn-add-cart {
+      flex: 1;
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.125rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-add-cart:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+    }
+    
+    .btn-buy-now {
+      background: transparent;
+      color: #667eea;
+      border: 2px solid #667eea;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1.125rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-buy-now:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    /* Features Section */
+    .features-section {
+      background: linear-gradient(145deg, #f8fafc, #ffffff);
+      padding: 2rem;
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .features-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 1.5rem;
+    }
+    
+    .features-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .features-list li {
+      padding: 12px 0;
+      font-size: 1rem;
+      color: #4b5563;
+      border-bottom: 1px solid #f3f4f6;
+      position: relative;
+      padding-left: 2rem;
+    }
+    
+    .features-list li:last-child {
+      border-bottom: none;
+    }
+    
+    .features-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.75rem;
+    }
+    
+    /* Specifications */
+    .specifications-section {
+      margin-bottom: 2rem;
+    }
+    
+    .specifications-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 1.5rem;
+    }
+    
+    .specifications-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    
+    .spec-item {
+      background: #f8fafc;
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .spec-label {
+      font-size: 0.875rem;
+      color: #6b7280;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .spec-value {
+      font-size: 1rem;
+      color: #1f2937;
+      font-weight: 700;
+    }
+    
+    /* Shipping Info */
+    .shipping-info {
+      background: linear-gradient(135deg, #e7faf0, #d1fae5);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border-left: 4px solid #10b981;
+      margin-bottom: 2rem;
+    }
+    
+    .shipping-text {
+      margin: 0;
+      font-size: 1rem;
+      color: #065f46;
+      font-weight: 600;
+    }
+    
+    /* Testimonials */
+    .testimonials-section {
+      margin-top: 3rem;
+      padding-top: 3rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    .testimonials-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .testimonial {
+      background: #f8fafc;
+      padding: 1.5rem;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .testimonial-text {
+      font-style: italic;
+      color: #4b5563;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+    
+    .testimonial-author {
+      font-weight: 600;
+      color: #1f2937;
+    }
+    
+    .testimonial-location {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+    
+    /* Loading State */
+    .loading {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #ff6b35;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      font-size: 1.125rem;
+      color: #6b7280;
+    }
+    
+    /* Error State */
+    .error-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #6b7280;
+    }
+    
+    .error-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    
+    .error-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+    
+    .error-message {
+      margin-bottom: 2rem;
+    }
+    
+    .btn-back {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-back:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .product-detail-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      
+      .product-images {
+        position: static;
+      }
+      
+      .main-image {
+        height: 300px;
+      }
+      
+      .product-title {
+        font-size: 2rem;
+      }
+      
+      .product-price {
+        font-size: 2.5rem;
+      }
+      
+      .product-actions {
+        flex-direction: column;
+      }
+      
+      .specifications-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .testimonials-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .product-detail-main {
+        padding: 2rem 0;
+      }
+      
+      .main-image {
+        height: 250px;
+      }
+      
+      .product-title {
+        font-size: 1.75rem;
+      }
+      
+      .product-price {
+        font-size: 2rem;
+      }
+      
+      .features-section,
+      .specifications-section {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" /></a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="account.html">My Account</a>
+        <a href="affiliates.html">Affiliate Central</a>
+        <a href="contact.html">Contact Us</a>
+        <div class="dropdown">
+          <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false" aria-label="More menu">More ▾</a>
+          <div class="dropdown-menu" role="menu" aria-labelledby="dropdown-toggle">
+            <a href="about.html" role="menuitem">About Us</a>
+            <a href="blog.html" target="_blank" rel="noopener" role="menuitem">Blog</a>
+            <a href="privacy.html" role="menuitem">Privacy</a>
+            <a href="terms.html" role="menuitem">Terms</a>
+          </div>
+        </div>
+        <a href="cart.html" class="cart-link">Cart <span id="cart-count" class="badge">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Breadcrumb -->
+    <section class="product-detail-hero">
+      <div class="container">
+        <div class="breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="breadcrumb-separator">›</span>
+          <a href="shop.html">Shop</a>
+          <span class="breadcrumb-separator">›</span>
+          <span id="breadcrumb-product">Product Details</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Detail Main Content -->
+    <section class="product-detail-main">
+      <div class="container">
+        <!-- Loading State -->
+        <div id="loading-state" class="loading">
+          <div class="loading-spinner"></div>
+          <div class="loading-text">Loading product details...</div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="error-state" style="display: none;">
+          <div class="error-icon">❌</div>
+          <h2 class="error-title">Product Not Found</h2>
+          <p class="error-message">Sorry, we couldn't find the product you're looking for.</p>
+          <a href="shop.html" class="btn-back">← Back to Shop</a>
+        </div>
+
+        <!-- Product Content -->
+        <div id="product-content" class="product-detail-container" style="display: none;">
+          <!-- Product Images -->
+          <div class="product-images">
+            <div class="main-image-container">
+              <img id="main-image" class="main-image" src="" alt="" />
+              <div class="image-actions">
+                <button class="image-action-btn" onclick="toggleZoom()" title="Zoom">
+                  🔍
+                </button>
+                <button class="image-action-btn" onclick="openFullscreen()" title="Fullscreen">
+                  ⛶
+                </button>
+              </div>
+            </div>
+            <div class="thumbnail-grid" id="thumbnail-grid">
+              <!-- Thumbnails will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Product Information -->
+          <div class="product-info">
+            <div class="product-category" id="product-category"></div>
+            <h1 class="product-title" id="product-title"></h1>
+            <div class="product-price" id="product-price"></div>
+            <p class="product-description" id="product-description"></p>
+            
+            <div class="product-actions">
+              <button class="btn-add-cart" onclick="addToCart()">
+                🛒 Add to Cart
+              </button>
+              <button class="btn-buy-now" onclick="buyNow()">
+                💳 Buy Now
+              </button>
+            </div>
+
+            <!-- Features Section -->
+            <div class="features-section">
+              <h3 class="features-title">Key Features</h3>
+              <ul class="features-list" id="features-list">
+                <!-- Features will be loaded here -->
+              </ul>
+            </div>
+
+            <!-- Specifications -->
+            <div class="specifications-section">
+              <h3 class="specifications-title">Specifications</h3>
+              <div class="specifications-grid" id="specifications-grid">
+                <!-- Specifications will be loaded here -->
+              </div>
+            </div>
+
+            <!-- Shipping Info -->
+            <div class="shipping-info">
+              <p class="shipping-text" id="shipping-text">
+                🚚 <strong>Free shipping</strong> across India • 2-5 day delivery
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonials Section -->
+        <div id="testimonials-section" class="testimonials-section" style="display: none;">
+          <h2 class="testimonials-title">What Our Customers Say</h2>
+          <div class="testimonials-grid" id="testimonials-grid">
+            <!-- Testimonials will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About ATTRAL</h4>
+          <p>Smart Power. Smarter Living. We provide next-gen consumer electronics to power your lifestyle with cutting-edge GaN technology.</p>
+          <div class="social-links">
+            <a href="https://facebook.com/attral" target="_blank" rel="noopener" title="Follow us on Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://instagram.com/attral" target="_blank" rel="noopener" title="Follow us on Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.83-9.281H7.83c-.49 0-.89.4-.89.89v7.83c0 .49.4.89.89.89h8.449c.49 0 .89-.4.89-.89v-7.83c0-.49-.4-.89-.89-.89z"/>
+              </svg>
+            </a>
+            <a href="https://twitter.com/attral" target="_blank" rel="noopener" title="Follow us on Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </a>
+            <a href="https://linkedin.com/company/attral" target="_blank" rel="noopener" title="Connect on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <p><a href="index.html">Home</a></p>
+          <p><a href="shop.html">Shop</a></p>
+          <p><a href="about.html">About Us</a></p>
+          <p><a href="contact.html">Contact</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <p><a href="account.html">My Account</a></p>
+          <p><a href="cart.html">Shopping Cart</a></p>
+          <p><a href="affiliates.html">Affiliate Program</a></p>
+          <p><a href="blog.html" target="_blank" rel="noopener">Blog</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Contact Info</h4>
+          <p>📧 info@attral.in</p>
+          <p>📱 +91 8903479870</p>
+          <p>📍 Phase 2 Sathuvachari<br>Vellore - 632009<br>Tamil Nadu, India</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="year"></span> ATTRAL. All rights reserved.</p>
+        <nav>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/dropdown.js"></script>
+  
+  <script>
+    // Product detail page functionality
+    let currentProduct = null;
+    let currentImageIndex = 0;
+    
+    // Load product details from JSON
+    async function loadProduct() {
+      try {
+        // Get product ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        
+        console.log('Loading product with ID:', productId);
+        
+        if (!productId) {
+          console.log('No product ID found in URL');
+          showError();
+          return;
+        }
+        
+        // Try to get product from sessionStorage first
+        const storedProduct = sessionStorage.getItem('selectedProduct');
+        if (storedProduct) {
+          currentProduct = JSON.parse(storedProduct);
+          console.log('Product loaded from sessionStorage:', currentProduct);
+          if (currentProduct.id == productId) {
+            renderProduct();
+            return;
+          }
+        }
+        
+        // If not in sessionStorage, load from products.json
+        console.log('Loading products from JSON file');
+        const response = await fetch('data/products.json');
+        const products = await response.json();
+        currentProduct = products.find(p => p.id == productId);
+        
+        console.log('Product found in JSON:', currentProduct);
+        
+        if (currentProduct) {
+          renderProduct();
+        } else {
+          console.log('Product not found in JSON');
+          showError();
+        }
+      } catch (error) {
+        console.error('Error loading product:', error);
+        showError();
+      }
+    }
+    
+    // Render product details
+    function renderProduct() {
+      if (!currentProduct) return;
+      
+      // Update page title and meta description
+      document.getElementById('page-title').textContent = `${currentProduct.title} | ATTRAL`;
+      document.getElementById('page-description').content = currentProduct.description;
+      
+      // Update breadcrumb
+      document.getElementById('breadcrumb-product').textContent = currentProduct.title;
+      
+      // Update product info
+      document.getElementById('product-category').textContent = currentProduct.category;
+      document.getElementById('product-title').textContent = currentProduct.title;
+      document.getElementById('product-price').textContent = `₹${currentProduct.price.toLocaleString()}`;
+      document.getElementById('product-description').textContent = currentProduct.description;
+      
+      // Update main image
+      const mainImage = document.getElementById('main-image');
+      mainImage.src = currentProduct.image;
+      mainImage.alt = currentProduct.title;
+      
+      // Update thumbnails
+      renderThumbnails();
+      
+      // Update features
+      renderFeatures();
+      
+      // Update specifications
+      renderSpecifications();
+      
+      // Update shipping info
+      if (currentProduct.shipping) {
+        document.getElementById('shipping-text').innerHTML = currentProduct.shipping.description;
+      }
+      
+      // Update testimonials
+      if (currentProduct.testimonials && currentProduct.testimonials.length > 0) {
+        renderTestimonials();
+      }
+      
+      // Show product content
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('product-content').style.display = 'grid';
+    }
+    
+    // Render product thumbnails
+    function renderThumbnails() {
+      const thumbnailGrid = document.getElementById('thumbnail-grid');
+      const images = currentProduct.images || [currentProduct.image];
+      
+      thumbnailGrid.innerHTML = images.map((image, index) => `
+        <img 
+          src="${image}" 
+          alt="Product view ${index + 1}" 
+          class="thumbnail ${index === 0 ? 'active' : ''}"
+          onclick="changeMainImage(${index})"
+        />
+      `).join('');
+    }
+    
+    // Change main image
+    function changeMainImage(index) {
+      const images = currentProduct.images || [currentProduct.image];
+      const mainImage = document.getElementById('main-image');
+      const thumbnails = document.querySelectorAll('.thumbnail');
+      
+      if (images[index]) {
+        mainImage.src = images[index];
+        currentImageIndex = index;
+        
+        // Update active thumbnail
+        thumbnails.forEach((thumb, i) => {
+          thumb.classList.toggle('active', i === index);
+        });
+      }
+    }
+    
+    // Render features
+    function renderFeatures() {
+      const featuresList = document.getElementById('features-list');
+      featuresList.innerHTML = currentProduct.features.map(feature => 
+        `<li>${feature}</li>`
+      ).join('');
+    }
+    
+    // Render specifications
+    function renderSpecifications() {
+      const specificationsGrid = document.getElementById('specifications-grid');
+      const specs = currentProduct.specifications || {};
+      
+      specificationsGrid.innerHTML = Object.entries(specs).map(([key, value]) => `
+        <div class="spec-item">
+          <div class="spec-label">${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</div>
+          <div class="spec-value">${value}</div>
+        </div>
+      `).join('');
+    }
+    
+    // Render testimonials
+    function renderTestimonials() {
+      const testimonialsSection = document.getElementById('testimonials-section');
+      const testimonialsGrid = document.getElementById('testimonials-grid');
+      
+      testimonialsGrid.innerHTML = currentProduct.testimonials.map(testimonial => `
+        <div class="testimonial">
+          <p class="testimonial-text">"${testimonial.text}"</p>
+          <div class="testimonial-author">${testimonial.author}</div>
+          <div class="testimonial-location">${testimonial.location}</div>
+        </div>
+      `).join('');
+      
+      testimonialsSection.style.display = 'block';
+    }
+    
+    // Show error state
+    function showError() {
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('error-state').style.display = 'block';
+    }
+    
+    // Add to cart
+    function addToCart() {
+      if (!currentProduct) return;
+      try {
+        // Normalize ID to Firestore slug if numeric
+        var idStr = String(currentProduct.id || '');
+        var isNumericId = /^\d+$/.test(idStr);
+        var slugId = isNumericId && currentProduct.title
+          ? currentProduct.title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim()
+          : idStr;
+
+        // Use centralized handler if available, otherwise fallback to localStorage
+        if (window.Attral && typeof window.Attral.addToCart === 'function') {
+          try { 
+            window.Attral.addToCart(slugId); 
+          } catch(e) { 
+            console.error('Centralized addToCart failed, using fallback:', e);
+            // Fallback to localStorage only if centralized fails
+            addToCartFallback(slugId, currentProduct);
+          }
+        } else {
+          // No centralized handler available, use localStorage fallback
+          addToCartFallback(slugId, currentProduct);
+        }
+
+        // Update header badge if available
+        try { if (window.Attral && window.Attral.initHeaderCartCount) { window.Attral.initHeaderCartCount(); } } catch(e) {}
+
+        // Product added to cart successfully
+      } catch (e) {
+        console.error('addToCart fallback error', e);
+      }
+    }
+    
+    // Fallback function for localStorage cart operations
+    function addToCartFallback(slugId, product) {
+      try {
+        var key = 'attral_cart';
+        var raw = localStorage.getItem(key);
+        var cart = raw ? JSON.parse(raw) : [];
+        var existing = cart.find(function(i){ return String(i.id) === String(slugId); });
+        if (existing) {
+          existing.quantity = (existing.quantity || 1) + 1;
+        } else {
+          cart.push({ id: slugId, title: product.title, price: product.price, image: product.image, quantity: 1 });
+        }
+        localStorage.setItem(key, JSON.stringify(cart));
+      } catch (err) {
+        console.error('Cart fallback failed:', err);
+      }
+    }
+    
+    // Buy now
+    function buyNow() {
+      if (currentProduct) {
+        // Store product data for order page
+        sessionStorage.setItem('buyNowProduct', JSON.stringify(currentProduct));
+        // Redirect directly to checkout page
+        window.location.href = 'order.html?type=cart';
+      }
+    }
+    
+    
+    // Placeholder functions for image actions
+    function toggleZoom() {
+      console.log('🔍 Zoom feature coming soon!');
+    }
+    
+    function openFullscreen() {
+      console.log('⛶ Fullscreen feature coming soon!');
+    }
+    
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Product detail page loaded');
+      document.getElementById('year').textContent = new Date().getFullYear();
+      if (window.Attral) {
+        window.Attral.initHeaderCartCount();
+      }
+      loadProduct();
+    });
+    
+  </script>
+</body>
+</html>

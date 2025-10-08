@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmed | ATTRAL</title>
+  <meta name="description" content="Your order has been confirmed successfully." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  
+  <style>
+    .success-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      text-align: center;
+    }
+    
+    .success-icon {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #10b981, #34d399);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      animation: successPulse 2s ease-in-out infinite;
+    }
+    
+    .success-icon svg {
+      width: 60px;
+      height: 60px;
+      color: white;
+    }
+    
+    @keyframes successPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); }
+    }
+    
+    .success-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin-bottom: 1rem;
+    }
+    
+    .success-subtitle {
+      font-size: 1.25rem;
+      color: #6b7280;
+      margin-bottom: 2rem;
+    }
+    
+    .order-details {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      margin-bottom: 2rem;
+      text-align: left;
+    }
+    
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .detail-row:last-child {
+      border-bottom: none;
+      font-weight: 700;
+      font-size: 1.125rem;
+      color: #1f2937;
+    }
+    
+    .detail-label {
+      color: #6b7280;
+      font-weight: 500;
+    }
+    
+    .detail-value {
+      color: #1f2937;
+      font-weight: 600;
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    
+    .status-confirmed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .status-processing {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    
+    .status-shipped {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .status-delivered {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #374151;
+      border: 2px solid #e5e7eb;
+    }
+    
+    .btn-secondary:hover {
+      border-color: #667eea;
+      color: #667eea;
+    }
+    
+    .timeline {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      margin-bottom: 2rem;
+    }
+    
+    .timeline-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    .timeline-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 0;
+      position: relative;
+    }
+    
+    .timeline-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 50px;
+      width: 2px;
+      height: 40px;
+      background: #e5e7eb;
+    }
+    
+    .timeline-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    
+    .timeline-icon.completed {
+      background: #10b981;
+      color: white;
+    }
+    
+    .timeline-icon.pending {
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
+    
+    .timeline-content {
+      flex: 1;
+    }
+    
+    .timeline-content h4 {
+      margin: 0 0 0.25rem 0;
+      font-weight: 600;
+      color: #1f2937;
+    }
+    
+    .timeline-content p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+    
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e5e7eb;
+      border-top: 2px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    .error-message {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #fca5a5;
+      margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+      .success-container {
+        padding: 1rem;
+      }
+      
+      .success-title {
+        font-size: 2rem;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" /></a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="account.html">My Account</a>
+        <a href="affiliates.html">Affiliate Central</a>
+        <a href="contact.html">Contact Us</a>
+        <div class="dropdown">
+          <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false" aria-label="More menu">More ▾</a>
+          <div class="dropdown-menu" role="menu" aria-labelledby="dropdown-toggle">
+            <a href="about.html" role="menuitem">About Us</a>
+            <a href="blog.html" target="_blank" rel="noopener" role="menuitem">Blog</a>
+            <a href="privacy.html" role="menuitem">Privacy</a>
+            <a href="terms.html" role="menuitem">Terms</a>
+          </div>
+        </div>
+        <a href="cart.html" class="cart-link">Cart <span id="cart-count" class="badge">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="success-container">
+      <!-- Success Icon -->
+      <div class="success-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+
+      <!-- Success Message -->
+      <h1 class="success-title">Order Confirmed! 🎉</h1>
+      <p class="success-subtitle">Thank you for your purchase. Your order has been successfully placed.</p>
+
+      <!-- Order Details -->
+      <div class="order-details">
+        <div class="detail-row">
+          <span class="detail-label">Order ID:</span>
+          <span class="detail-value" id="order-number">Loading...</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Payment ID:</span>
+          <span class="detail-value" id="payment-id">Loading...</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Total Amount:</span>
+          <span class="detail-value" id="total-amount">Loading...</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Order Status:</span>
+          <span id="order-status">Loading...</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Estimated Delivery:</span>
+          <span class="detail-value" id="estimated-delivery">2-5 business days</span>
+        </div>
+      </div>
+
+      <!-- Order Timeline -->
+      <div class="timeline">
+        <h3 class="timeline-title">Order Progress</h3>
+        <div id="order-timeline">
+          <div class="timeline-item">
+            <div class="timeline-icon completed">✓</div>
+            <div class="timeline-content">
+              <h4>Order Placed</h4>
+              <p id="order-placed-time">Just now</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-icon completed">✓</div>
+            <div class="timeline-content">
+              <h4>Payment Confirmed</h4>
+              <p id="payment-confirmed-time">Just now</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-icon pending" id="processing-icon">⏳</div>
+            <div class="timeline-content">
+              <h4>Processing</h4>
+              <p>We're preparing your order</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-icon pending" id="shipping-icon">📦</div>
+            <div class="timeline-content">
+              <h4>Shipped</h4>
+              <p>Your order is on the way</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-icon pending" id="delivery-icon">🚚</div>
+            <div class="timeline-content">
+              <h4>Delivered</h4>
+              <p>Order delivered successfully</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <a href="account.html" class="btn btn-primary">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+          View My Orders
+        </a>
+        <a href="shop.html" class="btn btn-secondary">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+          </svg>
+          Continue Shopping
+        </a>
+        <button onclick="downloadReceipt()" class="btn btn-secondary">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Download Receipt
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About ATTRAL</h4>
+          <p>Smart Power. Smarter Living. We provide next-gen consumer electronics to power your lifestyle with cutting-edge GaN technology.</p>
+          <div class="social-links">
+            <a href="https://facebook.com/attral" target="_blank" rel="noopener" title="Follow us on Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://instagram.com/attral" target="_blank" rel="noopener" title="Follow us on Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.83-9.281H7.83c-.49 0-.89.4-.89.89v7.83c0 .49.4.89.89.89h8.449c.49 0 .89-.4.89-.89v-7.83c0-.49-.4-.89-.89-.89z"/>
+              </svg>
+            </a>
+            <a href="https://twitter.com/attral" target="_blank" rel="noopener" title="Follow us on Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </a>
+            <a href="https://linkedin.com/company/attral" target="_blank" rel="noopener" title="Connect on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <p><a href="index.html">Home</a></p>
+          <p><a href="shop.html">Shop</a></p>
+          <p><a href="about.html">About Us</a></p>
+          <p><a href="contact.html">Contact</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <p><a href="account.html">My Account</a></p>
+          <p><a href="cart.html">Shopping Cart</a></p>
+          <p><a href="affiliates.html">Affiliate Program</a></p>
+          <p><a href="blog.html" target="_blank" rel="noopener">Blog</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Contact Info</h4>
+          <p>📧 info@attral.in</p>
+          <p>📱 +91 8903479870</p>
+          <p>📍 Phase 2 Sathuvachari<br>Vellore - 632009<br>Tamil Nadu, India</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="year"></span> ATTRAL. All rights reserved.</p>
+        <nav>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dropdown.js"></script>
+  
+  <!-- Global Redirect Protection -->
+  <script>
+    // Prevent any accidental redirects away from success page
+    (function() {
+      const successPageUrl = window.location.href;
+      const isSuccessPage = /order-success\.html/i.test(successPageUrl);
+      
+      if (isSuccessPage) {
+        // Override any global redirect functions that might interfere
+        window.originalLocationReplace = window.location.replace;
+        window.originalLocationHref = window.location.href;
+        
+        // Log any attempts to redirect away from success page
+        const originalReplace = window.location.replace;
+        window.location.replace = function(url) {
+          if (!/order-success\.html/i.test(url)) {
+            console.warn('🚨 BLOCKED redirect via location.replace:', url);
+            console.trace('Stack trace of blocked redirect:');
+            return;
+          }
+          return originalReplace.call(this, url);
+        };
+        
+        // Also guard assign and history APIs
+        const originalAssign = window.location.assign;
+        window.location.assign = function(url){
+          if (!/order-success\.html/i.test(url)) {
+            console.warn('🚨 BLOCKED redirect via location.assign:', url);
+            console.trace('Stack trace of blocked redirect:');
+            return;
+          }
+          return originalAssign.call(this, url);
+        };
+        
+        // Guard direct href assignment
+        let currentHref = window.location.href;
+        Object.defineProperty(window.location, 'href', {
+          get: function() { return currentHref; },
+          set: function(url) {
+            if (!/order-success\.html/i.test(url)) {
+              console.warn('🚨 BLOCKED redirect via location.href =', url);
+              console.trace('Stack trace of blocked redirect:');
+              return currentHref;
+            }
+            currentHref = url;
+            originalReplace.call(window.location, url);
+          }
+        });
+        
+        const origPush = history.pushState;
+        history.pushState = function(state, title, url){
+          if (url && !/order-success\.html/i.test(url)) {
+            console.warn('🚨 BLOCKED redirect via history.pushState:', url);
+            console.trace('Stack trace of blocked redirect:');
+            return;
+          }
+          return origPush.apply(this, arguments);
+        };
+        
+        const origReplaceState = history.replaceState;
+        history.replaceState = function(state, title, url){
+          if (url && !/order-success\.html/i.test(url)) {
+            console.warn('🚨 BLOCKED redirect via history.replaceState:', url);
+            console.trace('Stack trace of blocked redirect:');
+            return;
+          }
+          return origReplaceState.apply(this, arguments);
+        };
+
+        // Watchdog to snap back if navigation happens unexpectedly
+        let lastGoodUrl = window.location.href;
+        setInterval(function(){
+          if (!/order-success\.html/i.test(window.location.href)) {
+            console.warn('🛡️ Watchdog: restoring success page');
+            window.location.replace(lastGoodUrl);
+          } else {
+            lastGoodUrl = window.location.href;
+          }
+        }, 800);
+        
+        console.log('🛡️ Success page redirect protection activated');
+      }
+    })();
+  </script>
+  
+  <script>
+    let orderData = null;
+
+    // Load order details from URL parameters or session storage
+    async function loadOrderDetails() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderId');
+        
+        if (!orderId) {
+          showError('No order ID provided');
+          return;
+        }
+
+        // Try to get order details from server (Firestore) - with retry logic
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        let orderFound = false;
+        
+        // Retry up to 3 times with delays
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            const response = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/status?order_id=${orderId}`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success && data.order) {
+                orderData = data.order;
+                displayOrderDetails(orderData);
+
+                // 🎯 Send emails, then sync coupons/amount only after completion
+                const emailPromise = sendOrderConfirmationEmail(orderId).catch(error => {
+                  console.warn('📧 Order confirmation email failed (non-critical):', error);
+                });
+                const invoicePromise = generateAndSendInvoice(orderId).catch(error => {
+                  console.warn('📄 Invoice generation failed (non-critical):', error);
+                });
+                Promise.allSettled([emailPromise, invoicePromise]).then(() => {
+                  // After emails, upsert coupons and exact amounts
+                  try {
+                    const session = JSON.parse(sessionStorage.getItem('lastOrderData') || '{}');
+                    const sessionCoupons = Array.isArray(session.coupons) ? session.coupons : [];
+                    const orderCoupons = Array.isArray(orderData.coupons) ? orderData.coupons : [];
+                    const coupons = orderCoupons.length ? orderCoupons : sessionCoupons;
+                    if (coupons && coupons.length) {
+                      upsertOrderCoupons(orderId, coupons, orderData).catch(function(e){ console.warn('coupon upsert failed', e && e.message); });
+                    } else {
+                      // Even if no coupons, ensure exact amounts are synced
+                      upsertOrderCoupons(orderId, [], orderData).catch(function(e){ console.warn('amount upsert failed', e && e.message); });
+                    }
+                  } catch(_e) { /* ignore */ }
+                });
+
+                orderFound = true;
+                break;
+              }
+            }
+          } catch (error) {
+            console.warn(`Attempt ${attempt} failed to fetch order:`, error);
+          }
+          
+          // Wait before retry (1s, 2s, 3s)
+          if (attempt < 3) {
+            await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+          }
+        }
+        
+        if (orderFound) {
+          // Cart already cleared on page load - no need to clear again
+          return;
+        }
+
+        // Fallback: get from session storage
+        const sessionOrderData = sessionStorage.getItem('lastOrderData');
+        if (sessionOrderData) {
+          orderData = JSON.parse(sessionOrderData);
+          displayOrderDetails(orderData);
+
+          // 🎯 Send emails, then sync coupons/amount only after completion
+          const emailPromise = sendOrderConfirmationEmail(orderId).catch(error => {
+            console.warn('📧 Order confirmation email failed (non-critical):', error);
+          });
+          const invoicePromise = generateAndSendInvoice(orderId).catch(error => {
+            console.warn('📄 Invoice generation failed (non-critical):', error);
+          });
+          Promise.allSettled([emailPromise, invoicePromise]).then(() => {
+            try {
+              const session = JSON.parse(sessionStorage.getItem('lastOrderData') || '{}');
+              const sessionCoupons = Array.isArray(session.coupons) ? session.coupons : [];
+              const orderCoupons = Array.isArray(orderData.coupons) ? orderData.coupons : [];
+              const coupons = orderCoupons.length ? orderCoupons : sessionCoupons;
+              if (coupons && coupons.length) {
+                upsertOrderCoupons(orderId, coupons, orderData).catch(function(e){ console.warn('coupon upsert failed', e && e.message); });
+              } else {
+                upsertOrderCoupons(orderId, [], orderData).catch(function(e){ console.warn('amount upsert failed', e && e.message); });
+              }
+            } catch(_e) { /* ignore */ }
+          });
+          
+          // Cart already cleared on page load - no need to clear again
+        } else {
+          showError('Order details not found');
+        }
+
+      } catch (error) {
+        console.error('Error loading order details:', error);
+        showError('Failed to load order details');
+      }
+    }
+
+    function displayOrderDetails(order) {
+      // Update order details - prioritize Razorpay Order ID for display
+      const orderIdDisplay = order.razorpay_order_id || order.razorpayOrderId || order.id || order.orderId || order.order_number || 'N/A';
+      document.getElementById('order-number').textContent = orderIdDisplay;
+      // Support multiple possible payment id shapes
+      const paymentId = 
+        order.razorpay_payment_id ||
+        order.razorpayPaymentId ||
+        (order.payment && (order.payment.transaction_id || order.payment.paymentId)) ||
+        'N/A';
+      document.getElementById('payment-id').textContent = paymentId;
+      
+      // Parse pricing data - check multiple possible structures
+      let totalAmount = 'N/A';
+      
+      // Try different pricing data structures
+      if (order.pricing && order.pricing.total != null) {
+        const t = Number(order.pricing.total);
+        totalAmount = `₹${(isFinite(t) ? t : 0).toLocaleString()}`;
+      } else if (order.pricing_data && order.pricing_data.total) {
+        totalAmount = `₹${order.pricing_data.total.toLocaleString()}`;
+      } else if (order.payment && order.payment.amount) {
+        // Razorpay amounts may be in paise; convert if looks like paise
+        const amt = Number(order.payment.amount);
+        const rupees = (Number.isFinite(amt) && amt >= 100 && Number.isInteger(amt)) ? (amt/100) : amt;
+        totalAmount = `₹${rupees.toLocaleString()}`;
+      } else if (order.amount) {
+        const amt = Number(order.amount);
+        totalAmount = `₹${(isFinite(amt)?amt:0).toLocaleString()}`;
+      } else if (order.total) {
+        totalAmount = `₹${order.total.toLocaleString()}`;
+      }
+      
+      document.getElementById('total-amount').textContent = totalAmount;
+
+      // Update order status
+      updateOrderStatus(order.status);
+
+      // Update timeline based on status
+      updateTimeline(order.status);
+
+      // Update timestamps
+      const now = new Date();
+      document.getElementById('order-placed-time').textContent = formatTime(now);
+      document.getElementById('payment-confirmed-time').textContent = formatTime(now);
+      
+      // Debug: Log the order structure to console for troubleshooting
+      console.log('Order data structure:', order);
+      console.log('Pricing data:', order.pricing);
+      console.log('Payment data:', order.payment);
+
+      // Persist coupon list to the server order doc if available (use correct order id)
+      try {
+        const session = JSON.parse(sessionStorage.getItem('lastOrderData') || '{}');
+        const sessionCoupons = Array.isArray(session.coupons) ? session.coupons : [];
+        const orderCoupons = Array.isArray(order.coupons) ? order.coupons : [];
+        const coupons = orderCoupons.length ? orderCoupons : sessionCoupons;
+        const identifier = order.razorpay_order_id || order.razorpayOrderId || order.id || order.orderId || order.order_number;
+        if (identifier && coupons && coupons.length) {
+          upsertOrderCoupons(identifier, coupons, order).catch(function(e){ console.warn('coupon upsert failed', e && e.message); });
+        }
+      } catch(_e) { /* ignore */ }
+
+      // Usage increment is handled server-side
+    }
+
+    // Upsert coupons onto the order document in Firestore via API
+    async function upsertOrderCoupons(orderNumber, coupons, order){
+      try {
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        // Include exact amount fields to prevent rounding issues server-side
+        const totalRupees = (order && order.pricing && typeof order.pricing.total === 'number') ? order.pricing.total : (order && order.amount ? Number(order.amount) : null);
+        const payload = {
+          orderId: orderNumber,
+          status: 'confirmed',
+          coupons: coupons,
+          amount_rupees_exact: (typeof totalRupees === 'number') ? Number(totalRupees) : undefined,
+          amount_paise_exact: (typeof totalRupees === 'number') ? Math.round(Number(totalRupees) * 100) : undefined
+        };
+        const res = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/update`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+        const j = await res.json().catch(()=>({}));
+        console.log('🔗 coupons upsert result', j);
+      } catch (e){ console.warn('🔗 coupons upsert error', e && e.message); }
+    }
+
+    function updateOrderStatus(status) {
+      const statusElement = document.getElementById('order-status');
+      const statusMap = {
+        'confirmed': { text: 'Confirmed', class: 'status-confirmed' },
+        'processing': { text: 'Processing', class: 'status-processing' },
+        'shipped': { text: 'Shipped', class: 'status-shipped' },
+        'delivered': { text: 'Delivered', class: 'status-delivered' },
+        'cancelled': { text: 'Cancelled', class: 'status-cancelled' }
+      };
+
+      const statusInfo = statusMap[status] || { text: status, class: 'status-processing' };
+      
+      statusElement.innerHTML = `
+        <span class="status-badge ${statusInfo.class}">
+          ${statusInfo.text}
+        </span>
+      `;
+    }
+
+    function updateTimeline(status) {
+      const statusOrder = ['confirmed', 'processing', 'shipped', 'delivered'];
+      const currentIndex = statusOrder.indexOf(status);
+
+      // Update timeline icons
+      const icons = {
+        processing: document.getElementById('processing-icon'),
+        shipping: document.getElementById('shipping-icon'),
+        delivery: document.getElementById('delivery-icon')
+      };
+
+      Object.values(icons).forEach(icon => {
+        icon.className = 'timeline-icon pending';
+      });
+
+      if (currentIndex >= 1) {
+        icons.processing.className = 'timeline-icon completed';
+        icons.processing.textContent = '✓';
+      }
+      if (currentIndex >= 2) {
+        icons.shipping.className = 'timeline-icon completed';
+        icons.shipping.textContent = '✓';
+      }
+      if (currentIndex >= 3) {
+        icons.delivery.className = 'timeline-icon completed';
+        icons.delivery.textContent = '✓';
+      }
+    }
+
+    function formatTime(date) {
+      return date.toLocaleString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    async function downloadReceipt() {
+      if (!orderData) {
+        alert('Order data not available');
+        return;
+      }
+
+      // Declare originalText before try block to fix ReferenceError
+      let originalText = '';
+      const button = event?.target || document.querySelector('button[onclick="downloadReceipt()"]');
+      
+      try {
+        // Show loading indicator
+        originalText = button.innerHTML;
+        button.innerHTML = '<div class="loading-spinner"></div> Generating PDF...';
+        button.disabled = true;
+
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        
+        // Generate HTML invoice
+        const response = await fetch(`${apiBaseUrl}/api/generate_pdf_minimal.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            orderId: orderData.orderId || orderData.razorpay_order_id || orderData.order_number,
+            orderData: orderData
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.pdfContent) {
+          // Convert base64 to blob and download
+          const fileBlob = new Blob([
+            Uint8Array.from(atob(result.pdfContent), c => c.charCodeAt(0))
+          ], { type: result.filename.endsWith('.html') ? 'text/html' : 'application/pdf' });
+          
+          const url = window.URL.createObjectURL(fileBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = result.filename || 'invoice.html';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          
+          console.log('✅ HTML invoice downloaded successfully');
+        } else {
+          console.error('❌ Invoice generation failed:', result.error);
+          alert('Failed to generate invoice. Please try again.');
+        }
+
+      } catch (error) {
+        console.error('❌ Error generating PDF:', error);
+        alert('Error generating PDF invoice. Please try again.');
+      } finally {
+        // Restore button state
+        const button = event?.target || document.querySelector('button[onclick="downloadReceipt()"]');
+        if (button) {
+          button.innerHTML = originalText;
+          button.disabled = false;
+        }
+      }
+    }
+
+    function showError(message) {
+      const container = document.querySelector('.success-container');
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.textContent = message;
+      container.insertBefore(errorDiv, container.firstChild);
+    }
+
+    // 🎯 Send order confirmation email automatically
+    async function sendOrderConfirmationEmail(orderId) {
+      try {
+        console.log('📧 Sending order confirmation email for order:', orderId);
+        
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        const response = await fetch(`${apiBaseUrl}/api/send_email_real.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            orderId: orderId,
+            orderData: orderData // Send the complete order data
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        const result = await response.json();
+        
+        if (result.success) {
+          console.log('✅ Order confirmation email sent successfully');
+          // Show subtle success indicator to user
+          showEmailSentNotification();
+        } else {
+          console.warn('⚠️ Order confirmation email failed:', result.error);
+          // Don't show error to user - this is a background operation
+        }
+        
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.warn('⏱️ Order confirmation email request timed out');
+        } else {
+          console.warn('⚠️ Order confirmation email error:', error.message);
+        }
+        // Don't show error to user - this is a background operation
+      }
+    }
+
+    // Show subtle notification that email was sent
+    function showEmailSentNotification() {
+      // Create a subtle notification
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #10b981, #34d399);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 1000;
+        animation: slideInRight 0.3s ease-out;
+      `;
+      notification.innerHTML = '📧 Order confirmation email sent!';
+      document.body.appendChild(notification);
+      
+      // Auto-remove after 3 seconds
+      setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-in forwards';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // 🎯 Generate and send invoice email automatically
+    async function generateAndSendInvoice(orderId) {
+      try {
+        console.log('📄 Generating and sending invoice email for order:', orderId);
+        
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for invoice generation
+        
+        // First generate HTML invoice
+        const pdfResponse = await fetch(`${apiBaseUrl}/api/generate_pdf_minimal.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            orderId: orderId,
+            orderData: orderData
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        const pdfResult = await pdfResponse.json();
+        
+        if (!pdfResult.success || !pdfResult.pdfContent) {
+          console.warn('⚠️ Invoice generation failed:', pdfResult.error);
+          return;
+        }
+
+        // Then send email with HTML invoice attachment
+        const emailController = new AbortController();
+        const emailTimeoutId = setTimeout(() => emailController.abort(), 10000);
+        
+        const emailResponse = await fetch(`${apiBaseUrl}/api/send_email_real.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            orderId: orderId,
+            orderData: orderData,
+            pdfAttachment: {
+              content: pdfResult.pdfContent,
+              filename: pdfResult.filename || 'invoice.html',
+              type: 'text/html'
+            }
+          }),
+          signal: emailController.signal
+        });
+
+        clearTimeout(emailTimeoutId);
+        const emailResult = await emailResponse.json();
+        
+        if (emailResult.success) {
+          console.log('✅ Invoice email sent successfully');
+          // Show subtle notification that invoice was sent
+          showInvoiceSentNotification();
+        } else {
+          console.warn('⚠️ Invoice email failed:', emailResult.error);
+          // Don't show error to user - this is a background operation
+        }
+        
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.warn('⏱️ Invoice generation/email request timed out');
+        } else {
+          console.warn('⚠️ Invoice generation/email error:', error.message);
+        }
+        // Don't show error to user - this is a background operation
+      }
+    }
+
+    // Show invoice notification
+    function showInvoiceSentNotification() {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 60px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 1000;
+        animation: slideInRight 0.3s ease-out;
+      `;
+      notification.innerHTML = '📄 Invoice sent to your email!';
+      document.body.appendChild(notification);
+      
+      // Auto-remove after 4 seconds
+      setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-in forwards';
+        setTimeout(() => notification.remove(), 300);
+      }, 4000);
+    }
+
+    // Note: Removed error notification functions to prevent user-facing errors
+    // Email failures are now handled silently as background operations
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('year').textContent = new Date().getFullYear();
+      
+      if (window.Attral) {
+        window.Attral.initHeaderCartCount();
+      }
+      
+      // ✅ Cart clearing logic removed as requested by user
+      // Cart will persist until user manually clears it or places a new order
+      
+      // Load order details immediately
+      loadOrderDetails();
+      
+      // Add a small delay before attempting email operations to ensure page stability
+      setTimeout(() => {
+        console.log('📧 Starting background email operations...');
+        // The email and invoice functions are already called automatically in loadOrderDetails()
+      }, 2000);
+    });
+
+    // Safety mechanism to prevent accidental redirects away from success page
+    window.addEventListener('beforeunload', function(e) {
+      // Only prevent if we're on the success page and there's no explicit navigation
+      if (window.location.pathname.includes('order-success.html')) {
+        // Allow normal navigation but log it
+        console.log('🚀 User navigating away from success page');
+      }
+    });
+  </script>
+</body>
+</html>

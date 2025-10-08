@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>🧪 API Debug Runner</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#f8fafc}
+    .wrap{max-width:980px;margin:24px auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px}
+    label{font-weight:600;color:#374151;margin:8px 0 6px;display:block}
+    input,textarea,select{width:100%;padding:10px 12px;border:2px solid #e5e7eb;border-radius:8px}
+    textarea{min-height:140px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn{padding:10px 16px;border-radius:8px;border:none;background:#667eea;color:#fff;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#10b981}
+    .btn.light{background:#6b7280}
+    .btn.warn{background:#f59e0b}
+    pre{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:8px;overflow:auto}
+    .kv{display:grid;grid-template-columns:240px 1fr;gap:8px;align-items:center}
+    .stat{display:inline-block;margin:6px 10px 0 0;padding:6px 10px;background:#eef2ff;border-radius:8px;font-weight:700;color:#3730a3}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2 style="margin:0 0 8px">🧪 API Debug Runner</h2>
+    <p style="margin:0 0 16px;color:#6b7280">Send requests to <code>/api/firestore_order_manager.php</code>, inspect headers, body, and detect the active handler.</p>
+
+    <div class="row">
+      <div>
+        <label>Endpoint URL</label>
+        <input id="endpoint" value="/api/firestore_order_manager.php/create">
+      </div>
+      <div>
+        <label>Method</label>
+        <select id="method">
+          <option>POST</option>
+          <option>GET</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label>Cache Buster (auto)</label>
+        <input id="buster" readonly>
+      </div>
+      <div class="kv" style="margin-top:28px">
+        <span class="stat" id="apiSource">api_source: —</span>
+        <span class="stat" id="idempotent">X-Idempotent: —</span>
+      </div>
+    </div>
+
+    <label style="margin-top:12px">Request Body (JSON)</label>
+    <textarea id="body"></textarea>
+
+    <div style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="sendReq()">▶ Send</button>
+      <button class="btn secondary" onclick="fillCreate()">↺ Fill Create Payload</button>
+      <button class="btn light" onclick="clearOut()">🗑 Clear</button>
+    </div>
+
+    <label>Response Headers</label>
+    <pre id="respHeaders">(none)</pre>
+
+    <label>Response Body</label>
+    <pre id="respBody">(none)</pre>
+  </div>
+
+  <script>
+    function nowBuster(){ return 'ts_' + Date.now(); }
+    function setBuster(){ document.getElementById('buster').value = nowBuster(); }
+    function clearOut(){ document.getElementById('respHeaders').textContent='(cleared)'; document.getElementById('respBody').textContent='(cleared)'; }
+
+    function fillCreate(){
+      const uid = Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+      const payload = {
+        order_id: 'rzp_order_' + uid,
+        payment_id: 'pay_' + uid,
+        customer: { email: 'tester@attral.in' },
+        product: { title: 'Test Product' },
+        pricing: { total: 1499 },
+        shipping: {},
+        payment: { method: 'razorpay' },
+        notes: { tester: 'api-debug-runner' },
+        coupons: [ { code: 'attral-71hlzssgan', type: 'percentage', value: 5, isAffiliateCoupon: true, affiliateCode: 'attral-71hlzssgan' } ]
+      };
+      document.getElementById('body').value = JSON.stringify(payload, null, 2);
+    }
+
+    async function sendReq(){
+      try {
+        setBuster();
+        const endpoint = document.getElementById('endpoint').value.trim();
+        const method = document.getElementById('method').value.trim();
+        const buster = document.getElementById('buster').value.trim();
+        const url = endpoint + (endpoint.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(buster);
+
+        const headers = { 'Accept': 'application/json' };
+        let body = undefined;
+        if (method === 'POST'){
+          headers['Content-Type'] = 'application/json';
+          const txt = document.getElementById('body').value || '{}';
+          body = txt;
+        }
+
+        const res = await fetch(url, { method, headers, body });
+
+        // Collect headers
+        const hdrs = {};
+        res.headers.forEach((v, k)=>{ hdrs[k] = v; });
+        document.getElementById('respHeaders').textContent = JSON.stringify(hdrs, null, 2);
+        document.getElementById('idempotent').textContent = 'X-Idempotent: ' + (hdrs['x-idempotent'] || '—');
+
+        // Body (robust JSON parse)
+        const txt = await res.text();
+        let parsed = null; let apiSource = '—';
+        try {
+          parsed = JSON.parse(txt);
+        } catch(_) {
+          const lb = txt.lastIndexOf('}');
+          const fb = txt.lastIndexOf('{', lb);
+          if (fb !== -1 && lb !== -1 && lb > fb){
+            try { parsed = JSON.parse(txt.slice(fb, lb+1)); } catch(_e){}
+          }
+        }
+        if (parsed && parsed.api_source){ apiSource = parsed.api_source; }
+        document.getElementById('apiSource').textContent = 'api_source: ' + apiSource;
+        document.getElementById('respBody').textContent = parsed ? JSON.stringify(parsed, null, 2) : txt;
+
+      } catch (e){
+        document.getElementById('respBody').textContent = 'ERROR: ' + (e && e.message ? e.message : String(e));
+      }
+    }
+
+    // init
+    setBuster();
+    fillCreate();
+  </script>
+</body>
+</html>
+
+
