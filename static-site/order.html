@@ -710,6 +710,84 @@
   <script src="js/dropdown.js"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   
+  <!-- CRITICAL: Global redirect protection - active immediately on page load -->
+  <script>
+    (function setupGlobalRedirectProtection() {
+      console.log('🛡️ Initializing global redirect protection');
+      
+      // Global payment state flag
+      window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
+      
+      // Function to check if URL is allowed during payment
+      const isAllowedRedirect = function(url) {
+        const urlStr = String(url || '');
+        const isSuccessPage = /order-success\.html/i.test(urlStr);
+        return isSuccessPage;
+      };
+      
+      // Guard window.location.replace
+      const origReplace = window.location.replace;
+      window.location.replace = function(url) {
+        if (window.__ATTRAL_PAYMENT_IN_PROGRESS && !isAllowedRedirect(url)) {
+          console.warn('🚫 BLOCKED redirect via location.replace to:', url);
+          console.trace('Redirect attempt stack trace:');
+          return;
+        }
+        console.log('✅ Allowing redirect to:', url);
+        return origReplace.call(this, url);
+      };
+      
+      // Guard window.location.assign
+      const origAssign = window.location.assign;
+      window.location.assign = function(url) {
+        if (window.__ATTRAL_PAYMENT_IN_PROGRESS && !isAllowedRedirect(url)) {
+          console.warn('🚫 BLOCKED redirect via location.assign to:', url);
+          console.trace('Redirect attempt stack trace:');
+          return;
+        }
+        console.log('✅ Allowing redirect to:', url);
+        return origAssign.call(this, url);
+      };
+      
+      // Guard history.pushState
+      const origPushState = history.pushState;
+      history.pushState = function(state, title, url) {
+        if (url && window.__ATTRAL_PAYMENT_IN_PROGRESS && !isAllowedRedirect(url)) {
+          console.warn('🚫 BLOCKED redirect via history.pushState to:', url);
+          console.trace('Redirect attempt stack trace:');
+          return;
+        }
+        return origPushState.apply(this, arguments);
+      };
+      
+      // Guard history.replaceState
+      const origReplaceState = history.replaceState;
+      history.replaceState = function(state, title, url) {
+        if (url && window.__ATTRAL_PAYMENT_IN_PROGRESS && !isAllowedRedirect(url)) {
+          console.warn('🚫 BLOCKED redirect via history.replaceState to:', url);
+          console.trace('Redirect attempt stack trace:');
+          return;
+        }
+        return origReplaceState.apply(this, arguments);
+      };
+      
+      // Guard window.open to prevent popups during payment
+      if (window.open) {
+        const origOpen = window.open;
+        window.open = function(url) {
+          if (window.__ATTRAL_PAYMENT_IN_PROGRESS && url && !isAllowedRedirect(url)) {
+            console.warn('🚫 BLOCKED window.open to:', url);
+            console.trace('Window.open attempt stack trace:');
+            return null;
+          }
+          return origOpen.apply(this, arguments);
+        };
+      }
+      
+      console.log('🛡️ Global redirect protection active');
+    })();
+  </script>
+  
   <script>
     let currentProduct = null;
     let orderData = {};
@@ -1986,6 +2064,10 @@
         return;
       }
 
+      // CRITICAL: Set payment in progress flag IMMEDIATELY to prevent any redirects
+      window.__ATTRAL_PAYMENT_IN_PROGRESS = true;
+      console.log('🔒 Payment process started - redirects locked');
+
       // Show loading state
       checkoutBtn.disabled = true;
       checkoutText.style.display = 'none';
@@ -2082,6 +2164,10 @@
           },
           modal: {
             ondismiss: function() {
+              // Reset payment flag when modal is dismissed
+              window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
+              console.log('🔓 Payment modal dismissed - redirects unlocked');
+              
               // Reset button state when modal is dismissed
               checkoutBtn.disabled = false;
               checkoutText.style.display = 'inline';
@@ -2091,35 +2177,13 @@
         };
 
         // Open Razorpay checkout
-        // During payment, block any unexpected redirects except success page
-        try {
-          (function setupPaymentRedirectGuard(){
-            const allowed = function(url){ return /order-success\.html/i.test(String(url||'')); };
-            const originalReplace = window.location.replace;
-            window.location.replace = function(url){
-              if (!allowed(url)) { console.warn('🚫 Redirect blocked during payment:', url); return; }
-              return originalReplace.call(this, url);
-            };
-            const originalAssign = window.location.assign;
-            window.location.assign = function(url){
-              if (!allowed(url)) { console.warn('🚫 Assign blocked during payment:', url); return; }
-              return originalAssign.call(this, url);
-            };
-            const origPush = history.pushState;
-            history.pushState = function(state, title, url){
-              if (url && !allowed(url)) { console.warn('🚫 pushState blocked during payment:', url); return; }
-              return origPush.apply(this, arguments);
-            };
-            const origReplaceState = history.replaceState;
-            history.replaceState = function(state, title, url){
-              if (url && !allowed(url)) { console.warn('🚫 replaceState blocked during payment:', url); return; }
-              return origReplaceState.apply(this, arguments);
-            };
-          })();
-        } catch(_e) { /* ignore */ }
-
+        // Note: Redirect protection is now handled globally at page load
         const rzp = new Razorpay(options);
         rzp.on('payment.failed', function(response) {
+          // Reset payment flag on failure
+          window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
+          console.log('🔓 Payment failed - redirects unlocked');
+          
           showError('Payment failed. Please try again.');
           checkoutBtn.disabled = false;
           checkoutText.style.display = 'inline';
@@ -2129,6 +2193,10 @@
         rzp.open();
 
       } catch (error) {
+        // Reset payment flag on error
+        window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
+        console.log('🔓 Payment initiation failed - redirects unlocked');
+        
         console.error('Payment initiation error:', error);
         console.error('Error details:', {
           message: error.message,
@@ -2272,12 +2340,13 @@
 
     // Handle successful payment
     async function handlePaymentSuccess(order, response, orderData) {
-      // Prevent multiple executions
+      // CRITICAL: Set flag IMMEDIATELY to prevent any duplicate calls
       if (paymentSuccessHandled) {
         console.log('⚠️ Payment success already handled, skipping duplicate call');
         return;
       }
       paymentSuccessHandled = true;
+      console.log('✅ Payment success handler executing (flag set)');
 
       try {
         console.log('🎉 Payment successful! Processing order...', {
@@ -2375,27 +2444,28 @@
           // Don't fail the payment for order creation errors
         }
 
-        // ✅ CRITICAL: REDIRECT TO SUCCESS PAGE - This must be the LAST action
-        // Small delay to ensure background operations are initiated
-        setTimeout(() => {
-          const successUrl = `order-success.html?orderId=${order.id}`;
-          console.log('🚀 Redirecting to success page:', successUrl);
-          
-          // Set a flag to prevent any cart operations from interfering
-          sessionStorage.setItem('payment_success_redirect', 'true');
-          
-          // Disable all cart library functions temporarily
-          if (window.Attral) {
-            window.Attral.__disableRedirects = true;
-          }
-          
-          // Use replace to prevent back navigation issues
-          window.location.replace(successUrl);
-        }, 500); // 500ms delay to ensure order creation is initiated
+        // ✅ CRITICAL: REDIRECT TO SUCCESS PAGE IMMEDIATELY
+        // Background operations (order creation) are already initiated as non-blocking promises
+        const successUrl = `order-success.html?orderId=${order.id}`;
+        console.log('🚀 IMMEDIATE redirect to success page:', successUrl);
+        
+        // Set a flag to prevent any cart operations from interfering
+        sessionStorage.setItem('payment_success_redirect', 'true');
+        
+        // Disable all cart library functions temporarily
+        if (window.Attral) {
+          window.Attral.__disableRedirects = true;
+        }
+        
+        // Use replace to prevent back navigation issues
+        // This will be allowed by our global redirect protection since it's order-success.html
+        window.location.replace(successUrl);
 
       } catch (error) {
         console.error('Payment verification error:', error);
         showError('Payment verification failed. Please contact support.');
+        // Reset payment flag on error
+        window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
       }
     }
 

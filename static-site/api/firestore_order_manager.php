@@ -32,11 +32,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Load enhanced coupon tracking service
 require_once __DIR__ . '/coupon_tracking_service.php';
 
-// Check if Firebase SDK is available
-if (!class_exists('\Kreait\Firebase\Factory')) {
-    error_log("FIRESTORE: Firebase SDK not available, falling back to SQLite");
-    // Fallback to SQLite database for order management
-    define('FIRESTORE_FALLBACK', true);
+// Check if Firestore SDK is available
+if (!class_exists('Google\Cloud\Firestore\FirestoreClient')) {
+    error_log("FIRESTORE: Firestore SDK not available - REQUIRED for operation");
+    // No fallback - Firestore is required
+    throw new Exception('Firestore SDK is required but not available');
 }
 
 // Load configuration
@@ -55,9 +55,9 @@ class FirestoreOrderManager {
     
     private function initializeFirestore() {
         try {
-            // Check if Firebase SDK is available
-            if (!class_exists('\Kreait\Firebase\Factory')) {
-                throw new Exception('Firebase SDK not available');
+            // Check if Firestore SDK is available
+            if (!class_exists('Google\Cloud\Firestore\FirestoreClient')) {
+                throw new Exception('Firestore SDK not available');
             }
             
             $serviceAccountPath = __DIR__ . '/firebase-service-account.json';
@@ -65,19 +65,15 @@ class FirestoreOrderManager {
                 throw new Exception('Firebase service account file not found');
             }
             
-            $serviceAccount = json_decode(file_get_contents($serviceAccountPath), true);
-            $firebase = (new \Kreait\Firebase\Factory())
-                ->withServiceAccount($serviceAccount)
-                ->create();
-            
-            $this->firestore = $firebase->firestore();
+            $this->firestore = new Google\Cloud\Firestore\FirestoreClient([
+                'projectId' => 'e-commerce-1d40f',
+                'keyFilePath' => $serviceAccountPath
+            ]);
             error_log("FIRESTORE: Successfully initialized Firestore connection");
             
         } catch (Exception $e) {
             error_log("FIRESTORE ERROR: " . $e->getMessage());
-            error_log("FIRESTORE: Falling back to SQLite database");
-            // Don't throw exception - let fallback handle it
-            $this->firestore = null;
+            throw new Exception('Firestore initialization failed: ' . $e->getMessage());
         }
     }
     
@@ -174,6 +170,7 @@ class FirestoreOrderManager {
                 'orderId' => $orderNumber,
                 'razorpayOrderId' => $input['order_id'],
                 'razorpayPaymentId' => $input['payment_id'],
+                'uid' => $input['user_id'] ?? null, // Add uid field for user association
                 'status' => 'confirmed',
                 'amount' => $resolvedAmount,
                 'currency' => $input['pricing']['currency'] ?? 'INR', // Add currency field
@@ -764,12 +761,11 @@ error_log("FIRESTORE API: Request URI - " . $_SERVER['REQUEST_URI']);
 error_log("FIRESTORE API: Request headers - " . json_encode(getallheaders()));
 
 try {
-    // Check if we should use fallback immediately
-    if (defined('FIRESTORE_FALLBACK') || !class_exists('\Kreait\Firebase\Factory')) {
-        error_log("FIRESTORE: Using SQLite fallback immediately");
-        require_once __DIR__ . '/firestore_order_manager_fallback.php';
-        $fallbackManager = new SQLiteOrderManager();
-        $result = $fallbackManager->handleRequest();
+    // Check if Firestore SDK is available
+    if (!class_exists('Google\Cloud\Firestore\FirestoreClient')) {
+        error_log("FIRESTORE: Firestore SDK required but not available");
+        respond(['success' => false, 'error' => 'Firestore SDK not available'], 500);
+        exit;
     } else {
         $manager = new FirestoreOrderManager();
         $result = $manager->handleRequest();

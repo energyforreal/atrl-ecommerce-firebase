@@ -981,18 +981,30 @@
         setStatsFallback();
         return;
       }
-      // Prefer secure callable over client aggregation
-      if (fb.functions && fb.callFunction) {
+      // Call PHP API via callFunction (migrated from Cloud Functions)
+      if (fb && fb.callFunction) {
         fb.callFunction('getAffiliateStats', { code: code })
           .then((stats) => {
             const totalEarnings = Number(stats.totalEarnings || 0);
             const totalReferrals = Number(stats.totalReferrals || 0);
             const monthlyEarnings = Number(stats.monthlyEarnings || 0);
             const conversionRate = Number(stats.conversionRate || 0);
+            
             animateValue(qs('total-earnings'), 0, totalEarnings, 800, '₹');
             animateValue(qs('total-referrals'), 0, totalReferrals, 800, '');
             animateValue(qs('conversion-rate'), 0, conversionRate, 800, '%');
             animateValue(qs('monthly-earnings'), 0, monthlyEarnings, 800, '₹');
+            
+            // Show commission per order info
+            const earningsCard = qs('total-earnings')?.parentElement?.parentElement;
+            if (earningsCard && !earningsCard.querySelector('.commission-info')) {
+              const commissionInfo = document.createElement('div');
+              commissionInfo.className = 'commission-info';
+              commissionInfo.style.cssText = 'text-align: center; color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem;';
+              commissionInfo.textContent = '₹300 per order';
+              earningsCard.appendChild(commissionInfo);
+            }
+            
             // Additionally, show coupon usage for this affiliate if element exists
             try {
               const usageElId = 'affiliate-usage-count';
@@ -1001,7 +1013,7 @@
                 fb.db.collection('coupons').where('code','==', code).limit(1).get().then(s=>{
                   if (!s.empty){
                     const d = s.docs[0].data();
-                    usageEl.textContent = `${Number(d.payoutUsage||0)} (cycle) / ${Number(d.usageCount||0)} total`;
+                    usageEl.textContent = `${Number(d.usageCount||0)} orders (₹${Number(d.payoutUsage||0).toLocaleString()} earned)`;
                   }
                 }).catch(()=>{});
               }
@@ -1099,7 +1111,7 @@
       const pageSize = 50;
       const pageToken = (window.__ordersPageToken) || null;
 
-      if (fb.functions && fb.callFunction) {
+      if (fb && fb.callFunction) {
         fb.callFunction('getAffiliateOrders', { code, status: statusFilter, date: dateFilter, search: searchTerm, pageSize, pageToken })
           .then((res) => {
             const { orders, total, totalAmount, nextPageToken } = res || { orders: [], total: 0, totalAmount: 0, nextPageToken: null };
@@ -1215,7 +1227,7 @@
       
       pageOrders.forEach(order => {
         const orderAmount = order.amount || 0;
-        const commission = Math.round(orderAmount * 0.1); // 10% commission
+        const commission = 300; // Fixed ₹300 commission per order
         
         total += orderAmount;
         totalCommission += commission;
@@ -2053,7 +2065,7 @@
           successMessage.style.display = 'none';
         }
 
-        // Load existing settings
+        // Load existing settings via PHP API
         if (window.AttralFirebase && window.AttralFirebase.callFunction) {
           window.AttralFirebase.callFunction('getPaymentDetails', {}).then(d=>{
             modal.querySelector('#bank-name').value = d.bankAccountName || '';

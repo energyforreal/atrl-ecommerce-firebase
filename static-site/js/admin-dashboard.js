@@ -388,7 +388,7 @@ class AdminDashboard {
         const backBtn = document.getElementById('back-btn');
         if (backBtn) {
             backBtn.addEventListener('click', () => {
-                window.location.href = 'dashboard.html';
+                window.location.href = 'dashboard-original.html';
             });
         }
 

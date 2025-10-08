@@ -27,14 +27,14 @@
   
   console.log('Firebase config loaded:', firebaseConfig);
 
-  // Load Firebase from CDN
+  // Load Firebase from CDN (Functions SDK removed - now using PHP APIs)
   const scripts = [
     'https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js',
     'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js',
     'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js',
     'https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics-compat.js',
-    'https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js',
-    'https://www.gstatic.com/firebasejs/10.12.5/firebase-functions-compat.js'
+    'https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js'
+    // Firebase Functions SDK removed - now using PHP APIs (affiliate_functions.php)
   ];
 
   let loadedScripts = 0;
@@ -76,7 +76,8 @@
       const db = firebase.firestore();
       const analytics = firebase.analytics ? firebase.analytics() : null;
       const storage = firebase.storage ? firebase.storage() : null;
-      const functions = firebase.functions ? firebase.app().functions('asia-south1') : null;
+      // Functions removed - now using PHP APIs via callFunction()
+      const functions = null; // Kept for backward compatibility, always null
       
       // Initialize Google Auth Provider
       const googleProvider = new firebase.auth.GoogleAuthProvider();
@@ -214,10 +215,32 @@
   }
 
   function callFunction(name, data) {
-    if (!window.AttralFirebase || !window.AttralFirebase.functions) {
-      return Promise.reject('Functions not available');
-    }
-    return window.AttralFirebase.functions.httpsCallable(name)(data).then(r => r.data ?? r);
+    // Use PHP API instead of Firebase Functions for Hostinger compatibility
+    const apiUrl = `api/affiliate_functions.php?action=${name}`;
+    
+    return fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data || {})
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(result => {
+      if (result.success === false) {
+        throw new Error(result.error || 'API request failed');
+      }
+      return result;
+    })
+    .catch(error => {
+      console.error(`Function ${name} failed:`, error);
+      throw error;
+    });
   }
 
   // Connectivity health check: verifies SDK init and Firestore read access

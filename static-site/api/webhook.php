@@ -52,6 +52,9 @@ if ($event['event'] === 'payment.captured') {
         
         error_log("WEBHOOK: Processing payment.captured for order: $orderId, payment: $paymentId");
         
+        // Extract customer data from Razorpay notes first
+        $notes = $payment['notes'] ?? [];
+        
         // Create order in database using order_manager.php
         $orderData = [
             'order_id' => $orderId,
@@ -93,11 +96,10 @@ if ($event['event'] === 'payment.captured') {
                 'transaction_id' => $paymentId,
                 'signature' => $sig
             ],
-            'user_id' => null
+            'user_id' => $notes['uid'] ?? null // Extract uid from notes
         ];
         
-        // Extract customer data from Razorpay notes
-        $notes = $payment['notes'] ?? [];
+        // Extract more customer data from notes
         $customerEmail = $notes['email'] ?? 'customer@example.com';
         $customerFirstName = $notes['firstName'] ?? 'Valued';
         $customerLastName = $notes['lastName'] ?? 'Customer';
@@ -111,6 +113,48 @@ if ($event['event'] === 'payment.captured') {
             $notes['country'] ?? 'India'
         ]));
         
+        // Extract product data from Razorpay notes
+        $productData = null;
+        $pricingData = null;
+        $couponsData = [];
+        
+        // Try to parse product_data from notes
+        if (isset($notes['product_data'])) {
+            $productData = json_decode($notes['product_data'], true);
+            error_log("WEBHOOK: Extracted product data from notes: " . json_encode($productData));
+        } elseif (isset($notes['items_data'])) {
+            // Fallback: reconstruct from separate fields
+            $items = json_decode($notes['items_data'], true);
+            $productData = [
+                'id' => $notes['product_id'] ?? 'webhook_order',
+                'title' => $notes['product_title'] ?? 'Webhook Order',
+                'price' => $amount / 100,
+                'items' => $items ?: [[
+                    'id' => 'webhook_item',
+                    'title' => 'Webhook Item',
+                    'price' => $amount / 100,
+                    'quantity' => 1
+                ]]
+            ];
+            error_log("WEBHOOK: Reconstructed product data from separate notes fields");
+        }
+        
+        // Try to parse pricing_data from notes
+        if (isset($notes['pricing_data'])) {
+            $pricingData = json_decode($notes['pricing_data'], true);
+            error_log("WEBHOOK: Extracted pricing data from notes: " . json_encode($pricingData));
+        }
+        
+        // Try to parse coupons_data from notes
+        if (isset($notes['coupons_data'])) {
+            $couponsData = json_decode($notes['coupons_data'], true);
+            if (is_array($couponsData) && count($couponsData) > 0) {
+                error_log("WEBHOOK: Extracted coupons data from notes: " . json_encode($couponsData));
+            } else {
+                $couponsData = [];
+            }
+        }
+        
         // Update orderData with real customer info
         $orderData['customer'] = [
             'firstName' => $customerFirstName,
@@ -118,7 +162,30 @@ if ($event['event'] === 'payment.captured') {
             'email' => $customerEmail,
             'phone' => $customerPhone
         ];
-        $orderData['shipping']['address'] = $shippingAddress;
+        
+        // Update shipping data with real information from notes
+        $orderData['shipping'] = [
+            'address' => $shippingAddress,
+            'city' => $notes['city'] ?? 'Unknown City',
+            'state' => $notes['state'] ?? 'Unknown State',
+            'pincode' => $notes['pincode'] ?? '000000',
+            'country' => $notes['country'] ?? 'India'
+        ];
+        
+        // Update orderData with real product info if available
+        if ($productData) {
+            $orderData['product'] = $productData;
+        }
+        
+        // Update pricing data if available
+        if ($pricingData) {
+            $orderData['pricing'] = $pricingData;
+        }
+        
+        // Add coupons data if available
+        if (!empty($couponsData)) {
+            $orderData['coupons'] = $couponsData;
+        }
         
         // Save directly to Firestore using Firebase Admin SDK
         try {
@@ -131,10 +198,33 @@ if ($event['event'] === 'payment.captured') {
                         'keyFilePath' => $serviceAccountPath
                     ]);
                     
+                    // Use real product data if available, otherwise fallback to placeholder
+                    $firestoreProductData = $productData ?: [
+                        'id' => 'webhook_order',
+                        'title' => 'Webhook Order',
+                        'price' => $amount / 100,
+                        'items' => [[
+                            'id' => 'webhook_item',
+                            'title' => 'ATTRAL 100W GaN Charger',
+                            'price' => $amount / 100,
+                            'quantity' => 1
+                        ]]
+                    ];
+                    
+                    // Use real pricing data if available, otherwise fallback to calculated
+                    $firestorePricingData = $pricingData ?: [
+                        'subtotal' => $amount / 100,
+                        'shipping' => 0,
+                        'discount' => 0,
+                        'total' => $amount / 100,
+                        'currency' => $currency
+                    ];
+                    
                     $firestoreData = [
                         'orderId' => $orderId,
                         'razorpayOrderId' => $orderId,
                         'razorpayPaymentId' => $paymentId,
+                        'uid' => $notes['uid'] ?? null, // Extract uid from notes for user association
                         'status' => 'confirmed',
                         'amount' => $amount / 100,
                         'currency' => $currency,
@@ -144,24 +234,8 @@ if ($event['event'] === 'payment.captured') {
                             'email' => $customerEmail,
                             'phone' => $customerPhone
                         ],
-                        'product' => [
-                            'id' => 'webhook_order',
-                            'title' => 'Webhook Order',
-                            'price' => $amount / 100,
-                            'items' => [[
-                                'id' => 'webhook_item',
-                                'title' => 'ATTRAL 100W GaN Charger',
-                                'price' => $amount / 100,
-                                'quantity' => 1
-                            ]]
-                        ],
-                        'pricing' => [
-                            'subtotal' => $amount / 100,
-                            'shipping' => 0,
-                            'discount' => 0,
-                            'total' => $amount / 100,
-                            'currency' => $currency
-                        ],
+                        'product' => $firestoreProductData,
+                        'pricing' => $firestorePricingData,
                         'shipping' => [
                             'address' => $notes['address'] ?? '',
                             'city' => $notes['city'] ?? '',
@@ -174,10 +248,21 @@ if ($event['event'] === 'payment.captured') {
                             'transaction_id' => $paymentId,
                             'signature' => $sig
                         ],
+                        'paymentDetails' => [
+                            'method' => $payment['method'] ?? 'unknown',
+                            'upiVpa' => $payment['vpa'] ?? null
+                        ],
+                        'notes' => $notes, // Store all notes for reference
+                        'email' => $customerEmail, // Add top-level email for easy reference
                         'createdAt' => new Google\Cloud\Core\Timestamp(new DateTime()),
                         'updatedAt' => new Google\Cloud\Core\Timestamp(new DateTime()),
                         'source' => 'webhook'
                     ];
+                    
+                    // Add coupons if available
+                    if (!empty($couponsData)) {
+                        $firestoreData['coupons'] = $couponsData;
+                    }
                     
                     $docRef = $firestore->collection('orders')->add($firestoreData);
                     error_log("WEBHOOK: Order saved to Firestore with ID: " . $docRef->id());

@@ -736,12 +736,23 @@
         couponDiv.className = 'coupon-item';
         
         const payoutUsage = coupon.payoutUsage || 0;
-        const usageText = coupon.usageLimit ? 
-          `${coupon.usageCount}/${coupon.usageLimit} (cycle: ${payoutUsage})` : 
-          `${coupon.usageCount} (cycle: ${payoutUsage})`;
+        const isAffiliate = coupon.isAffiliateCoupon || false;
+        
+        // For affiliate coupons, show commission earned (₹300 per order)
+        // For regular coupons, show usage count
+        let usageText = '';
+        if (isAffiliate) {
+          usageText = coupon.usageLimit ? 
+            `${coupon.usageCount}/${coupon.usageLimit} uses (₹${payoutUsage.toLocaleString()} earned)` : 
+            `${coupon.usageCount} uses (₹${payoutUsage.toLocaleString()} earned)`;
+        } else {
+          usageText = coupon.usageLimit ? 
+            `${coupon.usageCount}/${coupon.usageLimit}` : 
+            `${coupon.usageCount} uses`;
+        }
         
         couponDiv.innerHTML = `
-          <div class="coupon-code">${coupon.code}</div>
+          <div class="coupon-code">${coupon.code}${isAffiliate ? ' 🤝' : ''}</div>
           <div class="coupon-name">${coupon.name}</div>
           <div class="coupon-type ${coupon.type}">${coupon.type}</div>
           <div class="coupon-status ${coupon.isActive ? 'active' : 'inactive'}">
@@ -750,7 +761,7 @@
           <div>${usageText}</div>
           <div class="coupon-actions">
             <button class="btn-edit" onclick="editCoupon('${coupon.id}')">Edit</button>
-            <button class="btn-edit" onclick="resetPayoutUsage('${coupon.code}')">Reset Cycle</button>
+            ${isAffiliate ? '<button class="btn-edit" onclick="resetPayoutUsage(\'' + coupon.code + '\')">Reset Cycle</button>' : ''}
             <button class="btn-delete" onclick="deleteCoupon('${coupon.id}')">Delete</button>
           </div>
         `;
@@ -1261,9 +1272,9 @@
         const payoutUsage = existingCoupon ? (existingCoupon.payoutUsage || 0) : 0;
         const usageText = existingCoupon ? 
           (existingCoupon.usageLimit ? 
-            `${existingCoupon.usageCount}/${existingCoupon.usageLimit} (cycle: ${payoutUsage})` : 
-            `${existingCoupon.usageCount} (cycle: ${payoutUsage})`) : 
-          '0 (cycle: 0)';
+            `${existingCoupon.usageCount}/${existingCoupon.usageLimit} uses (₹${payoutUsage.toLocaleString()} earned)` : 
+            `${existingCoupon.usageCount} uses (₹${payoutUsage.toLocaleString()} earned)`) : 
+          '0 uses (₹0 earned)';
         
         const actionsHtml = existingCoupon ? 
           `<div class="coupon-actions">
@@ -1350,10 +1361,53 @@
       
       // Setup affiliate button handlers
       document.getElementById('load-affiliates-btn').addEventListener('click', loadAffiliatesFromFirebase);
+      
+      // Start real-time stats updates
+      updateCouponStatsRealtime();
+      setInterval(updateCouponStatsRealtime, 30000); // Update every 30 seconds
     });
 
     // Initialize stats
     updateStats();
+
+  // Fetch and update coupon stats in real-time from Firestore
+  async function updateCouponStatsRealtime() {
+    try {
+      if (!window.AttralFirebase || !window.AttralFirebase.db) return;
+      
+      const couponsSnapshot = await window.AttralFirebase.db
+        .collection('coupons')
+        .get();
+      
+      let totalUsage = 0;
+      let totalCycle = 0;
+      let activeCoupons = 0;
+      let totalCoupons = 0;
+      
+      couponsSnapshot.forEach(doc => {
+        const data = doc.data();
+        totalCoupons++;
+        if (data.isActive) {
+          activeCoupons++;
+        }
+        totalUsage += (data.usageCount || 0);
+        totalCycle += (data.payoutUsage || 0);
+      });
+      
+      // Update display
+      document.getElementById('total-coupons').textContent = totalCoupons;
+      document.getElementById('active-coupons').textContent = activeCoupons;
+      document.getElementById('coupon-usage').textContent = totalUsage;
+      
+      // For affiliate coupons, payoutUsage is the commission amount (₹300 per order)
+      // For regular coupons, it's just a counter
+      document.getElementById('total-discounts').textContent = `₹${totalCycle.toLocaleString()}`;
+      
+      console.log('✅ Coupon stats updated:', { totalCoupons, activeCoupons, totalUsage, totalCommissions: totalCycle });
+    } catch (error) {
+      console.error('Error updating coupon stats:', error);
+    }
+  }
 
   // Reset payout (cycle) usage counter by coupon code
   async function resetPayoutUsage(code){

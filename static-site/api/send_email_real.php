@@ -65,15 +65,19 @@ try {
     $mail->setFrom($cfg['MAIL_FROM'] ?? 'info@attral.in', $cfg['MAIL_FROM_NAME'] ?? 'ATTRAL Electronics');
     
     // Get customer email from order data
-    $customerEmail = 'attralsolar@gmail.com'; // fallback
-    $customerName = 'Customer'; // fallback
+    if (!isset($input['orderData']) || !isset($input['orderData']['customer']['email'])) {
+        throw new Exception('Customer email is required in order data');
+    }
     
-    if (isset($input['orderData']) && isset($input['orderData']['customer'])) {
-        $customerEmail = $input['orderData']['customer']['email'] ?? $customerEmail;
-        $customerName = trim(($input['orderData']['customer']['firstName'] ?? '') . ' ' . ($input['orderData']['customer']['lastName'] ?? ''));
-        if (empty($customerName)) {
-            $customerName = 'Customer';
-        }
+    $customerEmail = $input['orderData']['customer']['email'];
+    $customerName = trim(($input['orderData']['customer']['firstName'] ?? '') . ' ' . ($input['orderData']['customer']['lastName'] ?? ''));
+    
+    if (empty($customerEmail)) {
+        throw new Exception('Customer email cannot be empty');
+    }
+    
+    if (empty($customerName)) {
+        $customerName = 'Customer';
     }
     
     $mail->addAddress($customerEmail, $customerName);

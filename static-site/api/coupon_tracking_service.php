@@ -424,10 +424,10 @@ function batchApplyCouponsForOrder($db, $coupons, $orderId, $orderMeta = [], $pa
         $isAffiliate = !empty($coupon['isAffiliateCoupon']);
         $affiliateCode = $coupon['affiliateCode'] ?? null;
         
-        // Calculate payout amount for affiliate coupons (10% commission)
+        // Calculate payout amount for affiliate coupons (fixed ₹300 commission)
         $payoutAmount = 0;
-        if ($isAffiliate && isset($orderMeta['amount'])) {
-            $payoutAmount = floatval($orderMeta['amount']) * 0.10; // 10% commission
+        if ($isAffiliate) {
+            $payoutAmount = 300; // Fixed ₹300 per sale
         }
         
         // Merge affiliate code into metadata

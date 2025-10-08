@@ -511,20 +511,8 @@
           return originalAssign.call(this, url);
         };
         
-        // Guard direct href assignment
-        let currentHref = window.location.href;
-        Object.defineProperty(window.location, 'href', {
-          get: function() { return currentHref; },
-          set: function(url) {
-            if (!/order-success\.html/i.test(url)) {
-              console.warn('🚨 BLOCKED redirect via location.href =', url);
-              console.trace('Stack trace of blocked redirect:');
-              return currentHref;
-            }
-            currentHref = url;
-            originalReplace.call(window.location, url);
-          }
-        });
+        // Note: Direct href assignment blocking removed due to browser restrictions
+        // Other redirect protections (replace, assign, history) remain active
         
         const origPush = history.pushState;
         history.pushState = function(state, title, url){

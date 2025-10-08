@@ -30,6 +30,37 @@ $receipt = isset($req['receipt']) ? $req['receipt'] : ('rcpt_'.time());
 $notes = isset($req['notes']) && is_array($req['notes']) ? $req['notes'] : [];
 if ($amount <= 0) { bad_request('Amount must be > 0'); }
 
+// Add product/cart data to notes for webhook processing
+// Razorpay notes support up to 15 key-value pairs with 256 chars each
+if (isset($req['product'])) {
+  // Encode product data as JSON string (may be truncated if too long)
+  $productJson = json_encode($req['product']);
+  if (strlen($productJson) <= 512) {
+    $notes['product_data'] = $productJson;
+  } else {
+    // For large product data, store items separately
+    if (isset($req['product']['items']) && is_array($req['product']['items'])) {
+      $notes['items_data'] = json_encode($req['product']['items']);
+    }
+    if (isset($req['product']['id'])) {
+      $notes['product_id'] = $req['product']['id'];
+    }
+    if (isset($req['product']['title'])) {
+      $notes['product_title'] = substr($req['product']['title'], 0, 255);
+    }
+  }
+}
+
+// Add pricing data to notes
+if (isset($req['pricing'])) {
+  $notes['pricing_data'] = json_encode($req['pricing']);
+}
+
+// Add coupons data if present
+if (isset($req['coupons']) && is_array($req['coupons']) && count($req['coupons']) > 0) {
+  $notes['coupons_data'] = json_encode($req['coupons']);
+}
+
 $payload = [
   'amount' => $amount,
   'currency' => $currency,

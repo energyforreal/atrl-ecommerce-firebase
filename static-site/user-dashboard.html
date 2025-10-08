@@ -1613,10 +1613,21 @@
       if (window.AttralFirebase && window.AttralFirebase.db) {
         // Loading states are already shown via HTML spinners
         
-        // Load order count
+        const user = window.AttralFirebase.auth.currentUser;
+        
+        // Load order count - first try by UID, then fallback to email
         window.AttralFirebase.db.collection('orders')
           .where('uid', '==', uid)
           .get()
+          .then(snapshot => {
+            // If no orders found by UID and user has email, try email fallback
+            if (snapshot.empty && user && user.email) {
+              return window.AttralFirebase.db.collection('orders')
+                .where('customer.email', '==', user.email)
+                .get();
+            }
+            return snapshot;
+          })
           .then(snapshot => {
             qs('order-count').textContent = snapshot.size;
             qs('order-count').classList.add('loaded');
@@ -1733,11 +1744,25 @@
     function loadRecentOrders(uid) {
       if (!window.AttralFirebase?.db) return;
       
+      const user = window.AttralFirebase.auth.currentUser;
+      
+      // First try by UID
       window.AttralFirebase.db.collection('orders')
         .where('uid', '==', uid)
         .orderBy('createdAt', 'desc')
         .limit(3)
         .get()
+        .then(snapshot => {
+          // If no orders found by UID and user has email, try email fallback
+          if (snapshot.empty && user && user.email) {
+            return window.AttralFirebase.db.collection('orders')
+              .where('customer.email', '==', user.email)
+              .orderBy('createdAt', 'desc')
+              .limit(3)
+              .get();
+          }
+          return snapshot;
+        })
         .then(snapshot => {
           const ordersContainer = qs('recent-orders');
           
@@ -1771,6 +1796,9 @@
       if (!window.AttralFirebase?.db) return;
       if (ordersUnsubscribe) { try { ordersUnsubscribe(); } catch(_) {} }
 
+      const user = window.AttralFirebase.auth.currentUser;
+      
+      // First try by UID
       const q = window.AttralFirebase.db
         .collection('orders')
         .where('uid', '==', uid)
@@ -1780,6 +1808,38 @@
       ordersUnsubscribe = q.onSnapshot((snapshot) => {
         const container = document.getElementById('orders-list');
         if (!container) return;
+
+        // If no orders found by UID and user has email, try email fallback
+        if (snapshot.empty && user && user.email) {
+          const fallbackQuery = window.AttralFirebase.db
+            .collection('orders')
+            .where('customer.email', '==', user.email)
+            .orderBy('createdAt', 'desc')
+            .limit(50);
+            
+          fallbackQuery.get().then(fallbackSnapshot => {
+            if (fallbackSnapshot.empty) {
+              container.innerHTML = `
+                <div class=\"empty-state\">
+                  <div class=\"empty-icon\">📦</div>
+                  <p>No orders found</p>
+                  <button class=\"btn-primary\" onclick=\"window.location.href='products.html'\">Start Shopping</button>
+                </div>
+              `;
+              return;
+            }
+
+            let html = '';
+            fallbackSnapshot.forEach(doc => {
+              const order = doc.data();
+              html += createOrderCard(order);
+            });
+            container.innerHTML = html;
+          }).catch(err => {
+            console.error('Fallback orders query error:', err);
+          });
+          return;
+        }
 
         if (snapshot.empty) {
           container.innerHTML = `
