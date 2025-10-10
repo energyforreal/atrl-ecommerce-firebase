@@ -9,10 +9,26 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-W
 header('Access-Control-Max-Age: 86400');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
-// TODO: Set these to your live/test keys
+// Load configuration
 $cfg = @include __DIR__.'/config.php';
+
+// Debug logging (comment out in production after testing)
+error_log('=== RAZORPAY CONFIG DEBUG ===');
+error_log('Config file path: ' . __DIR__ . '/config.php');
+error_log('Config loaded: ' . ($cfg ? 'YES' : 'NO'));
+error_log('Config type: ' . gettype($cfg));
+if ($cfg && is_array($cfg)) {
+    error_log('Config keys: ' . implode(', ', array_keys($cfg)));
+    error_log('Has RAZORPAY_KEY_ID: ' . (isset($cfg['RAZORPAY_KEY_ID']) ? 'YES' : 'NO'));
+}
+
 $RAZORPAY_KEY_ID = ($cfg['RAZORPAY_KEY_ID'] ?? null) ?: getenv('RAZORPAY_KEY_ID') ?: 'rzp_test_xxxxxxxxxxxx';
 $RAZORPAY_KEY_SECRET = ($cfg['RAZORPAY_KEY_SECRET'] ?? null) ?: getenv('RAZORPAY_KEY_SECRET') ?: 'xxxxxxxxxxxxxxxx';
+
+// Log what credentials are being used (mask the secret for security)
+error_log('Using RAZORPAY_KEY_ID: ' . $RAZORPAY_KEY_ID);
+error_log('Using RAZORPAY_KEY_SECRET: ' . (strlen($RAZORPAY_KEY_SECRET) > 4 ? substr($RAZORPAY_KEY_SECRET, 0, 4) . '...' : 'NOT_SET'));
+error_log('=========================');
 
 function bad_request($msg, $code = 400) {
   http_response_code($code);

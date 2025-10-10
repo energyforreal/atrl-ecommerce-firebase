@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Payment State - ATTRAL Debug Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 { color: #ff4444; }
+    button {
+      background: #4CAF50;
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover { background: #45a049; }
+    button.danger { background: #ff4444; }
+    button.danger:hover { background: #cc0000; }
+    .status { padding: 15px; margin: 15px 0; border-radius: 5px; }
+    .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+    .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    .flag-item { padding: 8px; border-bottom: 1px solid #ddd; }
+    .flag-item:last-child { border-bottom: none; }
+    .flag-name { font-weight: bold; color: #333; }
+    .flag-value { color: #666; float: right; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Reset Payment State - Debug Tool</h1>
+    <p>Use this tool to completely reset all payment-related flags and test fresh.</p>
+    
+    <h2>📊 Current State:</h2>
+    <div id="current-state"></div>
+    
+    <h2>🛠️ Actions:</h2>
+    <button onclick="showCurrentState()">🔍 Refresh Status</button>
+    <button onclick="resetPaymentFlags()" class="danger">🔄 Reset Payment Flags</button>
+    <button onclick="clearAllStorage()" class="danger">🗑️ Clear All Storage</button>
+    <button onclick="testRedirect()">🧪 Test Redirect Protection</button>
+    
+    <h2>📋 Debug Information:</h2>
+    <div id="debug-output"></div>
+    
+    <h2>🧪 Test Actions:</h2>
+    <button onclick="simulatePaymentSuccess()">✅ Simulate Payment Success</button>
+    <button onclick="window.location.href='shop.html'">🛍️ Go to Shop</button>
+    <button onclick="window.location.href='order.html'">📝 Go to Order Page</button>
+  </div>
+
+  <script>
+    function showCurrentState() {
+      const stateDiv = document.getElementById('current-state');
+      const flags = {
+        '__ATTRAL_PAYMENT_SUCCESS': sessionStorage.getItem('__ATTRAL_PAYMENT_SUCCESS'),
+        '__ATTRAL_ORDER_ID': sessionStorage.getItem('__ATTRAL_ORDER_ID'),
+        'payment_success_redirect': sessionStorage.getItem('payment_success_redirect'),
+        'lastOrderData': sessionStorage.getItem('lastOrderData') ? 'Present (' + sessionStorage.getItem('lastOrderData').length + ' chars)' : null,
+        'cartCheckout': sessionStorage.getItem('cartCheckout') ? 'Present' : null,
+        'buyNowProduct': sessionStorage.getItem('buyNowProduct') ? 'Present' : null,
+        'attral_cart (localStorage)': localStorage.getItem('attral_cart'),
+        'attral_ref (localStorage)': localStorage.getItem('attral_ref')
+      };
+      
+      let html = '<div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">';
+      
+      Object.keys(flags).forEach(key => {
+        const value = flags[key];
+        const color = value ? '#d4edda' : '#f8f9fa';
+        html += `<div class="flag-item" style="background: ${color}">
+          <span class="flag-name">${key}:</span>
+          <span class="flag-value">${value || 'null'}</span>
+        </div>`;
+      });
+      
+      html += '</div>';
+      stateDiv.innerHTML = html;
+      
+      log('Current state refreshed', 'success');
+    }
+    
+    function resetPaymentFlags() {
+      const flags = [
+        '__ATTRAL_PAYMENT_SUCCESS',
+        '__ATTRAL_ORDER_ID',
+        'payment_success_redirect',
+        'lastOrderData'
+      ];
+      
+      flags.forEach(flag => {
+        sessionStorage.removeItem(flag);
+      });
+      
+      window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
+      
+      log('✅ Payment flags reset successfully!', 'success');
+      showCurrentState();
+    }
+    
+    function clearAllStorage() {
+      if (confirm('This will clear ALL session and local storage. Continue?')) {
+        sessionStorage.clear();
+        localStorage.clear();
+        log('✅ All storage cleared!', 'success');
+        showCurrentState();
+      }
+    }
+    
+    function testRedirect() {
+      log('Testing redirect protection...', 'warning');
+      
+      try {
+        // Try to redirect to cart
+        log('Attempting redirect to cart.html...', 'info');
+        window.location.replace('cart.html');
+        
+        // If we get here, redirect was NOT blocked
+        setTimeout(() => {
+          log('❌ Redirect to cart.html was NOT blocked!', 'error');
+          log('This means protection is not working or old files are loaded', 'error');
+        }, 100);
+        
+      } catch (e) {
+        log('✅ Exception thrown - protection might be working: ' + e.message, 'success');
+      }
+    }
+    
+    function simulatePaymentSuccess() {
+      sessionStorage.setItem('__ATTRAL_PAYMENT_SUCCESS', 'true');
+      sessionStorage.setItem('__ATTRAL_ORDER_ID', 'order_test_' + Date.now());
+      sessionStorage.setItem('lastOrderData', JSON.stringify({
+        test: true,
+        orderId: 'TEST-001',
+        customer: { email: 'test@example.com' },
+        pricing: { total: 999 }
+      }));
+      
+      log('✅ Payment success simulated!', 'success');
+      log('Try navigating to order-success.html now', 'info');
+      showCurrentState();
+      
+      setTimeout(() => {
+        if (confirm('Go to order-success.html with simulated order?')) {
+          window.location.href = 'order-success.html?orderId=' + sessionStorage.getItem('__ATTRAL_ORDER_ID');
+        }
+      }, 1000);
+    }
+    
+    function log(message, type = 'info') {
+      const debugDiv = document.getElementById('debug-output');
+      const entry = document.createElement('div');
+      entry.className = `status ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      debugDiv.appendChild(entry);
+      console.log(message);
+    }
+    
+    // Initialize
+    showCurrentState();
+    log('Debug tool loaded successfully', 'success');
+    log('Click "Refresh Status" to see current flags', 'info');
+    
+    // Auto-refresh every 2 seconds
+    setInterval(showCurrentState, 2000);
+  </script>
+</body>
+</html>
+

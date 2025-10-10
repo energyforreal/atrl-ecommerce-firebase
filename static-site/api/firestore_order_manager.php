@@ -1,13 +1,33 @@
 <?php
 /**
- * 🔥 Firestore-Only Order Management System
- * Handles all order operations using Firestore database
+ * ⚠️ DEPRECATED - USE firestore_order_manager_rest.php INSTEAD
+ * 
+ * This file uses the Firestore SDK which requires Composer dependencies.
+ * For Hostinger compatibility, use firestore_order_manager_rest.php which uses REST API.
+ * 
+ * This file is kept for backward compatibility only.
+ * 
+ * PRIMARY SYSTEM: firestore_order_manager_rest.php (REST API - Hostinger compatible)
+ * DEPRECATED: firestore_order_manager.php (SDK - requires Composer/vendor)
+ * 
+ * @deprecated Use firestore_order_manager_rest.php
+ * @see firestore_order_manager_rest.php
+ */
+
+/**
+ * 🔥 Firestore-Only Order Management System (DEPRECATED - SDK VERSION)
+ * Handles all order operations using Firestore SDK
+ * 
+ * ⚠️ WARNING: Requires Composer dependencies (vendor/google/cloud-firestore)
+ * ⚠️ NOT RECOMMENDED for Hostinger shared hosting
  */
 
 // Suppress warnings and errors to prevent JSON corruption
 error_reporting(0);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
+
+error_log("⚠️ DEPRECATION WARNING: firestore_order_manager.php (SDK) is being used. Please migrate to firestore_order_manager_rest.php (REST API)");
 
 // Start output buffering to catch any unexpected output
 ob_start();
@@ -17,7 +37,7 @@ if (php_sapi_name() !== 'cli' && !headers_sent()) {
     header('Content-Type: application/json');
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: POST, GET, PUT, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Razorpay-Signature');
     header('Access-Control-Max-Age: 86400');
 }
 
@@ -34,10 +54,11 @@ require_once __DIR__ . '/coupon_tracking_service.php';
 
 // Check if Firestore SDK is available
 if (!class_exists('Google\Cloud\Firestore\FirestoreClient')) {
-    error_log("FIRESTORE: Firestore SDK not available - REQUIRED for operation");
+    error_log("❌ [DEBUG] FIRESTORE_MGR: Firestore SDK not available - REQUIRED for operation");
     // No fallback - Firestore is required
     throw new Exception('Firestore SDK is required but not available');
 }
+error_log("✅ [DEBUG] FIRESTORE_MGR: Firestore SDK (FirestoreClient) is available");
 
 // Load configuration
 $cfg = @include __DIR__.'/config.php';
@@ -55,24 +76,31 @@ class FirestoreOrderManager {
     
     private function initializeFirestore() {
         try {
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: Initializing Firestore connection...");
+            
             // Check if Firestore SDK is available
             if (!class_exists('Google\Cloud\Firestore\FirestoreClient')) {
                 throw new Exception('Firestore SDK not available');
             }
+            error_log("✅ [DEBUG] FIRESTORE_MGR: FirestoreClient class exists");
             
             $serviceAccountPath = __DIR__ . '/firebase-service-account.json';
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: Checking for service account at: $serviceAccountPath");
+            
             if (!file_exists($serviceAccountPath)) {
                 throw new Exception('Firebase service account file not found');
             }
+            error_log("✅ [DEBUG] FIRESTORE_MGR: Service account file found");
             
             $this->firestore = new Google\Cloud\Firestore\FirestoreClient([
                 'projectId' => 'e-commerce-1d40f',
                 'keyFilePath' => $serviceAccountPath
             ]);
-            error_log("FIRESTORE: Successfully initialized Firestore connection");
+            error_log("✅ [DEBUG] FIRESTORE_MGR: *** FIRESTORE CONNECTION INITIALIZED SUCCESSFULLY ***");
             
         } catch (Exception $e) {
-            error_log("FIRESTORE ERROR: " . $e->getMessage());
+            error_log("❌ [DEBUG] FIRESTORE_MGR: INITIALIZATION FAILED: " . $e->getMessage());
+            error_log("❌ [DEBUG] FIRESTORE_MGR: Stack trace: " . $e->getTraceAsString());
             throw new Exception('Firestore initialization failed: ' . $e->getMessage());
         }
     }
@@ -81,6 +109,9 @@ class FirestoreOrderManager {
         $method = $_SERVER['REQUEST_METHOD'];
         $requestUri = $_SERVER['REQUEST_URI'] ?? '';
         $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        
+        error_log("🔧 [DEBUG] FIRESTORE_MGR: handleRequest() called");
+        error_log("🔧 [DEBUG] FIRESTORE_MGR: Method: $method, URI: $requestUri");
         
         // Extract path after the script name
         $path = '/';
@@ -94,25 +125,32 @@ class FirestoreOrderManager {
             $path = substr($path, 0, strpos($path, '?'));
         }
         
+        error_log("🔧 [DEBUG] FIRESTORE_MGR: Extracted path: $path");
+        
         try {
             switch ($path) {
                 case '/create':
+                    error_log("🔧 [DEBUG] FIRESTORE_MGR: Routing to createOrder()");
                     return $this->createOrder();
                     
                 case '/status':
+                    error_log("🔧 [DEBUG] FIRESTORE_MGR: Routing to getOrderStatus()");
                     return $this->getOrderStatus();
                     
                 case '/update':
+                    error_log("🔧 [DEBUG] FIRESTORE_MGR: Routing to updateOrderStatus()");
                     return $this->updateOrderStatus();
                     
                 default:
+                    error_log("❌ [DEBUG] FIRESTORE_MGR: Endpoint NOT FOUND: $path");
                     if (php_sapi_name() !== 'cli' && !headers_sent()) {
                         http_response_code(404);
                     }
                     return ['success' => false, 'error' => 'Endpoint not found'];
             }
         } catch (Exception $e) {
-            error_log("FIRESTORE ORDER MANAGER ERROR: " . $e->getMessage());
+            error_log("❌ [DEBUG] FIRESTORE_MGR: EXCEPTION in handleRequest: " . $e->getMessage());
+            error_log("❌ [DEBUG] FIRESTORE_MGR: Stack trace: " . $e->getTraceAsString());
             if (php_sapi_name() !== 'cli' && !headers_sent()) {
                 http_response_code(500);
             }
@@ -122,28 +160,43 @@ class FirestoreOrderManager {
     
     private function createOrder() {
         try {
-            $input = json_decode(file_get_contents('php://input'), true);
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: createOrder() started");
+            
+            $rawInput = file_get_contents('php://input');
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: Raw input length: " . strlen($rawInput) . " bytes");
+            
+            $input = json_decode($rawInput, true);
             
             if (!$input) {
+                error_log("❌ [DEBUG] FIRESTORE_MGR: Invalid JSON input");
+                error_log("❌ [DEBUG] FIRESTORE_MGR: Raw input was: " . substr($rawInput, 0, 500));
                 throw new Exception('Invalid JSON input');
             }
+            
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: Parsed input successfully");
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: Input keys: " . implode(', ', array_keys($input)));
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: user_id in input: " . ($input['user_id'] ?? 'NULL'));
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: Full input: " . json_encode($input));
             
             // Validate required fields
             $required = ['order_id', 'payment_id', 'customer', 'product', 'pricing', 'shipping', 'payment'];
             foreach ($required as $field) {
                 if (!isset($input[$field])) {
+                    error_log("❌ [DEBUG] FIRESTORE_MGR: Missing required field: $field");
                     throw new Exception("Missing required field: $field");
                 }
             }
+            error_log("✅ [DEBUG] FIRESTORE_MGR: All required fields present");
             
             // Generate unique order number
             $orderNumber = $this->generateOrderNumber();
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: Generated order number: $orderNumber");
             
             // Check if order already exists (idempotent)
             $existingOrder = $this->getOrderByPaymentId($input['payment_id']);
             if ($existingOrder) {
                 // Idempotent success: return the existing order instead of erroring
-                error_log("FIRESTORE ORDER: Idempotent hit for payment {$input['payment_id']}, returning existing order");
+                error_log("✅ [DEBUG] FIRESTORE_MGR: Idempotent hit for payment {$input['payment_id']}, returning existing order");
                 if (!headers_sent()) { header('X-Idempotent', 'true'); }
                 return [
                     'success' => true,
@@ -185,17 +238,30 @@ class FirestoreOrderManager {
                 'notes' => $input['notes'] ?? ''
             ];
             
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: Order data to save:");
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: - Order Number: $orderNumber");
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: - Razorpay Order ID: " . $input['order_id']);
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: - Razorpay Payment ID: " . $input['payment_id']);
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: - UID: " . ($orderData['uid'] ?? 'NULL'));
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: - Customer Email: " . ($input['customer']['email'] ?? 'NULL'));
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: - Amount: $resolvedAmount");
+            
             // Add affiliate tracking if present
             if (isset($input['affiliate_code'])) {
                 $orderData['affiliate'] = [
                     'code' => $input['affiliate_code'],
                     'trackedAt' => new \Google\Cloud\Core\Timestamp(new DateTime())
                 ];
+                error_log("🔧 [DEBUG] FIRESTORE_MGR: Affiliate code: " . $input['affiliate_code']);
             }
             
             // Save to Firestore
+            error_log("🔧 [DEBUG] FIRESTORE_MGR: Saving to Firestore collection 'orders'...");
             $docRef = $this->firestore->collection('orders')->add($orderData);
             $orderId = $docRef->id();
+            error_log("✅ [DEBUG] FIRESTORE_MGR: *** ORDER SAVED TO FIRESTORE SUCCESSFULLY ***");
+            error_log("✅ [DEBUG] FIRESTORE_MGR: Firestore Document ID: $orderId");
+            error_log("✅ [DEBUG] FIRESTORE_MGR: Order Number: $orderNumber");
             
             // Add status history
             $this->addStatusHistory($orderId, 'confirmed', 'Order created and payment verified');
@@ -209,6 +275,9 @@ class FirestoreOrderManager {
             // 🔢 Increment coupon usage counters using enhanced coupon tracking service
             $couponResults = [];
             if (!empty($input['coupons']) && is_array($input['coupons'])) {
+                error_log("FIRESTORE ORDER: Processing " . count($input['coupons']) . " coupons for order $orderId");
+                error_log("FIRESTORE ORDER: Coupon data: " . json_encode($input['coupons']));
+                
                 // Use batch apply from coupon tracking service
                 $orderMeta = [
                     'amount' => $resolvedAmount,
@@ -234,10 +303,12 @@ class FirestoreOrderManager {
                 }
                 
                 error_log("FIRESTORE ORDER: Batch coupon processing - " . $batchResult['message']);
+            } else {
+                error_log("FIRESTORE ORDER: No coupons to process for order $orderId");
             }
             
             error_log("FIRESTORE ORDER: Order created successfully - ID: $orderId, Order Number: $orderNumber");
-            error_log("FIRESTORE ORDER: Coupon results - " . implode(', ', $couponResults));
+            error_log("FIRESTORE ORDER: Coupon results - " . (count($couponResults) > 0 ? implode(', ', $couponResults) : 'No coupons applied'));
             
             return [
                 'success' => true,

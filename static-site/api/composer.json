@@ -5,8 +5,8 @@
     "require": {
         "php": ">=7.4",
         "kreait/firebase-php": "^6.0",
-        "google/cloud-firestore": "^1.0",
-        "google/cloud-core": "^1.0",
+        "google/cloud-firestore": "^1.28",
+        "google/cloud-core": "^1.49",
         "phpmailer/phpmailer": "^6.9"
     },
     "autoload": {

@@ -44,16 +44,21 @@ error_log("WEBHOOK: Event received: " . ($event['event'] ?? 'unknown'));
 // Handle payment.captured event
 if ($event['event'] === 'payment.captured') {
     try {
+        error_log("🔧 [DEBUG] WEBHOOK: payment.captured event triggered");
+        
         $payment = $event['payload']['payment']['entity'];
         $orderId = $payment['order_id'];
         $paymentId = $payment['id'];
         $amount = $payment['amount'];
         $currency = $payment['currency'];
         
-        error_log("WEBHOOK: Processing payment.captured for order: $orderId, payment: $paymentId");
+        error_log("🔧 [DEBUG] WEBHOOK: Payment details - Order: $orderId, Payment: $paymentId, Amount: $amount $currency");
+        error_log("🔧 [DEBUG] WEBHOOK: Full payment entity: " . json_encode($payment));
         
         // Extract customer data from Razorpay notes first
         $notes = $payment['notes'] ?? [];
+        error_log("🔧 [DEBUG] WEBHOOK: Extracted notes: " . json_encode($notes));
+        error_log("🔧 [DEBUG] WEBHOOK: UID from notes: " . ($notes['uid'] ?? 'NULL'));
         
         // Create order in database using order_manager.php
         $orderData = [
@@ -187,101 +192,15 @@ if ($event['event'] === 'payment.captured') {
             $orderData['coupons'] = $couponsData;
         }
         
-        // Save directly to Firestore using Firebase Admin SDK
-        try {
-            // Check if Firebase Admin SDK is available
-            if (class_exists('Google\Cloud\Firestore\FirestoreClient')) {
-                $serviceAccountPath = __DIR__ . '/firebase-service-account.json';
-                if (file_exists($serviceAccountPath)) {
-                    $firestore = new Google\Cloud\Firestore\FirestoreClient([
-                        'projectId' => 'e-commerce-1d40f',
-                        'keyFilePath' => $serviceAccountPath
-                    ]);
-                    
-                    // Use real product data if available, otherwise fallback to placeholder
-                    $firestoreProductData = $productData ?: [
-                        'id' => 'webhook_order',
-                        'title' => 'Webhook Order',
-                        'price' => $amount / 100,
-                        'items' => [[
-                            'id' => 'webhook_item',
-                            'title' => 'ATTRAL 100W GaN Charger',
-                            'price' => $amount / 100,
-                            'quantity' => 1
-                        ]]
-                    ];
-                    
-                    // Use real pricing data if available, otherwise fallback to calculated
-                    $firestorePricingData = $pricingData ?: [
-                        'subtotal' => $amount / 100,
-                        'shipping' => 0,
-                        'discount' => 0,
-                        'total' => $amount / 100,
-                        'currency' => $currency
-                    ];
-                    
-                    $firestoreData = [
-                        'orderId' => $orderId,
-                        'razorpayOrderId' => $orderId,
-                        'razorpayPaymentId' => $paymentId,
-                        'uid' => $notes['uid'] ?? null, // Extract uid from notes for user association
-                        'status' => 'confirmed',
-                        'amount' => $amount / 100,
-                        'currency' => $currency,
-                        'customer' => [
-                            'firstName' => $customerFirstName,
-                            'lastName' => $customerLastName,
-                            'email' => $customerEmail,
-                            'phone' => $customerPhone
-                        ],
-                        'product' => $firestoreProductData,
-                        'pricing' => $firestorePricingData,
-                        'shipping' => [
-                            'address' => $notes['address'] ?? '',
-                            'city' => $notes['city'] ?? '',
-                            'state' => $notes['state'] ?? '',
-                            'pincode' => $notes['pincode'] ?? '',
-                            'country' => $notes['country'] ?? 'India'
-                        ],
-                        'payment' => [
-                            'method' => 'razorpay',
-                            'transaction_id' => $paymentId,
-                            'signature' => $sig
-                        ],
-                        'paymentDetails' => [
-                            'method' => $payment['method'] ?? 'unknown',
-                            'upiVpa' => $payment['vpa'] ?? null
-                        ],
-                        'notes' => $notes, // Store all notes for reference
-                        'email' => $customerEmail, // Add top-level email for easy reference
-                        'createdAt' => new Google\Cloud\Core\Timestamp(new DateTime()),
-                        'updatedAt' => new Google\Cloud\Core\Timestamp(new DateTime()),
-                        'source' => 'webhook'
-                    ];
-                    
-                    // Add coupons if available
-                    if (!empty($couponsData)) {
-                        $firestoreData['coupons'] = $couponsData;
-                    }
-                    
-                    $docRef = $firestore->collection('orders')->add($firestoreData);
-                    error_log("WEBHOOK: Order saved to Firestore with ID: " . $docRef->id());
-                    
-                    // 📧 Email sending removed - handled by order-success.html page
-                    error_log("WEBHOOK: Order saved to Firestore. Email will be sent from order-success page.");
-                } else {
-                    error_log("WEBHOOK: Firebase service account file not found");
-                }
-            } else {
-                error_log("WEBHOOK: Firebase Admin SDK not available");
-            }
-        } catch (Exception $e) {
-            error_log("WEBHOOK: Firestore save error: " . $e->getMessage());
-        }
+        // ✅ Direct Firestore write removed - using order manager API for consistency
+        error_log("🔧 [DEBUG] WEBHOOK: Firestore write handled by firestore_order_manager.php API");
         
-        // Process order using Firestore-only order manager
+        // Process order using Firestore REST API order manager (PRIMARY)
+        error_log("🔧 [DEBUG] WEBHOOK: Calling firestore_order_manager_rest.php/create API...");
+        error_log("🔧 [DEBUG] WEBHOOK: Order data being sent to API: " . json_encode($orderData));
+        
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://attral.in/api/firestore_order_manager.php/create');
+        curl_setopt($ch, CURLOPT_URL, 'https://attral.in/api/firestore_order_manager_rest.php/create');
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($orderData));
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -293,21 +212,39 @@ if ($event['event'] === 'payment.captured') {
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
         curl_close($ch);
+        
+        error_log("🔧 [DEBUG] WEBHOOK: API Response - HTTP Code: $httpCode");
+        error_log("🔧 [DEBUG] WEBHOOK: API Response - Body: " . ($response ?: 'EMPTY'));
+        
+        if ($curlError) {
+            error_log("❌ [DEBUG] WEBHOOK: cURL ERROR: $curlError");
+        }
         
         if ($httpCode === 200) {
             $result = json_decode($response, true);
-            if ($result['success']) {
-                error_log("WEBHOOK: Order processed via Firestore manager: " . ($result['orderNumber'] ?? 'unknown'));
+            if ($result && $result['success']) {
+                error_log("✅ [DEBUG] WEBHOOK: API call successful - Order Number: " . ($result['orderNumber'] ?? 'unknown'));
+                error_log("✅ [DEBUG] WEBHOOK: Order ID: " . ($result['orderId'] ?? 'unknown'));
+                error_log("✅ [DEBUG] WEBHOOK: API Source: " . ($result['api_source'] ?? 'unknown'));
+                
+                // Log coupon processing results
+                if (!empty($result['couponResults'])) {
+                    error_log("🎫 [DEBUG] WEBHOOK: Coupon results: " . implode(', ', $result['couponResults']));
+                }
             } else {
-                error_log("WEBHOOK: Firestore order processing failed: " . ($result['error'] ?? 'unknown error'));
+                error_log("❌ [DEBUG] WEBHOOK: API call failed - Error: " . ($result['error'] ?? 'unknown error'));
+                error_log("❌ [DEBUG] WEBHOOK: Full response: " . json_encode($result));
             }
         } else {
-            error_log("WEBHOOK: Firestore order processing failed with code $httpCode: $response");
+            error_log("❌ [DEBUG] WEBHOOK: API call failed with HTTP code $httpCode");
+            error_log("❌ [DEBUG] WEBHOOK: Response body: " . ($response ?: 'EMPTY'));
         }
         
     } catch (Exception $e) {
-        error_log("WEBHOOK: Error processing payment.captured: " . $e->getMessage());
+        error_log("❌ [DEBUG] WEBHOOK: EXCEPTION in payment.captured handler: " . $e->getMessage());
+        error_log("❌ [DEBUG] WEBHOOK: Stack trace: " . $e->getTraceAsString());
     }
 }
 

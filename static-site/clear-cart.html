@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clear Cart - ATTRAL</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 { color: #ff6b35; }
+    button {
+      background: #ff4444;
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover { background: #cc0000; }
+    button.success { background: #4CAF50; }
+    button.success:hover { background: #45a049; }
+    .status { padding: 15px; margin: 15px 0; border-radius: 5px; }
+    .success { background: #d4edda; color: #155724; }
+    .warning { background: #fff3cd; color: #856404; }
+    pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🛒 Cart Management Tool</h1>
+    <p>Use this tool to check and clear your cart storage.</p>
+    
+    <h2>📊 Current Cart Status:</h2>
+    <div id="status"></div>
+    
+    <h2>🛠️ Actions:</h2>
+    <button onclick="showCart()">🔍 Show Cart Contents</button>
+    <button onclick="clearCart()">🗑️ Clear Cart</button>
+    <button onclick="window.location.reload()">🔄 Refresh Page</button>
+    
+    <h2>📋 Cart Data:</h2>
+    <div id="cart-data"></div>
+  </div>
+
+  <script>
+    function showCart() {
+      const statusDiv = document.getElementById('status');
+      const cartDataDiv = document.getElementById('cart-data');
+      
+      try {
+        const cartRaw = localStorage.getItem('attral_cart');
+        const cart = cartRaw ? JSON.parse(cartRaw) : [];
+        
+        let html = '<div class="status ';
+        html += cart.length > 0 ? 'warning' : 'success';
+        html += '">';
+        html += `<strong>Cart has ${cart.length} item(s)</strong><br>`;
+        html += `Total items in cart: ${cart.reduce((sum, item) => sum + (item.quantity || 1), 0)}`;
+        html += '</div>';
+        
+        statusDiv.innerHTML = html;
+        
+        if (cart.length > 0) {
+          let cartHtml = '<pre>';
+          cartHtml += JSON.stringify(cart, null, 2);
+          cartHtml += '</pre>';
+          cartDataDiv.innerHTML = cartHtml;
+        } else {
+          cartDataDiv.innerHTML = '<div class="status success">Cart is empty ✅</div>';
+        }
+        
+      } catch (error) {
+        statusDiv.innerHTML = '<div class="status warning">Error reading cart: ' + error.message + '</div>';
+      }
+    }
+    
+    function clearCart() {
+      if (confirm('Are you sure you want to clear your cart?')) {
+        try {
+          localStorage.removeItem('attral_cart');
+          localStorage.removeItem('cartCheckout');
+          localStorage.removeItem('buyNowProduct');
+          sessionStorage.removeItem('cartCheckout');
+          sessionStorage.removeItem('buyNowProduct');
+          sessionStorage.removeItem('lastOrderData');
+          
+          const statusDiv = document.getElementById('status');
+          statusDiv.innerHTML = '<div class="status success">✅ Cart cleared successfully! Page will refresh in 2 seconds...</div>';
+          
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+          
+        } catch (error) {
+          const statusDiv = document.getElementById('status');
+          statusDiv.innerHTML = '<div class="status warning">Error clearing cart: ' + error.message + '</div>';
+        }
+      }
+    }
+    
+    // Auto-show cart on page load
+    window.addEventListener('load', showCart);
+  </script>
+</body>
+</html>
+

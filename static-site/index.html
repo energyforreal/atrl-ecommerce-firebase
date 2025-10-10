@@ -1419,7 +1419,14 @@
   
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
-    window.Attral.initHeaderCartCount();
+    
+    // 🛒 AUTO-VALIDATE: Clean cart automatically on page load
+    (async function() {
+      if (window.Attral && window.Attral.validateAndCleanCart) {
+        await window.Attral.validateAndCleanCart();
+      }
+      window.Attral.initHeaderCartCount();
+    })();
     
     // Load product price from products.json and update buttons
     async function loadProductPrice() {

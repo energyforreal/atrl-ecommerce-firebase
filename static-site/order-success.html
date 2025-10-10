@@ -477,6 +477,15 @@
   <script src="js/app.js"></script>
   <script src="js/dropdown.js"></script>
   
+  <!-- Version Check for Cache Detection -->
+  <script>
+    console.log('═══════════════════════════════════════════════');
+    console.log('📦 ORDER SUCCESS PAGE VERSION: 3.0 - Firestore REST API');
+    console.log('📅 Last Updated: 2025-10-10');
+    console.log('🔥 Using: firestore_order_manager_rest.php');
+    console.log('═══════════════════════════════════════════════');
+  </script>
+  
   <!-- Global Redirect Protection -->
   <script>
     // Prevent any accidental redirects away from success page
@@ -571,7 +580,7 @@
         // Retry up to 3 times with delays
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
-            const response = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/status?order_id=${orderId}`);
+            const response = await fetch(`${apiBaseUrl}/api/firestore_order_manager_rest.php/status?order_id=${orderId}`);
             
             if (response.ok) {
               const data = await response.json();
@@ -738,7 +747,7 @@
           amount_rupees_exact: (typeof totalRupees === 'number') ? Number(totalRupees) : undefined,
           amount_paise_exact: (typeof totalRupees === 'number') ? Math.round(Number(totalRupees) * 100) : undefined
         };
-        const res = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/update`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+        const res = await fetch(`${apiBaseUrl}/api/firestore_order_manager_rest.php/update`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
         const j = await res.json().catch(()=>({}));
         console.log('🔗 coupons upsert result', j);
       } catch (e){ console.warn('🔗 coupons upsert error', e && e.message); }

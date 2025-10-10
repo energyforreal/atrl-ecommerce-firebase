@@ -976,19 +976,30 @@
 
     function updateStats(code) {
       const fb = window.AttralFirebase;
+      console.log('📊 [AFFILIATE STATS] Loading stats for code:', code);
+      
       if (!fb) {
-        console.error('Firebase not available for stats');
+        console.error('❌ [AFFILIATE STATS] Firebase not available for stats');
         setStatsFallback();
         return;
       }
       // Call PHP API via callFunction (migrated from Cloud Functions)
       if (fb && fb.callFunction) {
+        console.log('🔄 [AFFILIATE STATS] Calling getAffiliateStats API...');
         fb.callFunction('getAffiliateStats', { code: code })
           .then((stats) => {
+            console.log('✅ [AFFILIATE STATS] API response:', stats);
             const totalEarnings = Number(stats.totalEarnings || 0);
             const totalReferrals = Number(stats.totalReferrals || 0);
             const monthlyEarnings = Number(stats.monthlyEarnings || 0);
             const conversionRate = Number(stats.conversionRate || 0);
+            
+            console.log('📈 [AFFILIATE STATS] Parsed values:', {
+              totalEarnings,
+              totalReferrals,
+              monthlyEarnings,
+              conversionRate
+            });
             
             animateValue(qs('total-earnings'), 0, totalEarnings, 800, '₹');
             animateValue(qs('total-referrals'), 0, totalReferrals, 800, '');
@@ -1020,13 +1031,19 @@
             } catch(_) {}
           })
           .catch((error) => {
-            console.error('Callable stats failed, falling back:', error);
+            console.error('❌ [AFFILIATE STATS] API call failed:', error);
+            console.error('❌ [AFFILIATE STATS] Error details:', {
+              message: error.message,
+              code: error.code,
+              stack: error.stack
+            });
             // Fallback to zeroes instead of Error text
             setStatsFallback();
           });
         return;
       }
       // As a last resort, set zeros
+      console.warn('⚠️ [AFFILIATE STATS] No callFunction available, using fallback');
       setStatsFallback();
     }
 
@@ -1062,19 +1079,19 @@
     const maxRenderRetries = 5;
 
     function renderReferredOrders(code){
-      console.log('renderReferredOrders called with code:', code);
+      console.log('📋 [AFFILIATE ORDERS] renderReferredOrders called with code:', code);
       
       const fb = window.AttralFirebase; 
       
       if (!fb) {
-        console.error('Firebase not available for orders');
+        console.error('❌ [AFFILIATE ORDERS] Firebase not available for orders');
         showErrorInOrders('Service not available. Please refresh the page.');
         return;
       }
       const root = document.getElementById('referred-orders');
       
-      console.log('Looking for referred-orders container...');
-      console.log('Element found:', root);
+      console.log('🔍 [AFFILIATE ORDERS] Looking for referred-orders container...');
+      console.log('✅ [AFFILIATE ORDERS] Element found:', root);
       
       if (!root) {
         console.error('referred-orders container not found');
@@ -1112,9 +1129,25 @@
       const pageToken = (window.__ordersPageToken) || null;
 
       if (fb && fb.callFunction) {
+        console.log('🔄 [AFFILIATE ORDERS] Calling getAffiliateOrders API with:', {
+          code,
+          status: statusFilter,
+          date: dateFilter,
+          search: searchTerm,
+          pageSize
+        });
+        
         fb.callFunction('getAffiliateOrders', { code, status: statusFilter, date: dateFilter, search: searchTerm, pageSize, pageToken })
           .then((res) => {
+            console.log('✅ [AFFILIATE ORDERS] API response received:', res);
             const { orders, total, totalAmount, nextPageToken } = res || { orders: [], total: 0, totalAmount: 0, nextPageToken: null };
+            console.log('📊 [AFFILIATE ORDERS] Parsed data:', {
+              ordersCount: orders?.length || 0,
+              total,
+              totalAmount,
+              hasNextPage: !!nextPageToken
+            });
+            
             window.__ordersNextPageToken = nextPageToken;
             allOrders = orders;
             filteredOrders = [...allOrders];
@@ -1125,7 +1158,12 @@
             updatePagination(total);
           })
           .catch((error) => {
-            console.error('Error loading orders via callable:', error);
+            console.error('❌ [AFFILIATE ORDERS] API call failed:', error);
+            console.error('❌ [AFFILIATE ORDERS] Error details:', {
+              message: error.message,
+              code: error.code,
+              stack: error.stack
+            });
             root.innerHTML = `
               <div class="error-state">
                 <div class="error-icon">⚠️</div>

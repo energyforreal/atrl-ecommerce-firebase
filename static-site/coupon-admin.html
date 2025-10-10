@@ -571,24 +571,25 @@
     // Load coupons from Firebase Firestore
     async function loadCouponsFromFirebase() {
       try {
-        console.log('🔄 Loading coupons from Firebase...');
+        console.log('🔄 [COUPON ADMIN] Loading coupons from Firebase...');
         
         // Wait for Firebase to be ready
         await waitForFirebase();
         
         if (!window.AttralFirebase || !window.AttralFirebase.db) {
-          console.log('❌ Firebase not available, using local storage');
+          console.log('❌ [COUPON ADMIN] Firebase not available, using local storage');
           loadCouponsFromLocalStorage();
           return;
         }
 
+        console.log('🔍 [COUPON ADMIN] Querying coupons collection...');
         // Fetch all coupons from Firestore
         const couponsSnapshot = await window.AttralFirebase.db
           .collection('coupons')
           .orderBy('createdAt', 'desc')
           .get();
 
-        console.log('📊 Loaded coupons from Firebase:', couponsSnapshot.size);
+        console.log('📦 [COUPON ADMIN] Loaded coupons from Firebase:', couponsSnapshot.size);
 
         // Clear existing array
         coupons = [];
@@ -609,14 +610,18 @@
             usageLimit: couponData.usageLimit || null,
             usageCount: couponData.usageCount || 0,
             description: couponData.description || '',
-            createdAt: couponData.createdAt ? couponData.createdAt.toDate() : new Date()
+            createdAt: couponData.createdAt ? couponData.createdAt.toDate() : new Date(),
+            payoutUsage: couponData.payoutUsage || 0,
+            isAffiliateCoupon: couponData.isAffiliateCoupon || false,
+            affiliateCode: couponData.affiliateCode || null
           };
           
           coupons.push(coupon);
         });
 
         couponsLoaded = true;
-        console.log('✅ Coupons loaded successfully:', coupons.length);
+        console.log('✅ [COUPON ADMIN] Coupons loaded successfully:', coupons.length);
+        console.log('📋 [COUPON ADMIN] Sample coupon data:', coupons.slice(0, 3));
 
         // Update UI
         updateStats();
@@ -1373,11 +1378,19 @@
   // Fetch and update coupon stats in real-time from Firestore
   async function updateCouponStatsRealtime() {
     try {
-      if (!window.AttralFirebase || !window.AttralFirebase.db) return;
+      console.log('📊 [COUPON ADMIN] Updating real-time stats from Firestore...');
       
+      if (!window.AttralFirebase || !window.AttralFirebase.db) {
+        console.warn('⚠️ [COUPON ADMIN] Firebase not available for stats update');
+        return;
+      }
+      
+      console.log('🔄 [COUPON ADMIN] Querying coupons collection...');
       const couponsSnapshot = await window.AttralFirebase.db
         .collection('coupons')
         .get();
+      
+      console.log('📦 [COUPON ADMIN] Retrieved coupons:', couponsSnapshot.size);
       
       let totalUsage = 0;
       let totalCycle = 0;
@@ -1386,6 +1399,14 @@
       
       couponsSnapshot.forEach(doc => {
         const data = doc.data();
+        console.log('🎫 [COUPON ADMIN] Processing coupon:', {
+          code: data.code,
+          usageCount: data.usageCount || 0,
+          payoutUsage: data.payoutUsage || 0,
+          isActive: data.isActive,
+          isAffiliate: data.isAffiliateCoupon || false
+        });
+        
         totalCoupons++;
         if (data.isActive) {
           activeCoupons++;
@@ -1403,9 +1424,18 @@
       // For regular coupons, it's just a counter
       document.getElementById('total-discounts').textContent = `₹${totalCycle.toLocaleString()}`;
       
-      console.log('✅ Coupon stats updated:', { totalCoupons, activeCoupons, totalUsage, totalCommissions: totalCycle });
+      console.log('✅ [COUPON ADMIN] Stats updated successfully:', { 
+        totalCoupons, 
+        activeCoupons, 
+        totalUsage, 
+        totalCommissions: totalCycle 
+      });
     } catch (error) {
-      console.error('Error updating coupon stats:', error);
+      console.error('❌ [COUPON ADMIN] Error updating coupon stats:', error);
+      console.error('❌ [COUPON ADMIN] Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
     }
   }
 

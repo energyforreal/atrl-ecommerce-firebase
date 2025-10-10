@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coupon Test Tool - ATTRAL</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #00ff00;
+    }
+    .container {
+      background: #2a2a2a;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border: 2px solid #333;
+    }
+    h1 { color: #00ff00; text-shadow: 0 0 10px #00ff00; }
+    h2 { color: #ffaa00; border-bottom: 2px solid #ffaa00; padding-bottom: 10px; }
+    input, button {
+      padding: 12px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+    }
+    input {
+      background: #1a1a1a;
+      border: 2px solid #00ff00;
+      color: #00ff00;
+      width: 300px;
+    }
+    button {
+      background: #00ff00;
+      color: #1a1a1a;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    button:hover {
+      background: #00cc00;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #00ff00;
+    }
+    button.danger {
+      background: #ff4444;
+      color: white;
+    }
+    button.danger:hover {
+      background: #cc0000;
+      box-shadow: 0 0 20px #ff4444;
+    }
+    .result {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 5px;
+      border-left: 4px solid;
+    }
+    .success {
+      background: #0d2818;
+      border-color: #00ff00;
+      color: #00ff00;
+    }
+    .error {
+      background: #2a1010;
+      border-color: #ff4444;
+      color: #ff4444;
+    }
+    .warning {
+      background: #2a2210;
+      border-color: #ffaa00;
+      color: #ffaa00;
+    }
+    pre {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      border: 1px solid #333;
+      color: #00ff00;
+      font-size: 12px;
+    }
+    .field {
+      margin: 15px 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #ffaa00;
+      font-weight: bold;
+    }
+    .checkbox {
+      display: inline-block;
+      margin-right: 10px;
+    }
+    .checkbox input {
+      width: auto;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎫 Coupon Validation Test Tool</h1>
+    <p style="color: #888;">Test any coupon code to see detailed validation results and debug why it's not being accepted.</p>
+    
+    <div class="field">
+      <label for="coupon-code-input">Coupon Code:</label>
+      <input type="text" id="coupon-code-input" placeholder="Enter coupon code (e.g., SAVE20)" />
+    </div>
+    
+    <div class="field">
+      <label for="subtotal-input">Order Subtotal (₹):</label>
+      <input type="number" id="subtotal-input" value="2999" placeholder="Enter order amount" />
+    </div>
+    
+    <div class="field">
+      <label class="checkbox">
+        <input type="checkbox" id="bypass-cache" />
+        Bypass Cache (Force fresh Firestore query)
+      </label>
+    </div>
+    
+    <div class="field">
+      <button onclick="testCoupon()">🔍 Test Coupon</button>
+      <button onclick="clearCache()" class="danger">🗑️ Clear All Coupon Cache</button>
+      <button onclick="showCacheInfo()">📊 Show Cache Info</button>
+    </div>
+    
+    <h2>📊 Validation Result:</h2>
+    <div id="result"></div>
+    
+    <h2>🔧 Raw API Response:</h2>
+    <div id="raw-response"></div>
+    
+    <h2>📋 Server Logs:</h2>
+    <div id="logs-info" style="color: #888;">
+      <p>Check Hostinger error logs for detailed validation logs:</p>
+      <ul>
+        <li>File Manager → error_log (in root or /api/ directory)</li>
+        <li>Look for lines starting with "COUPON VALIDATION:"</li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    async function testCoupon() {
+      const code = document.getElementById('coupon-code-input').value.trim();
+      const subtotal = parseFloat(document.getElementById('subtotal-input').value) || 0;
+      const bypassCache = document.getElementById('bypass-cache').checked;
+      const resultDiv = document.getElementById('result');
+      const rawDiv = document.getElementById('raw-response');
+      
+      if (!code) {
+        resultDiv.innerHTML = '<div class="result error">❌ Please enter a coupon code</div>';
+        return;
+      }
+      
+      resultDiv.innerHTML = '<div class="result warning">⏳ Testing coupon validation...</div>';
+      rawDiv.innerHTML = '';
+      
+      try {
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        
+        console.log('Testing coupon:', code, 'with subtotal:', subtotal, 'bypass cache:', bypassCache);
+        
+        const response = await fetch(`${apiBaseUrl}/api/validate_coupon.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: code,
+            subtotal: subtotal,
+            bypassCache: bypassCache
+          })
+        });
+        
+        const result = await response.json();
+        
+        console.log('Validation result:', result);
+        
+        // Display result
+        let html = '';
+        
+        if (result.valid) {
+          html += '<div class="result success">';
+          html += '<h3>✅ Coupon is VALID</h3>';
+          html += '<p><strong>Code:</strong> ' + result.coupon.code + '</p>';
+          html += '<p><strong>Name:</strong> ' + result.coupon.name + '</p>';
+          html += '<p><strong>Type:</strong> ' + result.coupon.type + '</p>';
+          html += '<p><strong>Value:</strong> ' + result.coupon.value + (result.coupon.type === 'percentage' ? '%' : ' ₹') + '</p>';
+          html += '<p><strong>Min Amount:</strong> ₹' + (result.coupon.minAmount || 0) + '</p>';
+          html += '<p><strong>Description:</strong> ' + (result.coupon.description || 'N/A') + '</p>';
+          html += '<p><strong>Cached:</strong> ' + (result.cached ? 'Yes (age: ' + (result.cacheAge || 0) + 's)' : 'No (fresh from Firestore)') + '</p>';
+          html += '</div>';
+        } else {
+          html += '<div class="result error">';
+          html += '<h3>❌ Coupon is INVALID</h3>';
+          html += '<p><strong>Error:</strong> ' + result.error + '</p>';
+          
+          if (result.debug) {
+            html += '<p><strong>Debug Info:</strong></p>';
+            html += '<pre>' + JSON.stringify(result.debug, null, 2) + '</pre>';
+          }
+          
+          html += '<p><strong>Cached:</strong> ' + (result.cached ? 'Yes (serving cached error)' : 'No (fresh query)') + '</p>';
+          html += '<hr style="border-color: #444; margin: 15px 0;">';
+          html += '<p style="color: #ffaa00;"><strong>Common Reasons:</strong></p>';
+          html += '<ul style="color: #888;">';
+          html += '<li>Coupon code might be case-sensitive in Firestore (try exact case)</li>';
+          html += '<li>Coupon might use different field name (isActive vs active vs status)</li>';
+          html += '<li>Coupon might be expired (check validUntil field)</li>';
+          html += '<li>Order subtotal might be below minimum (check minAmount)</li>';
+          html += '<li>Usage limit might be reached (check usageLimit vs usageCount)</li>';
+          html += '<li>Cached negative result (try bypassing cache)</li>';
+          html += '</ul>';
+          html += '</div>';
+        }
+        
+        resultDiv.innerHTML = html;
+        
+        // Show raw API response
+        rawDiv.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+        
+      } catch (error) {
+        console.error('Test error:', error);
+        resultDiv.innerHTML = '<div class="result error">❌ API Error: ' + error.message + '</div>';
+        rawDiv.innerHTML = '<pre>Error: ' + error.stack + '</pre>';
+      }
+    }
+    
+    async function clearCache() {
+      if (!confirm('Clear ALL coupon cache? This will force fresh Firestore queries for all coupons.')) {
+        return;
+      }
+      
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '<div class="result warning">⏳ Clearing cache...</div>';
+      
+      try {
+        const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
+        
+        const response = await fetch(`${apiBaseUrl}/api/clear_coupon_cache.php`, {
+          method: 'POST'
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          resultDiv.innerHTML = '<div class="result success">✅ Cache cleared: ' + (result.deleted || 0) + ' files deleted</div>';
+        } else {
+          resultDiv.innerHTML = '<div class="result error">❌ Cache clear failed (create clear_coupon_cache.php if needed)</div>';
+        }
+        
+      } catch (error) {
+        resultDiv.innerHTML = '<div class="result warning">⚠️ Cache clear endpoint not available. Manually delete /api/.cache/coupon_*.json files.</div>';
+      }
+    }
+    
+    function showCacheInfo() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = `
+        <div class="result warning">
+          <h3>📊 Cache Information</h3>
+          <p><strong>Cache Location:</strong> /api/.cache/</p>
+          <p><strong>Cache TTL:</strong> 5 minutes (300 seconds)</p>
+          <p><strong>Cache Files:</strong> coupon_[md5hash].json</p>
+          <p><strong>Note:</strong> If a coupon was invalid 4 minutes ago, it's still cached as invalid for 1 more minute.</p>
+          <p><strong>Solution:</strong> Wait 5 minutes OR check "Bypass Cache" above OR clear cache manually</p>
+        </div>
+      `;
+    }
+    
+    // Add Enter key support
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('coupon-code-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          testCoupon();
+        }
+      });
+      
+      document.getElementById('subtotal-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          testCoupon();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+

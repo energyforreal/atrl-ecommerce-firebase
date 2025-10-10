@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirect Debugger - ATTRAL</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #00ff00;
+    }
+    .log-entry {
+      padding: 5px;
+      border-bottom: 1px solid #333;
+      font-size: 12px;
+    }
+    .error { color: #ff4444; font-weight: bold; }
+    .warning { color: #ffaa00; }
+    .success { color: #00ff00; }
+    .info { color: #4444ff; }
+    #clear-btn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px 20px;
+      background: #ff4444;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    h1 { color: #ffffff; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Redirect Debugger - Monitoring All Redirects</h1>
+  <p>This page monitors ALL redirect attempts on your site. Leave it open while testing.</p>
+  <button id="clear-btn" onclick="document.getElementById('logs').innerHTML = ''">Clear Logs</button>
+  <div id="logs"></div>
+
+  <script>
+    const logsDiv = document.getElementById('logs');
+    const startTime = Date.now();
+    
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const timestamp = ((Date.now() - startTime) / 1000).toFixed(3);
+      entry.textContent = `[${timestamp}s] ${message}`;
+      logsDiv.appendChild(entry);
+      logsDiv.scrollTop = logsDiv.scrollHeight;
+      console.log(`[${type.toUpperCase()}]`, message);
+    }
+    
+    log('🛡️ Redirect debugger started', 'success');
+    log('Current URL: ' + window.location.href, 'info');
+    
+    // Monitor all location changes
+    const origReplace = window.location.replace.bind(window.location);
+    const origAssign = window.location.assign ? window.location.assign.bind(window.location) : null;
+    
+    let redirectCount = 0;
+    
+    window.location.replace = function(url) {
+      redirectCount++;
+      log(`🔄 REDIRECT #${redirectCount} via replace() to: ${url}`, 
+          url.includes('cart.html') ? 'error' : 'warning');
+      log(`   Called from: ${new Error().stack.split('\n')[2]}`, 'info');
+      
+      // Allow the redirect but log it
+      return origReplace(url);
+    };
+    
+    if (origAssign) {
+      window.location.assign = function(url) {
+        redirectCount++;
+        log(`🔄 REDIRECT #${redirectCount} via assign() to: ${url}`, 
+            url.includes('cart.html') ? 'error' : 'warning');
+        log(`   Called from: ${new Error().stack.split('\n')[2]}`, 'info');
+        
+        return origAssign(url);
+      };
+    }
+    
+    // Monitor direct href assignment (can't fully override but can detect changes)
+    let lastHref = window.location.href;
+    setInterval(() => {
+      if (window.location.href !== lastHref) {
+        redirectCount++;
+        log(`🔄 REDIRECT #${redirectCount} detected (URL changed)`, 'warning');
+        log(`   From: ${lastHref}`, 'info');
+        log(`   To: ${window.location.href}`, 
+            window.location.href.includes('cart.html') ? 'error' : 'info');
+        lastHref = window.location.href;
+      }
+    }, 100);
+    
+    // Monitor history API
+    const origPushState = history.pushState.bind(history);
+    const origReplaceState = history.replaceState.bind(history);
+    
+    history.pushState = function(state, title, url) {
+      if (url) {
+        log(`📝 history.pushState to: ${url}`, 'info');
+      }
+      return origPushState(state, title, url);
+    };
+    
+    history.replaceState = function(state, title, url) {
+      if (url) {
+        log(`📝 history.replaceState to: ${url}`, 'info');
+      }
+      return origReplaceState(state, title, url);
+    };
+    
+    // Monitor page navigation events
+    window.addEventListener('beforeunload', (e) => {
+      log('⚠️ Page is being unloaded/navigated away', 'warning');
+    });
+    
+    window.addEventListener('popstate', (e) => {
+      log('⬅️ Browser back/forward button pressed', 'info');
+    });
+    
+    // Log session storage changes
+    log('Session Storage:', 'info');
+    log('  __ATTRAL_PAYMENT_SUCCESS: ' + sessionStorage.getItem('__ATTRAL_PAYMENT_SUCCESS'), 'info');
+    log('  __ATTRAL_ORDER_ID: ' + sessionStorage.getItem('__ATTRAL_ORDER_ID'), 'info');
+    log('  lastOrderData: ' + (sessionStorage.getItem('lastOrderData') ? 'Present' : 'Missing'), 'info');
+    
+    log('Local Storage:', 'info');
+    log('  attral_cart: ' + (localStorage.getItem('attral_cart') || 'Empty'), 'info');
+    
+    log('✅ Monitoring active - all redirects will be logged here', 'success');
+    
+    // Keep window open
+    window.onbeforeunload = function() {
+      return "Redirect monitor is closing - logs will be lost. Are you sure?";
+    };
+  </script>
+</body>
+</html>
+

@@ -43,3 +43,6 @@ invoices/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local configuration files with credentials
+static-site/api/config.local.php

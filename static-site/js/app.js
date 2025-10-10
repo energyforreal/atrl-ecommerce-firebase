@@ -35,6 +35,80 @@
     try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.CART) || '[]'); } catch { return []; }
   }
   function writeCart(items){ localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(items)); }
+  
+  // 🛒 AUTOMATIC CART VALIDATION - Ensures cart is always clean
+  async function validateAndCleanCart() {
+    try {
+      const cart = readCart();
+      if (cart.length === 0) {
+        console.log('✅ Cart is empty - no validation needed');
+        return cart;
+      }
+      
+      console.log('🔍 Validating cart items:', cart.length, 'items');
+      
+      // Load current products to validate against
+      const products = await fetchProducts().catch(() => []);
+      
+      if (products.length === 0) {
+        console.warn('⚠️ Could not load products for validation - keeping cart as is');
+        return cart;
+      }
+      
+      // Validate each cart item
+      const validatedCart = cart.filter(item => {
+        // Remove test/demo items (common test patterns)
+        const testPatterns = ['test', 'demo', 'sample', 'example', 'placeholder'];
+        const isTestItem = testPatterns.some(pattern => 
+          String(item.id).toLowerCase().includes(pattern) ||
+          String(item.title).toLowerCase().includes(pattern)
+        );
+        
+        if (isTestItem) {
+          console.warn('🗑️ Removing test/demo cart item:', item.id, item.title);
+          return false;
+        }
+        
+        // Check if product still exists in current product list
+        const productExists = products.some(p => p.id === item.id);
+        
+        if (!productExists) {
+          console.warn('🗑️ Removing invalid cart item (product not found):', item.id, item.title);
+          return false;
+        }
+        
+        // Check if item has required fields
+        if (!item.id || !item.price || !item.title) {
+          console.warn('🗑️ Removing invalid cart item (missing required fields):', item);
+          return false;
+        }
+        
+        // Check for obviously invalid prices (like ₹10 for electronics)
+        if (item.price < 100) {
+          console.warn('🗑️ Removing cart item with suspiciously low price (likely test data):', item.title, item.price);
+          return false;
+        }
+        
+        // Item is valid
+        return true;
+      });
+      
+      // If cart changed, update localStorage
+      if (validatedCart.length !== cart.length) {
+        console.log(`🧹 Cleaned cart: ${cart.length} → ${validatedCart.length} items`);
+        writeCart(validatedCart);
+        return validatedCart;
+      }
+      
+      console.log('✅ Cart validation complete - all items valid');
+      return validatedCart;
+      
+    } catch (error) {
+      console.error('❌ Cart validation error:', error);
+      return readCart(); // Return current cart on error
+    }
+  }
+  
   function updateHeaderCount(){
     const items = readCart();
     const count = items.reduce((a,i)=>a + (i.quantity||1), 0);
@@ -137,18 +211,17 @@
       let product = products.find(p => p.id === productId);
       console.log('🔍 Direct comparison result:', product);
       
-      // If still not found, try the first product (for testing)
-      if (!product && products.length > 0) {
-        console.log('⚠️ Product not found, using first available product for testing');
-        product = products[0];
-      }
+      // ✅ REMOVED TESTING FALLBACK - Do NOT add first product if not found
+      // This was causing cart to populate with items automatically
       
       console.log('🔍 Final product selected:', product);
       
       if(!product) {
-        console.error('❌ Product not found:', productId);
+        console.error('❌ Product not found with ID:', productId);
         console.error('❌ Available products:', products.map(p => ({ id: p.id, title: p.title })));
-        return;
+        console.error('❌ Aborting addToCart - will not add random product');
+        notify('Product not found');
+        return null; // Return null instead of undefined
       }
       
       const items = readCart();
@@ -476,6 +549,7 @@
     notify,
     addToCart,
     clearCartSafely, // 🆕 Safe cart clearing utility
+    validateAndCleanCart, // 🆕 Automatic cart validation
     calculateCartTotalPaise: function(){
       const items = readCart();
       const total = items.reduce((a,i)=> a + (i.price * i.quantity), 0);
@@ -698,6 +772,19 @@
   document.addEventListener('DOMContentLoaded', function() {
     initializeNewsletterForm();
   });
+
+  // 🚀 AUTO-RUN: Validate and clean cart on EVERY page load
+  // This ensures cart always starts clean, removing invalid/stale items
+  (async function autoValidateCart() {
+    try {
+      console.log('🔄 Auto-validating cart on page load...');
+      await validateAndCleanCart();
+      updateHeaderCount(); // Update count after validation
+      console.log('✅ Cart auto-validation complete');
+    } catch (error) {
+      console.error('❌ Auto-validation failed (non-critical):', error);
+    }
+  })();
 
 })();
 

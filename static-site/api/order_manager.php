@@ -1,8 +1,26 @@
 <?php
+/**
+ * ⚠️ TERTIARY FALLBACK ONLY - NOT PRIMARY ORDER DATABASE
+ * 
+ * This file uses SQLite for local order storage.
+ * 
+ * PRIMARY ORDER DATABASE: Firestore (via firestore_order_manager_rest.php)
+ * FALLBACK: SQLite (this file - for emergencies/local development only)
+ * 
+ * ⚠️ WARNING: Orders saved here will NOT appear in Firestore
+ * ⚠️ WARNING: User dashboards query Firestore, not SQLite
+ * ⚠️ Use this ONLY as a temporary fallback when Firestore is unavailable
+ * 
+ * @deprecated for production use - Firestore is PRIMARY per user requirements
+ * @see firestore_order_manager_rest.php for PRIMARY system
+ */
+
 // Composer autoloader for Firestore SDK (if installed)
 @include_once __DIR__ . '/vendor/autoload.php';
-// Comprehensive Order Management System
-// Handles order creation, status tracking, and inventory management
+// SQLite Order Management System (TERTIARY FALLBACK ONLY)
+// Handles order creation, status tracking, and inventory management in local SQLite database
+
+error_log("⚠️ NOTICE: order_manager.php (SQLite) is being used. This is a FALLBACK system. PRIMARY is Firestore via firestore_order_manager_rest.php");
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -57,6 +75,14 @@ switch ($path) {
         if ($method === 'GET') {
             getOrderStatus($pdo);
         } elseif ($method === 'PUT') {
+            updateOrderStatus($pdo);
+        } else {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method not allowed']);
+        }
+        break;
+    case '/update':
+        if ($method === 'POST') {
             updateOrderStatus($pdo);
         } else {
             http_response_code(405);
@@ -171,19 +197,47 @@ function createOrder($pdo, $keySecret) {
         $nextNumber = intval($seqRow['last_number'] ?? 1);
         $orderNumber = 'ATRL-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
         
-        // Check if order already exists
-        $stmt = $pdo->prepare("SELECT id FROM orders WHERE razorpay_payment_id = ?");
+        // Check if order already exists (idempotent)
+        $stmt = $pdo->prepare("SELECT * FROM orders WHERE razorpay_payment_id = ?");
         $stmt->execute([$input['payment_id']]);
-        if ($stmt->fetch()) {
-            throw new Exception('Order already exists for this payment');
+        $existingOrder = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($existingOrder) {
+            // Return existing order instead of throwing error (idempotent)
+            error_log("ORDER_MANAGER: Idempotent hit for payment {$input['payment_id']}, returning existing order");
+            $pdo->commit();
+            
+            http_response_code(200);
+            echo json_encode([
+                'success' => true,
+                'orderId' => $existingOrder['id'],
+                'orderNumber' => $existingOrder['order_number'],
+                'order_id' => $existingOrder['id'],
+                'order_number' => $existingOrder['order_number'],
+                'status' => $existingOrder['status'],
+                'message' => 'Order already exists (idempotent)',
+                'api_source' => 'order_manager_sqlite',
+                'timestamp' => date('c'),
+                'request_id' => uniqid('sqlite_idempotent_', true)
+            ]);
+            return;
+        }
+        
+        // Prepare notes field with coupons and other metadata
+        $notes = [];
+        if (!empty($input['coupons']) && is_array($input['coupons'])) {
+            $notes['coupons'] = $input['coupons'];
+        }
+        if (!empty($input['user_id'])) {
+            $notes['uid'] = $input['user_id'];
         }
         
         // Create order record
         $stmt = $pdo->prepare("
             INSERT INTO orders (
                 razorpay_order_id, razorpay_payment_id, order_number,
-                customer_data, product_data, pricing_data, shipping_data, payment_data, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')
+                customer_data, product_data, pricing_data, shipping_data, payment_data, status, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?)
         ");
         
         $stmt->execute([
@@ -194,7 +248,8 @@ function createOrder($pdo, $keySecret) {
             json_encode($input['product']),
             json_encode($input['pricing']),
             json_encode($input['shipping']),
-            json_encode($input['payment'])
+            json_encode($input['payment']),
+            json_encode($notes)
         ]);
         
         $orderId = $pdo->lastInsertId();
@@ -207,6 +262,11 @@ function createOrder($pdo, $keySecret) {
         
         // 🤝 Check for affiliate code and process commission
         processAffiliateCommission($pdo, $orderId, $orderNumber, $input);
+        
+        // 🎫 Process coupons if available
+        if (!empty($input['coupons']) && is_array($input['coupons'])) {
+            processCoupons($input['coupons'], $orderId, $orderNumber);
+        }
         
         // Note: Email and invoice generation moved to order success page for better UX
         
@@ -222,11 +282,13 @@ function createOrder($pdo, $keySecret) {
         http_response_code(201);
         echo json_encode([
             'success' => true,
+            'orderId' => $orderId,
+            'orderNumber' => $orderNumber,
             'order_id' => $orderId,
             'order_number' => $orderNumber,
             'status' => 'confirmed',
             'message' => 'Order created successfully',
-            'invoice_url' => $invoicePath ? relativeInvoiceUrl($invoicePath) : null,
+            'invoice_url' => isset($invoicePath) ? relativeInvoiceUrl($invoicePath) : null,
             'api_source' => 'order_manager_sqlite',
             'timestamp' => date('c'),
             'request_id' => uniqid('sqlite_', true)
@@ -461,6 +523,59 @@ function sendInvoiceEmailToCustomer($orderNumber, $invoicePath, $orderData) {
         }
     }
 
+    /**
+     * Process coupons for an order
+     */
+    function processCoupons($coupons, $orderId, $orderNumber) {
+        try {
+            error_log("COUPON PROCESSING: Processing " . count($coupons) . " coupons for order $orderNumber");
+            
+            // Load coupon tracking service if available
+            $couponServicePath = __DIR__ . '/coupon_tracking_service.php';
+            if (file_exists($couponServicePath)) {
+                require_once $couponServicePath;
+                
+                // Initialize Firestore for coupon tracking
+                $serviceAccountPath = __DIR__ . '/firebase-service-account.json';
+                if (!file_exists($serviceAccountPath)) {
+                    error_log("COUPON: Firebase service account file not found - using local tracking");
+                    return;
+                }
+                
+                try {
+                    $firestore = new Google\Cloud\Firestore\FirestoreClient([
+                        'projectId' => 'e-commerce-1d40f',
+                        'keyFilePath' => $serviceAccountPath
+                    ]);
+                    
+                    // Use batch apply from coupon tracking service
+                    $orderMeta = [
+                        'amount' => 0, // Will be calculated from coupons
+                        'customerEmail' => null
+                    ];
+                    
+                    $batchResult = batchApplyCouponsForOrder(
+                        $firestore,
+                        $coupons,
+                        $orderId,
+                        $orderMeta,
+                        null // No payment ID available here
+                    );
+                    
+                    error_log("COUPON PROCESSING: " . $batchResult['message']);
+                    
+                } catch (Exception $e) {
+                    error_log("COUPON PROCESSING ERROR: " . $e->getMessage());
+                }
+            } else {
+                error_log("COUPON: Coupon tracking service not found - skipping coupon processing");
+            }
+            
+        } catch (Exception $e) {
+            error_log("COUPON EXCEPTION: " . $e->getMessage());
+        }
+    }
+
 function getOrderStatus($pdo) {
     $orderId = $_GET['order_id'] ?? $_GET['order_number'] ?? '';
     
@@ -488,57 +603,122 @@ function getOrderStatus($pdo) {
         return;
     }
     
-    // Parse JSON fields
-    $order['customer_data'] = json_decode($order['customer_data'], true);
-    $order['product_data'] = json_decode($order['product_data'], true);
-    $order['pricing_data'] = json_decode($order['pricing_data'], true);
-    $order['shipping_data'] = json_decode($order['shipping_data'], true);
-    $order['payment_data'] = json_decode($order['payment_data'], true);
-    $order['status_history'] = json_decode($order['status_history'], true);
+    // Parse JSON fields and format for compatibility with order-success.html
+    $formattedOrder = [
+        'id' => $order['id'],
+        'orderId' => $order['order_number'],
+        'razorpayOrderId' => $order['razorpay_order_id'],
+        'razorpayPaymentId' => $order['razorpay_payment_id'],
+        'order_number' => $order['order_number'],
+        'status' => $order['status'],
+        'customer' => json_decode($order['customer_data'], true),
+        'product' => json_decode($order['product_data'], true),
+        'pricing' => json_decode($order['pricing_data'], true),
+        'shipping' => json_decode($order['shipping_data'], true),
+        'payment' => json_decode($order['payment_data'], true),
+        'coupons' => json_decode($order['notes'], true)['coupons'] ?? [],
+        'status_history' => json_decode($order['status_history'], true),
+        'createdAt' => $order['created_at'],
+        'updatedAt' => $order['updated_at'],
+        // For backward compatibility, also include old field names
+        'customer_data' => json_decode($order['customer_data'], true),
+        'product_data' => json_decode($order['product_data'], true),
+        'pricing_data' => json_decode($order['pricing_data'], true),
+        'shipping_data' => json_decode($order['shipping_data'], true),
+        'payment_data' => json_decode($order['payment_data'], true)
+    ];
     
-    echo json_encode(['success' => true, 'order' => $order]);
+    // Add amount field for display
+    $pricingData = $formattedOrder['pricing'];
+    if (isset($pricingData['total'])) {
+        $formattedOrder['amount'] = $pricingData['total'];
+    }
+    
+    echo json_encode(['success' => true, 'order' => $formattedOrder]);
 }
 
 function updateOrderStatus($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
     
-    $orderId = $input['order_id'] ?? '';
+    $orderId = $input['orderId'] ?? $input['order_id'] ?? '';
     $status = $input['status'] ?? '';
     $message = $input['message'] ?? '';
+    $coupons = isset($input['coupons']) && is_array($input['coupons']) ? $input['coupons'] : null;
     
-    if (!$orderId || !$status) {
+    if (!$orderId) {
         http_response_code(400);
-        echo json_encode(['error' => 'Order ID and status required']);
+        echo json_encode(['error' => 'Order ID required']);
         return;
     }
     
     try {
         $pdo->beginTransaction();
         
-        // Update order status
-        $stmt = $pdo->prepare("
-            UPDATE orders 
-            SET status = ?, updated_at = CURRENT_TIMESTAMP 
-            WHERE razorpay_order_id = ? OR order_number = ?
-        ");
-        $stmt->execute([$status, $orderId, $orderId]);
+        // Get the order first
+        $orderStmt = $pdo->prepare("SELECT * FROM orders WHERE razorpay_order_id = ? OR order_number = ?");
+        $orderStmt->execute([$orderId, $orderId]);
+        $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
         
-        if ($stmt->rowCount() === 0) {
+        if (!$order) {
             throw new Exception('Order not found');
         }
         
-        // Add status history
-        $orderStmt = $pdo->prepare("SELECT id FROM orders WHERE razorpay_order_id = ? OR order_number = ?");
-        $orderStmt->execute([$orderId, $orderId]);
-        $order = $orderStmt->fetch();
+        // Build update query dynamically based on what's provided
+        $updates = [];
+        $params = [];
         
-        addStatusHistory($pdo, $order['id'], $status, $message);
+        if ($status) {
+            $updates[] = "status = ?";
+            $params[] = $status;
+        }
+        
+        // Update pricing data if exact amounts provided
+        if (isset($input['amount_rupees_exact']) || isset($input['amount_paise_exact'])) {
+            $pricingData = json_decode($order['pricing_data'], true) ?: [];
+            
+            if (isset($input['amount_rupees_exact'])) {
+                $pricingData['total'] = floatval($input['amount_rupees_exact']);
+            } elseif (isset($input['amount_paise_exact'])) {
+                $pricingData['total'] = round(floatval($input['amount_paise_exact']) / 100.0, 2);
+            }
+            
+            $updates[] = "pricing_data = ?";
+            $params[] = json_encode($pricingData);
+        }
+        
+        $updates[] = "updated_at = CURRENT_TIMESTAMP";
+        
+        // Update order
+        if (!empty($updates)) {
+            $sql = "UPDATE orders SET " . implode(', ', $updates) . " WHERE id = ?";
+            $params[] = $order['id'];
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+        }
+        
+        // Add status history if status was updated
+        if ($status) {
+            addStatusHistory($pdo, $order['id'], $status, $message);
+        }
+        
+        // Process coupons if provided
+        $couponResults = [];
+        if ($coupons && is_array($coupons)) {
+            try {
+                processCoupons($coupons, $orderId, $order['order_number']);
+                $couponResults[] = "✅ Coupons processed successfully";
+            } catch (Exception $e) {
+                error_log("COUPON UPDATE ERROR: " . $e->getMessage());
+                $couponResults[] = "⚠️ Coupon processing failed (non-critical)";
+            }
+        }
         
         $pdo->commit();
         
         echo json_encode([
             'success' => true,
-            'message' => 'Order status updated successfully'
+            'message' => 'Order updated successfully',
+            'couponResults' => $couponResults
         ]);
         
     } catch (Exception $e) {
@@ -650,6 +830,7 @@ function writeToFirestore($orderNumber, $orderData, $orderId) {
             'pricing' => $orderData['pricing'],
             'shipping' => $orderData['shipping'],
             'payment' => $orderData['payment'],
+            'coupons' => isset($orderData['coupons']) && is_array($orderData['coupons']) ? $orderData['coupons'] : [],
             'uid' => $orderData['user_id'] ?? null,
             'createdAt' => new Google\Cloud\Core\Timestamp(new DateTime()),
             'updatedAt' => new Google\Cloud\Core\Timestamp(new DateTime()),

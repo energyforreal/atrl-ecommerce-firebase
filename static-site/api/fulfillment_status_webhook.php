@@ -55,9 +55,18 @@ try {
         'estimatedDelivery' => $input['estimatedDelivery'] ?? ''
     ];
     
+    // ✅ FIX: Use correct API URL (not localhost) for Hostinger compatibility
+    $apiBaseUrl = isset($_SERVER['HTTP_HOST']) ? 
+                  (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] : 
+                  'https://attral.in';
+    
+    $emailApiUrl = $apiBaseUrl . '/api/send_fulfillment_email.php';
+    
+    error_log("FULFILLMENT WEBHOOK: Calling email API at: {$emailApiUrl}");
+    
     // Make internal API call to send email
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000/api/send_fulfillment_email.php');
+    curl_setopt($ch, CURLOPT_URL, $emailApiUrl);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($emailData));
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);

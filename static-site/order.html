@@ -710,6 +710,15 @@
   <script src="js/dropdown.js"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   
+  <!-- Version Check for Cache Detection -->
+  <script>
+    console.log('═══════════════════════════════════════════════');
+    console.log('📦 ORDER PAGE VERSION: 3.0 - Firestore REST API');
+    console.log('📅 Last Updated: 2025-10-10');
+    console.log('🔥 Using: firestore_order_manager_rest.php');
+    console.log('═══════════════════════════════════════════════');
+  </script>
+  
   <!-- CRITICAL: Global redirect protection - active immediately on page load -->
   <script>
     (function setupGlobalRedirectProtection() {
@@ -717,6 +726,14 @@
       
       // Global payment state flag
       window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
+      
+      // Store ORIGINAL browser methods BEFORE any overrides
+      window.__ATTRAL_ORIGINAL_METHODS = {
+        replace: window.location.replace.bind(window.location),
+        assign: window.location.assign.bind(window.location),
+        pushState: history.pushState.bind(history),
+        replaceState: history.replaceState.bind(history)
+      };
       
       // Function to check if URL is allowed during payment
       const isAllowedRedirect = function(url) {
@@ -785,6 +802,7 @@
       }
       
       console.log('🛡️ Global redirect protection active');
+      console.log('🛡️ Original browser methods saved for emergency use');
     })();
   </script>
   
@@ -2305,7 +2323,7 @@
       const keep = [];
       for (const item of q){
         try {
-          const res = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/create`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(item.payload) });
+          const res = await fetch(`${apiBaseUrl}/api/firestore_order_manager_rest.php/create`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(item.payload) });
           const j = await res.json().catch(()=>({}));
           console.log('[order-queue] flush result', { status: res.status, ok: res.ok, body: j });
           if (!res.ok || !j.success) { throw new Error('not ok'); }
@@ -2322,7 +2340,7 @@
       while (attempt < maxAttempts){
         attempt++;
         try {
-          const res = await fetch(`${apiBaseUrl}/api/firestore_order_manager.php/create`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+          const res = await fetch(`${apiBaseUrl}/api/firestore_order_manager_rest.php/create`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
           const j = await res.json().catch(()=>({}));
           console.log('[order-manager] attempt', attempt, { status: res.status, ok: res.ok, body: j });
           if (res.ok && j && j.success) return j;
@@ -2355,117 +2373,128 @@
           amount: orderData.pricing.total
         });
 
-        // Verify payment on server
+        // ✅ STEP 1: Store order data SYNCHRONOUSLY (before any async operations)
+        const orderDataForSuccess = {
+          ...orderData,
+          razorpay_order_id: order.id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+          status: 'confirmed',
+          timestamp: new Date().toISOString()
+        };
+        orderDataForSuccess.coupons = Array.isArray(orderData.coupons) ? orderData.coupons.slice(0, 5) : [];
+        
+        sessionStorage.setItem('lastOrderData', JSON.stringify(orderDataForSuccess));
+        sessionStorage.setItem('payment_success_redirect', 'true');
+        sessionStorage.setItem('__ATTRAL_PAYMENT_SUCCESS', 'true');
+        sessionStorage.setItem('__ATTRAL_ORDER_ID', order.id);
+        console.log('✅ Order data stored for success page');
+
+        // ✅ STEP 2: Calculate redirect URL (simple, safe construction)
+        const successUrl = 'order-success.html?orderId=' + encodeURIComponent(order.id);
+        console.log('🚀 IMMEDIATE redirect to success page:', successUrl);
+        console.log('📍 Current payment flag status:', window.__ATTRAL_PAYMENT_IN_PROGRESS);
+        
+        // ✅ STEP 3: Disable cart library functions
+        if (window.Attral) {
+          window.Attral.__disableRedirects = true;
+        }
+        
+        // ✅ STEP 4: RESET payment flag to allow redirect
+        window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
+        console.log('🔓 Payment flag reset to allow redirect');
+        
+        // ✅ STEP 5: REDIRECT IMMEDIATELY using ORIGINAL browser method (bypasses all protections)
+        console.log('🚀 Using original browser replace method to redirect...');
+        if (window.__ATTRAL_ORIGINAL_METHODS && window.__ATTRAL_ORIGINAL_METHODS.replace) {
+          // Use the original method saved before any overrides
+          window.__ATTRAL_ORIGINAL_METHODS.replace(successUrl);
+          console.log('✅ Original replace method called');
+        } else {
+          // Fallback: use current method (should work now that flag is false)
+          window.location.replace(successUrl);
+          console.log('✅ Standard replace method called');
+        }
+        
+        // ✅ STEP 6: Multiple backup redirects (in case first doesn't work)
+        setTimeout(function() {
+          console.log('🔄 Backup redirect #1 (10ms delay)');
+          window.location.href = successUrl;
+        }, 10);
+        
+        setTimeout(function() {
+          console.log('🔄 Backup redirect #2 (50ms delay)');
+          if (window.__ATTRAL_ORIGINAL_METHODS && window.__ATTRAL_ORIGINAL_METHODS.assign) {
+            window.__ATTRAL_ORIGINAL_METHODS.assign(successUrl);
+          } else {
+            window.location.assign(successUrl);
+          }
+        }, 50);
+        
+        // ✅ STEP 7: Background operations (after redirect initiated)
+        // These will execute if redirect takes time, but won't block navigation
+        
+        // Payment verification (non-blocking)
         const apiBaseUrl = window.ATTRAL_PUBLIC?.API_BASE_URL || '';
-        const verifyResponse = await fetch(`${apiBaseUrl}/api/verify.php`, {
+        fetch(`${apiBaseUrl}/api/verify.php`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             order_id: order.id,
             payment_id: response.razorpay_payment_id,
             signature: response.razorpay_signature
           })
+        }).then(res => res.json()).then(verification => {
+          console.log('🔍 Payment verification result:', verification);
+        }).catch(err => {
+          console.warn('⚠️ Payment verification error (non-critical):', err);
         });
 
-        const verification = await verifyResponse.json();
-        console.log('🔍 Payment verification result:', verification);
-
-        if (!verification.valid) {
-          console.warn('⚠️ Payment verification failed, but continuing with order creation...');
-          // Don't fail the order creation for verification issues
-          // The webhook will handle the actual order creation
+        // Order creation (non-blocking)
+        let userId = null;
+        if (window.AttralFirebase && window.AttralFirebase.auth) {
+          const user = window.AttralFirebase.auth.currentUser;
+          userId = user ? user.uid : null;
         }
 
-        // Store order data for success page
-        try {
-          const orderDataForSuccess = {
-            ...orderData,
-            razorpay_order_id: order.id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            status: 'confirmed',
-            timestamp: new Date().toISOString()
-          };
-          // Persist applied coupons explicitly for success page and server
-          try {
-            orderDataForSuccess.coupons = Array.isArray(orderData.coupons) ? orderData.coupons.slice(0, 5) : [];
-          } catch(_) { /* ignore */ }
-          sessionStorage.setItem('lastOrderData', JSON.stringify(orderDataForSuccess));
-          console.log('✅ Order data stored for success page');
-        } catch (error) {
-          console.error('❌ Failed to store order data:', error);
-        }
-
-        // Create order in our server order management system FIRST (before redirect)
-        try {
-          // Get current user ID for access control
-          let userId = null;
-          if (window.AttralFirebase && window.AttralFirebase.auth) {
-            const user = window.AttralFirebase.auth.currentUser;
-            userId = user ? user.uid : null;
+        postOrderWithRetry({
+          order_id: order.id,
+          payment_id: response.razorpay_payment_id,
+          signature: response.razorpay_signature,
+          customer: orderData.customer,
+          product: orderData.product,
+          pricing: {
+            ...orderData.pricing,
+            amountPaise: Math.round(orderData.pricing.total * 100)
+          },
+          shipping: orderData.shipping,
+          coupons: orderDataForSuccess.coupons,
+          payment: {
+            method: 'razorpay',
+            transaction_id: response.razorpay_payment_id,
+            signature: response.razorpay_signature
+          },
+          user_id: userId
+        }).then(function(createOrderResult){
+          if (createOrderResult && createOrderResult.success) {
+            try {
+              const current = JSON.parse(sessionStorage.getItem('lastOrderData')||'{}');
+              current.order_number = createOrderResult.order_number;
+              sessionStorage.setItem('lastOrderData', JSON.stringify(current));
+              console.log('✅ Order created successfully:', createOrderResult.order_number);
+            } catch(_){}
+          } else {
+            console.error('❌ Order creation failed:', createOrderResult && createOrderResult.error);
           }
-
-          // Create order with retry - do NOT await to avoid blocking redirect
-          postOrderWithRetry({
-            order_id: order.id,
-            payment_id: response.razorpay_payment_id,
-            signature: response.razorpay_signature,
-            customer: orderData.customer,
-            product: orderData.product,
-            // Include exact amounts
-            pricing: {
-              ...orderData.pricing,
-              amountPaise: Math.round(orderData.pricing.total * 100)
-            },
-            shipping: orderData.shipping,
-            coupons: Array.isArray(orderData.coupons) ? orderData.coupons.slice(0, 5) : [],
-            payment: {
-              method: 'razorpay',
-              transaction_id: response.razorpay_payment_id,
-              signature: response.razorpay_signature
-            },
-            user_id: userId // Include user ID for access control
-          }).then(function(createOrderResult){
-            if (!(createOrderResult && createOrderResult.success)) {
-              console.error('Order creation failed:', createOrderResult && createOrderResult.error);
-            } else {
-              try {
-                const current = JSON.parse(sessionStorage.getItem('lastOrderData')||'{}');
-                current.order_number = createOrderResult.order_number;
-                sessionStorage.setItem('lastOrderData', JSON.stringify(current));
-              } catch(_){}
-              console.log('Order created successfully:', createOrderResult.order_number);
-            }
-          }).catch(function(e){ console.error('Order creation error:', e); });
-        } catch (orderError) {
-          console.error('Order creation error:', orderError);
-          // Don't fail the payment for order creation errors
-        }
-
-        // ✅ CRITICAL: REDIRECT TO SUCCESS PAGE IMMEDIATELY
-        // Background operations (order creation) are already initiated as non-blocking promises
-        const successUrl = `order-success.html?orderId=${order.id}`;
-        console.log('🚀 IMMEDIATE redirect to success page:', successUrl);
-        
-        // Set a flag to prevent any cart operations from interfering
-        sessionStorage.setItem('payment_success_redirect', 'true');
-        
-        // Disable all cart library functions temporarily
-        if (window.Attral) {
-          window.Attral.__disableRedirects = true;
-        }
-        
-        // Use replace to prevent back navigation issues
-        // This will be allowed by our global redirect protection since it's order-success.html
-        window.location.replace(successUrl);
+        }).catch(function(e){ 
+          console.error('❌ Order creation error:', e); 
+        });
 
       } catch (error) {
-        console.error('Payment verification error:', error);
-        showError('Payment verification failed. Please contact support.');
-        // Reset payment flag on error
-        window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
+        console.error('❌ Payment success handler error:', error);
+        // Emergency fallback: force redirect even on error
+        const fallbackUrl = 'order-success.html?orderId=' + order.id;
+        window.location.href = fallbackUrl;
       }
     }
 

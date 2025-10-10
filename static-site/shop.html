@@ -735,8 +735,15 @@
     
     
     // Initialize page
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
       document.getElementById('year').textContent = new Date().getFullYear();
+      
+      // 🛒 AUTO-VALIDATE: Clean cart automatically before displaying
+      if (window.Attral && window.Attral.validateAndCleanCart) {
+        await window.Attral.validateAndCleanCart();
+        console.log('✅ Cart validated on shop page');
+      }
+      
       if (window.Attral && typeof window.Attral.initHeaderCartCount === 'function') {
         window.Attral.initHeaderCartCount();
       } else {
