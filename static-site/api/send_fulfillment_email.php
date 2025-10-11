@@ -83,25 +83,12 @@ try {
     $mail->CharSet = 'UTF-8';
     $mail->Encoding = 'base64';
     
-    // Generate simple email content
-    $productTitle = $input['productTitle'] ?? 'Your Product';
-    $statusDisplayNames = [
-        'yet-to-dispatch' => 'Yet to Dispatch',
-        'ready-to-dispatch' => 'Ready for Dispatch', 
-        'out-for-delivery' => 'Out for Delivery',
-        'delivered' => 'Delivered'
-    ];
-    $statusDisplay = $statusDisplayNames[$fulfillmentStatus] ?? $fulfillmentStatus;
+    // Generate professional email content using the template function
+    $emailContent = generateFulfillmentEmailContent($orderId, $fulfillmentStatus, $customerName, $input);
     
-    $mail->Subject = 'Order Status Update - Order #' . $orderId;
-    $mail->Body = '<h1>🚚 Order Status Update</h1>
-                   <p><strong>Order ID:</strong> ' . htmlspecialchars($orderId) . '</p>
-                   <p><strong>Customer:</strong> ' . htmlspecialchars($customerName) . '</p>
-                   <p><strong>Product:</strong> ' . htmlspecialchars($productTitle) . '</p>
-                   <p><strong>Status:</strong> ' . htmlspecialchars($statusDisplay) . '</p>
-                   <p><strong>Updated:</strong> ' . date('Y-m-d H:i:s') . '</p>
-                   <p>Thank you for choosing ATTRAL Electronics!</p>';
-    $mail->AltBody = 'Order Status Update - Order #' . $orderId . ' - Customer: ' . $customerName . ' - Product: ' . $productTitle . ' - Status: ' . $statusDisplay . ' - Updated: ' . date('Y-m-d H:i:s');
+    $mail->Subject = $emailContent['subject'];
+    $mail->Body = $emailContent['body'];
+    $mail->AltBody = $emailContent['altBody'];
     
     // Send the email
     try {
@@ -161,6 +148,8 @@ function generateFulfillmentEmailContent($orderId, $status, $customerName, $inpu
                 <p><strong>Product:</strong> ' . htmlspecialchars($productTitle) . '</p>
                 <p><strong>Status:</strong> ' . htmlspecialchars($statusInfo['displayName']) . '</p>
                 <p><strong>Updated:</strong> ' . $timestamp . '</p>
+                ' . ($input['razorpayPaymentId'] ? '<p><strong>Payment ID:</strong> ' . htmlspecialchars($input['razorpayPaymentId']) . '</p>' : '') . '
+                ' . ($input['razorpayOrderId'] ? '<p><strong>Transaction ID:</strong> ' . htmlspecialchars($input['razorpayOrderId']) . '</p>' : '') . '
                 ' . ($trackingNumber ? '<p><strong>Tracking Number:</strong> ' . htmlspecialchars($trackingNumber) . '</p>' : '') . '
                 ' . ($estimatedDelivery ? '<p><strong>Estimated Delivery:</strong> ' . htmlspecialchars($estimatedDelivery) . '</p>' : '') . '
             </div>
@@ -178,7 +167,7 @@ function generateFulfillmentEmailContent($orderId, $status, $customerName, $inpu
     </body>
     </html>';
     
-    $altBody = $statusInfo['title'] . ' - Order #' . $orderId . ' - Customer: ' . $customerName . ' - Product: ' . $productTitle . ' - Status: ' . $statusInfo['displayName'] . ' - Updated: ' . $timestamp . ($trackingNumber ? ' - Tracking: ' . $trackingNumber : '') . ($estimatedDelivery ? ' - Estimated Delivery: ' . $estimatedDelivery : '');
+    $altBody = $statusInfo['title'] . ' - Order #' . $orderId . ' - Customer: ' . $customerName . ' - Product: ' . $productTitle . ' - Status: ' . $statusInfo['displayName'] . ' - Updated: ' . $timestamp . ($input['razorpayPaymentId'] ? ' - Payment ID: ' . $input['razorpayPaymentId'] : '') . ($input['razorpayOrderId'] ? ' - Transaction ID: ' . $input['razorpayOrderId'] : '') . ($trackingNumber ? ' - Tracking: ' . $trackingNumber : '') . ($estimatedDelivery ? ' - Estimated Delivery: ' . $estimatedDelivery : '');
     
     return [
         'subject' => $subject,
@@ -209,6 +198,15 @@ function getStatusInfo($status) {
             'bgColor' => '#e3f2fd',
             'subject' => '🚚 Your Order is Ready for Dispatch',
             'description' => 'Great news! Your order has been packed and is ready to be dispatched. It will be handed over to our delivery partner shortly.'
+        ],
+        'shipped' => [
+            'icon' => '🚚',
+            'title' => 'Order Shipped',
+            'displayName' => 'Shipped',
+            'color' => '#2196f3',
+            'bgColor' => '#e3f2fd',
+            'subject' => '🚚 Your Order has been Shipped',
+            'description' => 'Your order has been shipped and is on its way to you. You can track your package using the tracking information provided.'
         ],
         'out-for-delivery' => [
             'icon' => '🚛',

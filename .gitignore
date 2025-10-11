@@ -46,3 +46,7 @@ Thumbs.db
 
 # Local configuration files with credentials
 static-site/api/config.local.php
+
+# Vendor git repositories (use as regular files, not submodules)
+static-site/api/vendor/**/.git
+static-site/api/vendor/**/phpmailer/.git
