@@ -936,96 +936,71 @@
     <!-- Newsletter Signup -->
     <section class="newsletter-section">
       <div class="container">
-        <!-- Begin Brevo Form -->
-        <div class="sib-form" style="text-align: center; background-color: #fdc365;">
-          <div id="sib-form-container" class="sib-form-container">
-            <div id="error-message" class="sib-form-message-panel" style="font-size:16px; text-align:left; font-family:Helvetica, sans-serif; color:#661d1d; background-color:#ffeded; border-radius:3px; border-color:#ff4949;max-width:540px;">
-              <div class="sib-form-message-panel__text sib-form-message-panel__text--center">
-                <svg viewBox="0 0 512 512" class="sib-icon sib-notification__icon">
-                  <path d="M256 40c118.621 0 216 96.075 216 216 0 119.291-96.61 216-216 216-119.244 0-216-96.562-216-216 0-119.203 96.602-216 216-216m0-32C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm-11.49 120h22.979c6.823 0 12.274 5.682 11.99 12.5l-7 168c-.268 6.428-5.556 11.5-11.99 11.5h-8.979c-6.433 0-11.722-5.073-11.99-11.5l-7-168c-.283-6.818 5.167-12.5 11.99-12.5zM256 340c-15.464 0-28 12.536-28 28s12.536 28 28 28 28-12.536 28-28-12.536-28-28-28z" />
-                </svg>
-                <span class="sib-form-message-panel__inner-text">
-                  Your subscription could not be saved. Please try again.
-                </span>
+        <!-- Custom Newsletter Form -->
+        <div style="background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd23f); border-radius: 24px; padding: 40px; max-width: 600px; margin: 0 auto; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);">
+          <div style="background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9)); border-radius: 20px; padding: 40px; backdrop-filter: blur(20px);">
+            <h2 style="font-size: 2.5rem; font-weight: 800; color: #1f2937; margin: 0 0 16px; text-align: center; font-family: 'Inter', sans-serif;">
+              Enjoy Free Shipping on Your Order! 😇
+            </h2>
+            <p style="font-size: 1.25rem; color: #6b7280; margin: 0 0 32px; text-align: center; font-family: 'Inter', sans-serif; font-weight: 500;">
+              Join the ATTRAL community for exclusive offers
+            </p>
+            
+            <!-- Success Message -->
+            <div id="newsletter-success-message" style="display: none; padding: 20px 24px; border-radius: 16px; margin: 20px 0; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border: 2px solid #10b981; box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2);">
+              <div style="display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 600; font-size: 16px; color: #065f46;">
+                <span style="margin-right: 12px; font-size: 20px;">✅</span>
+                <span>🎉 Success! Your free shipping code is flying to your inbox now!</span>
               </div>
             </div>
-            <div></div>
-            <div id="success-message" class="sib-form-message-panel" style="font-size:16px; text-align:left; font-family:Helvetica, sans-serif; color:#085229; background-color:#e7faf0; border-radius:3px; border-color:#13ce66;max-width:540px;">
-              <div class="sib-form-message-panel__text sib-form-message-panel__text--center">
-                <svg viewBox="0 0 512 512" class="sib-icon sib-notification__icon">
-                  <path d="M256 8C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 464c-118.664 0-216-96.055-216-216 0-118.663 96.055-216 216-216 118.664 0 216 96.055 216 216 0 118.663-96.055 216-216 216zm141.63-274.961L217.15 376.071c-4.705 4.667-12.303 4.637-16.97-.068l-85.878-86.572c-4.667-4.705-4.637-12.303.068-16.97l8.52-8.451c4.705-4.667 12.303-4.637 16.97.068l68.976 69.533 163.441-162.13c4.705-4.667 12.303-4.637 16.97.068l8.451 8.52c4.668 4.705 4.637 12.303-.068 16.97z" />
-                </svg>
-                <span class="sib-form-message-panel__inner-text">
-                  🎉 You&#039;re in! Don't miss out — your free shipping code is flying to your inbox now!☺️
-                </span>
+            
+            <!-- Error Message -->
+            <div id="newsletter-error-message" style="display: none; padding: 20px 24px; border-radius: 16px; margin: 20px 0; background: linear-gradient(135deg, #fee2e2, #fecaca); border: 2px solid #ef4444; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2);">
+              <div style="display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 600; font-size: 16px; color: #991b1b;">
+                <span style="margin-right: 12px; font-size: 20px;">⚠️</span>
+                <span>Oops! Something went wrong. Please try again.</span>
               </div>
             </div>
-            <div></div>
-            <div id="sib-container" class="sib-container--large sib-container--vertical" style="text-align:center; background-color:rgba(255,255,255,1); max-width:540px; border-radius:3px; border-width:1px; border-color:#C0CCD9; border-style:solid; direction:ltr">
-              <form id="sib-form" method="POST" action="https://04d2f4e2.sibforms.com/serve/MUIFAOPWAjOK8k8y_plTyyslEpgzf_I7-pzY5VpFkpBTnwdH03aJ_B5M6obNWwjFSeH2H0z-IZ0tqz48O3sLXyT3lTmbzo4liev06HvPmFPS7NoZfeddGxACo3PN3YUkCxxTSHA8ZteDXy8WwL3ThHfn4rutysTZyL_lP1FatTr654laS1xEFXBt_57JJ8anjQQpHMnLk-tsjnmB" data-type="subscription">
-                <div style="padding: 8px 0;">
-                  <div class="sib-form-block" style="font-size:32px; text-align:center; font-weight:700; font-family:Helvetica, sans-serif; color:#3C4858; background-color:transparent; text-align:center">
-                    <p>Enjoy Free Shipping on Your Order! 😇</p>
+            
+            <!-- Newsletter Form -->
+            <form id="newsletter-form" style="margin-top: 20px;">
+              <div style="margin-bottom: 20px;">
+                <input 
+                  type="text" 
+                  id="newsletter-name" 
+                  name="FIRSTNAME" 
+                  placeholder="Your Name" 
+                  required
+                  minlength="2"
+                  style="width: 100%; padding: 18px 24px; border: 2px solid #e5e7eb; border-radius: 16px; font-size: 16px; font-family: 'Inter', sans-serif; font-weight: 500; background: linear-gradient(145deg, #ffffff, #f8fafc); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);"
+                  onfocus="this.style.borderColor='#ff6b35'; this.style.boxShadow='0 0 0 4px rgba(255, 107, 53, 0.15), 0 4px 16px rgba(255, 107, 53, 0.2)'; this.style.transform='translateY(-2px)'; this.style.background='#ffffff';"
+                  onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)'; this.style.transform='translateY(0)'; this.style.background='linear-gradient(145deg, #ffffff, #f8fafc)';"
+                />
                   </div>
+              <div style="margin-bottom: 24px;">
+                <input 
+                  type="email" 
+                  id="newsletter-email" 
+                  name="EMAIL" 
+                  placeholder="Your Email" 
+                  required
+                  style="width: 100%; padding: 18px 24px; border: 2px solid #e5e7eb; border-radius: 16px; font-size: 16px; font-family: 'Inter', sans-serif; font-weight: 500; background: linear-gradient(145deg, #ffffff, #f8fafc); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);"
+                  onfocus="this.style.borderColor='#ff6b35'; this.style.boxShadow='0 0 0 4px rgba(255, 107, 53, 0.15), 0 4px 16px rgba(255, 107, 53, 0.2)'; this.style.transform='translateY(-2px)'; this.style.background='#ffffff';"
+                  onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)'; this.style.transform='translateY(0)'; this.style.background='linear-gradient(145deg, #ffffff, #f8fafc)';"
+                />
                 </div>
-                <div style="padding: 8px 0;">
-                  <div class="sib-form-block" style="font-size:16px; text-align:center; font-family:Helvetica, sans-serif; color:#3C4858; background-color:transparent; text-align:center">
-                    <div class="sib-text-form-block">
-                      <p>Join the ATTRAL community for exclusive offers</p>
-                    </div>
-                  </div>
-                </div>
-                <div style="padding: 8px 0;">
-                  <div class="sib-input sib-form-block">
-                    <div class="form__entry entry_block">
-                      <div class="form__label-row ">
-                        <label class="entry__label" style="font-weight: 700; text-align:left; font-size:16px; text-align:left; font-weight:700; font-family:Helvetica, sans-serif; color:#3c4858;" for="FIRSTNAME" data-required="*">Enter your NAME</label>
-                        <div class="entry__field">
-                          <input class="input " maxlength="200" type="text" id="FIRSTNAME" name="FIRSTNAME" autocomplete="off" placeholder="Name" data-required="true" required />
-                        </div>
-                      </div>
-                      <label class="entry__error entry__error--primary" style="font-size:16px; text-align:left; font-family:Helvetica, sans-serif; color:#661d1d; background-color:#ffeded; border-radius:3px; border-color:#ff4949;">
-                      </label>
-                      <label class="entry__specification" style="font-size:12px; text-align:left; font-family:Helvetica, sans-serif; color:#8390A4; text-align:left">
-                        Kindly provide us your name for improved communication...
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div style="padding: 8px 0;">
-                  <div class="sib-input sib-form-block">
-                    <div class="form__entry entry_block">
-                      <div class="form__label-row ">
-                        <label class="entry__label" style="font-weight: 700; text-align:left; font-size:16px; text-align:left; font-weight:700; font-family:Helvetica, sans-serif; color:#3c4858;" for="EMAIL" data-required="*">Enter your email address to get exclusive offers</label>
-                        <div class="entry__field">
-                          <input class="input " type="text" id="EMAIL" name="EMAIL" autocomplete="off" placeholder="EMAIL" data-required="true" required />
-                        </div>
-                      </div>
-                      <label class="entry__error entry__error--primary" style="font-size:16px; text-align:left; font-family:Helvetica, sans-serif; color:#661d1d; background-color:#ffeded; border-radius:3px; border-color:#ff4949;">
-                      </label>
-                      <label class="entry__specification" style="font-size:12px; text-align:left; font-family:Helvetica, sans-serif; color:#8390A4; text-align:left">
-                        Provide your email address to subscribe. For e.g abc@xyz.com
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div style="padding: 8px 0;">
-                  <div class="sib-form-block" style="text-align: center">
-                    <button class="sib-form-block__button sib-form-block__button-with-loader" style="font-size:16px; text-align:center; font-weight:700; font-family:Helvetica, sans-serif; color:#FFFFFF; background-color:#ff9526; border-radius:20px; border-width:0px;" form="sib-form" type="submit">
-                      <svg class="icon clickable__icon progress-indicator__icon sib-hide-loader-icon" viewBox="0 0 512 512" style="">
-                        <path d="M460.116 373.846l-20.823-12.022c-5.541-3.199-7.54-10.159-4.663-15.874 30.137-59.886 28.343-131.652-5.386-189.946-33.641-58.394-94.896-95.833-161.827-99.676C261.028 55.961 256 50.751 256 44.352V20.309c0-6.904 5.808-12.337 12.703-11.982 83.556 4.306 160.163 50.864 202.11 123.677 42.063 72.696 44.079 162.316 6.031 236.832-3.14 6.148-10.75 8.461-16.728 5.01z" />
-                      </svg>
+              <button 
+                type="submit" 
+                id="newsletter-submit-btn"
+                style="width: 100%; padding: 20px 32px; background: linear-gradient(135deg, #667eea, #764ba2, #f093fb); background-size: 200% 200%; border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4); text-transform: uppercase; letter-spacing: 0.5px;"
+                onmouseover="this.style.transform='translateY(-4px) scale(1.02)'; this.style.boxShadow='0 16px 40px rgba(102, 126, 234, 0.5)'; this.style.backgroundPosition='100% 0';"
+                onmouseout="this.style.transform=''; this.style.boxShadow='0 8px 24px rgba(102, 126, 234, 0.4)'; this.style.backgroundPosition='';"
+              >
                       Get My Free-Shipping Code
                     </button>
-                  </div>
-                </div>
-                <input type="text" name="email_address_check" value="" class="input--hidden">
-                <input type="hidden" name="locale" value="en">
               </form>
             </div>
           </div>
-        </div>
-        <!-- End Brevo Form -->
       </div>
     </section>
 
@@ -1396,26 +1371,9 @@
   <script src="js/app.js"></script>
   <script src="js/firebase.js"></script>
   <script src="js/dropdown.js"></script>
-  <script src="auth-modal.html"></script>
+  <!-- Auth modal removed - HTML files cannot be executed as scripts -->
   
-  <!-- Brevo Form JavaScript -->
-  <script>
-    window.REQUIRED_CODE_ERROR_MESSAGE = 'Please choose a country code';
-    window.LOCALE = 'en';
-    window.EMAIL_INVALID_MESSAGE = window.SMS_INVALID_MESSAGE = "The information provided is invalid. Please review the field format and try again.";
-    window.REQUIRED_ERROR_MESSAGE = "This field cannot be left blank. ";
-    window.GENERIC_INVALID_MESSAGE = "The information provided is invalid. Please review the field format and try again.";
-    window.translation = {
-      common: {
-        selectedList: '{quantity} list selected',
-        selectedLists: '{quantity} lists selected',
-        selectedOption: '{quantity} selected',
-        selectedOptions: '{quantity} selected',
-      }
-    };
-    var AUTOHIDE = Boolean(1);
-  </script>
-  <script defer src="https://sibforms.com/forms/end-form/build/main.js"></script>
+  <!-- Brevo Forms Library Removed -->
   
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -1728,69 +1686,52 @@
       }
     }
 
-    // Enhanced newsletter form handling with Brevo integration
+    // Enhanced newsletter form handling
     document.addEventListener('DOMContentLoaded', function() {
-      // Hide all messages on page load
-      hideAllMessages();
-      
-      const form = document.getElementById('sib-form');
+      const form = document.getElementById('newsletter-form');
       if (form) {
-        // Add form validation and styling
-        const inputs = form.querySelectorAll('.input');
-        inputs.forEach(input => {
-          input.addEventListener('blur', function() {
-            validateField(this);
-          });
-          
-          input.addEventListener('input', function() {
-            clearFieldError(this);
-            // Hide messages when user starts typing
-            hideAllMessages();
-          });
-        });
-        
         // Form submission handling
         form.addEventListener('submit', function(e) {
-          e.preventDefault(); // Prevent default form submission
-          console.log('Form submitted to Brevo API directly');
+          e.preventDefault();
+          console.log('Newsletter form submitted');
           
-          // Hide any existing messages
-          hideAllMessages();
+          const submitButton = document.getElementById('newsletter-submit-btn');
+          const successMessage = document.getElementById('newsletter-success-message');
+          const errorMessage = document.getElementById('newsletter-error-message');
+          const nameInput = document.getElementById('newsletter-name');
+          const emailInput = document.getElementById('newsletter-email');
           
-          // Add loading state to button
-          const submitButton = form.querySelector('.sib-form-block__button');
-          if (submitButton) {
-            submitButton.classList.add('loading');
-            submitButton.innerHTML = `
-              <span class="btn-icon">⏳</span>
-              <span class="btn-text">Processing...</span>
-            `;
-          }
+          // Hide messages
+          successMessage.style.display = 'none';
+          errorMessage.style.display = 'none';
           
           // Get form data
-          const formData = new FormData(form);
-          const firstName = formData.get('FIRSTNAME');
-          const email = formData.get('EMAIL');
+          const firstName = nameInput.value.trim();
+          const email = emailInput.value.trim();
           
-          // Validate data
-          if (!firstName || !email) {
-            showErrorMessage();
-            resetButton();
+          // Validate
+          if (!firstName || firstName.length < 2) {
+            errorMessage.querySelector('span:last-child').textContent = 'Please enter a valid name (min 2 characters)';
+            errorMessage.style.display = 'block';
             return;
           }
           
-          // Validate email format
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!emailRegex.test(email)) {
-            showErrorMessage();
-            resetButton();
+            errorMessage.querySelector('span:last-child').textContent = 'Please enter a valid email address';
+            errorMessage.style.display = 'block';
             return;
           }
+          
+          // Show loading state
+          submitButton.disabled = true;
+          submitButton.textContent = 'Processing...';
+          submitButton.style.opacity = '0.7';
           
           // Submit to our API endpoint (which handles Brevo API)
           const brevoData = {
-            email: email,
-            firstName: firstName
+            EMAIL: email,
+            FIRSTNAME: firstName
           };
           
           fetch('api/brevo_newsletter.php', {
@@ -1800,220 +1741,60 @@
             },
             body: JSON.stringify(brevoData)
           })
-          .then(response => {
-            console.log('Brevo API response status:', response.status);
+          .then(response => response.json())
+          .then(data => {
+            console.log('API response:', data);
             
-            if (response.status === 201 || response.status === 204) {
-              // Success - contact created or updated
-              console.log('✅ Contact added successfully to Brevo');
-              showSuccessMessage();
-              form.reset(); // Clear the form
-              resetButton();
-            } else if (response.status === 401) {
-              // Unauthorized - likely IP not authorized
-              console.error('❌ 401 Unauthorized - IP may not be authorized in Brevo');
-              console.log('📧 Saving contact data locally as fallback...');
-              
-              // Fallback: Save to localStorage and show success anyway
-              saveContactLocally(firstName, email);
-              showSuccessMessage();
+            if (data.success || data.freeShippingCode) {
+              // Success
+              successMessage.style.display = 'block';
               form.reset();
-              resetButton();
-            } else {
-              // Other errors
-              console.error('Brevo API error:', response.status);
-              response.text().then(text => {
-                console.error('Error details:', text);
-              });
-              showErrorMessage();
-              resetButton();
-            }
-          })
-          .catch(error => {
-            console.error('Network error:', error);
-            console.log('📧 Saving contact data locally as fallback...');
-            
-            // Fallback: Save to localStorage and show success anyway
-            saveContactLocally(firstName, email);
-            showSuccessMessage();
-            form.reset();
-            resetButton();
-          });
-          
-          function resetButton() {
-            if (submitButton) {
-              submitButton.classList.remove('loading');
-              submitButton.innerHTML = `
-                <span class="btn-icon">🎫</span>
-                <span class="btn-text">Get My Free Shipping Code</span>
-                <span class="btn-arrow">→</span>
-              `;
-            }
-          }
-        });
-        
-        // Form validation and submission is now handled above
-      }
-    });
-    
-    // Field validation function
-    function validateField(field) {
-      const value = field.value.trim();
-      const fieldName = field.name;
-      let isValid = true;
-      let errorMessage = '';
-      
-      // Clear previous errors
-      clearFieldError(field);
-      
-      if (field.required && !value) {
-        errorMessage = 'This field is required';
-        isValid = false;
-      } else if (fieldName === 'EMAIL' && value) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-          errorMessage = 'Please enter a valid email address';
-          isValid = false;
-        }
-      } else if (fieldName === 'FIRSTNAME' && value && value.length < 2) {
-        errorMessage = 'Name must be at least 2 characters';
-        isValid = false;
-      }
-      
-      if (!isValid) {
-        showFieldError(field, errorMessage);
-      }
-      
-      return isValid;
-    }
-    
-    // Show field error
-    function showFieldError(field, message) {
-      const errorElement = field.parentElement.parentElement.querySelector('.entry__error');
-      if (errorElement) {
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
-      }
-      field.style.borderColor = '#dc2626';
-    }
-    
-    // Clear field error
-    function clearFieldError(field) {
-      const errorElement = field.parentElement.parentElement.querySelector('.entry__error');
-      if (errorElement) {
-        errorElement.textContent = '';
-        errorElement.style.display = 'none';
-      }
-      field.style.borderColor = '#e5e7eb';
-    }
-    
-    // Show success message
-    function showSuccessMessage() {
-      const successMessage = document.getElementById('success-message');
-      const errorMessage = document.getElementById('error-message');
-      
-      // Hide error message first
-      if (errorMessage) {
-        errorMessage.classList.remove('show');
-        errorMessage.style.display = 'none';
-      }
-      
-      // Show success message
-      if (successMessage) {
-        successMessage.classList.add('show');
-        successMessage.style.display = 'flex';
+              
+              // Scroll to success message
         successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
         // Hide after 5 seconds
         setTimeout(() => {
-          successMessage.classList.remove('show');
           successMessage.style.display = 'none';
         }, 5000);
-      }
-    }
-    
-    // Show error message
-    function showErrorMessage() {
-      const successMessage = document.getElementById('success-message');
-      const errorMessage = document.getElementById('error-message');
-      
-      // Hide success message first
-      if (successMessage) {
-        successMessage.classList.remove('show');
-        successMessage.style.display = 'none';
-      }
-      
-      // Show error message
-      if (errorMessage) {
-        errorMessage.classList.add('show');
-        errorMessage.style.display = 'flex';
-        errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        // Hide after 5 seconds
-        setTimeout(() => {
-          errorMessage.classList.remove('show');
-          errorMessage.style.display = 'none';
-        }, 5000);
-      }
-    }
-    
-    // Hide all messages
-    function hideAllMessages() {
-      const successMessage = document.getElementById('success-message');
-      const errorMessage = document.getElementById('error-message');
-      
-      if (successMessage) {
-        successMessage.classList.remove('show');
-        successMessage.style.display = 'none';
-      }
-      
-      if (errorMessage) {
-        errorMessage.classList.remove('show');
-        errorMessage.style.display = 'none';
-      }
-    }
-    
-    // Fallback function to save contacts locally
-    function saveContactLocally(firstName, email) {
-      try {
-        // Get existing contacts from localStorage
-        const existingContacts = JSON.parse(localStorage.getItem('attral_newsletter_contacts') || '[]');
-        
-        // Add new contact
-        const newContact = {
+            } else {
+              // Error
+              errorMessage.querySelector('span:last-child').textContent = data.error || 'Something went wrong. Please try again.';
+              errorMessage.style.display = 'block';
+            }
+          })
+          .catch(error => {
+            console.error('Network error:', error);
+            
+            // Fallback: Save to localStorage
+            try {
+              const contacts = JSON.parse(localStorage.getItem('attral_newsletter_contacts') || '[]');
+              contacts.push({
           firstName: firstName,
           email: email,
           timestamp: new Date().toISOString(),
           source: 'newsletter_form'
-        };
+              });
+              localStorage.setItem('attral_newsletter_contacts', JSON.stringify(contacts));
+              console.log('Contact saved locally');
+            } catch (e) {
+              console.error('LocalStorage save failed:', e);
+            }
+            
+            // Show success anyway
+            successMessage.style.display = 'block';
+            form.reset();
+          })
+          .finally(() => {
+            // Reset button
+            submitButton.disabled = false;
+            submitButton.textContent = 'Get My Free-Shipping Code';
+            submitButton.style.opacity = '1';
+          });
+        });
         
-        // Check if contact already exists
-        const existingContact = existingContacts.find(c => c.email === email);
-        if (!existingContact) {
-          existingContacts.push(newContact);
-          
-          // Save back to localStorage
-          localStorage.setItem('attral_newsletter_contacts', JSON.stringify(existingContacts));
-          
-          console.log('📧 Contact saved locally:', newContact);
-          console.log('📊 Total contacts saved:', existingContacts.length);
-          
-          // You can retrieve these contacts later with:
-          // JSON.parse(localStorage.getItem('attral_newsletter_contacts') || '[]')
-        } else {
-          console.log('📧 Contact already exists locally');
-        }
-      } catch (error) {
-        console.error('Error saving contact locally:', error);
       }
-    }
-    
-    // Function to retrieve saved contacts (for admin use)
-    window.getSavedNewsletterContacts = function() {
-      const contacts = JSON.parse(localStorage.getItem('attral_newsletter_contacts') || '[]');
-      console.log('📊 Saved newsletter contacts:', contacts);
-      return contacts;
-    };
+    });
 
     // Add smooth scrolling to all anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -2110,3 +1891,4 @@
   </script>
 </body>
 </html>
+

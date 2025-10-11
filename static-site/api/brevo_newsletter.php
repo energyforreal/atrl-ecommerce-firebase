@@ -17,22 +17,47 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
+// Log request details for debugging
+error_log("NEWSLETTER API: Request method: " . $_SERVER['REQUEST_METHOD']);
+error_log("NEWSLETTER API: Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'Not set'));
+error_log("NEWSLETTER API: User-Agent: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Not set'));
+
 // Load configuration
-require_once __DIR__ . '/config.php';
+$cfg = include __DIR__ . '/config.php';
 
 // Brevo API configuration
-$BREVO_API_KEY = defined('BREVO_API_KEY') ? BREVO_API_KEY : getenv('BREVO_API_KEY');
+$BREVO_API_KEY = $cfg['BREVO_API_KEY'] ?? null;
 $BREVO_API_URL = 'https://api.brevo.com/v3/contacts';
 $LIST_ID = 3; // Attral Shopping list ID
 
-// Determine local mode (no cURL or explicit flag)
-$LOCAL_MODE = (getenv('LOCAL_MODE') && strtolower(getenv('LOCAL_MODE')) === 'true') || !function_exists('curl_init');
+// Validate API key
+if (empty($BREVO_API_KEY)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Brevo API key not configured']);
+    exit();
+}
+
+// Determine local mode (only by explicit flag, not by cURL availability)
+$LOCAL_MODE = (getenv('LOCAL_MODE') && strtolower(getenv('LOCAL_MODE')) === 'true');
 
 // Get JSON input
-$input = json_decode(file_get_contents('php://input'), true);
+$rawInput = file_get_contents('php://input');
+$input = json_decode($rawInput, true);
+
+// Debug logging
+error_log("NEWSLETTER API: Raw input: " . $rawInput);
+error_log("NEWSLETTER API: Parsed input: " . json_encode($input));
+
+// Check if JSON parsing failed
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON: ' . json_last_error_msg()]);
+    exit();
+}
 
 // Validate required fields
 if (!isset($input['FIRSTNAME']) || !isset($input['EMAIL'])) {
+    error_log("NEWSLETTER API: Missing fields - FIRSTNAME: " . (isset($input['FIRSTNAME']) ? 'OK' : 'MISSING') . ", EMAIL: " . (isset($input['EMAIL']) ? 'OK' : 'MISSING'));
     http_response_code(400);
     echo json_encode(['error' => 'Missing required fields: FIRSTNAME and EMAIL']);
     exit();
@@ -85,31 +110,18 @@ if ($LOCAL_MODE) {
     
     // Send welcome email with free shipping code in local mode too
     $freeShippingCode = 'ATTRALFREESHIP100';
+    
+    // Send welcome email with free shipping code
     try {
-        $emailData = [
-            'action' => 'newsletter_welcome_freeship',
-            'email' => $email,
-            'firstName' => $firstName,
-            'freeShippingCode' => $freeShippingCode
-        ];
+        // Load and use email service directly
+        require_once __DIR__ . '/brevo_email_service.php';
+        $emailService = new BrevoEmailService();
+        $emailResult = $emailService->sendFreeShipCouponEmail($email, $firstName);
         
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => 'http://localhost/api/brevo_email_service.php',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($emailData),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_TIMEOUT => 10
-        ]);
-        $emailResponse = curl_exec($ch);
-        $emailHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($emailHttpCode === 200) {
+        if ($emailResult['success']) {
             error_log("NEWSLETTER LOCAL: ✅ Welcome email with free shipping code sent to $email");
         } else {
-            error_log("NEWSLETTER LOCAL: ⚠️ Failed to send welcome email: " . $emailResponse);
+            error_log("NEWSLETTER LOCAL: ⚠️ Failed to send welcome email: " . ($emailResult['error'] ?? 'Unknown error'));
         }
     } catch (Exception $emailError) {
         error_log("NEWSLETTER LOCAL: Email sending error: " . $emailError->getMessage());
@@ -124,37 +136,76 @@ if ($LOCAL_MODE) {
     exit();
 }
 
-// Initialize cURL
-$ch = curl_init();
+// Try to use cURL if available, otherwise use file_get_contents
+if (function_exists('curl_init')) {
+    // Initialize cURL
+    $ch = curl_init();
 
-// Set cURL options
-curl_setopt_array($ch, [
-    CURLOPT_URL => $BREVO_API_URL,
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => json_encode($contactData),
-    CURLOPT_HTTPHEADER => [
-        'accept: application/json',
-        'api-key: ' . $BREVO_API_KEY,
-        'content-type: application/json'
-    ],
-    CURLOPT_TIMEOUT => 30,
-    CURLOPT_SSL_VERIFYPEER => true
-]);
+    // Set cURL options
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $BREVO_API_URL,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($contactData),
+        CURLOPT_HTTPHEADER => [
+            'accept: application/json',
+            'api-key: ' . $BREVO_API_KEY,
+            'content-type: application/json'
+        ],
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_SSL_VERIFYPEER => true
+    ]);
 
-// Execute the request
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlError = curl_error($ch);
+    // Execute the request
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
 
-curl_close($ch);
+    curl_close($ch);
 
-// Handle cURL errors
-if ($curlError) {
-    error_log("Brevo API cURL Error: " . $curlError);
-    http_response_code(500);
-    echo json_encode(['error' => 'Failed to connect to Brevo API']);
-    exit();
+    // Handle cURL errors
+    if ($curlError) {
+        error_log("Brevo API cURL Error: " . $curlError);
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to connect to Brevo API']);
+        exit();
+    }
+} else {
+    // Fallback: Use file_get_contents with stream context
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => [
+                'accept: application/json',
+                'api-key: ' . $BREVO_API_KEY,
+                'content-type: application/json'
+            ],
+            'content' => json_encode($contactData),
+            'timeout' => 30
+        ]
+    ]);
+    
+    $response = @file_get_contents($BREVO_API_URL, false, $context);
+    
+    if ($response === false) {
+        error_log("Brevo API file_get_contents Error");
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to connect to Brevo API (no cURL available)']);
+        exit();
+    }
+    
+    // Get HTTP response code from headers
+    $httpCode = 200; // Default, will be updated based on response
+    if (isset($http_response_header)) {
+        foreach ($http_response_header as $header) {
+            if (strpos($header, 'HTTP/') === 0) {
+                preg_match('/HTTP\/\d\.\d\s+(\d+)/', $header, $matches);
+                if (isset($matches[1])) {
+                    $httpCode = intval($matches[1]);
+                }
+            }
+        }
+    }
 }
 
 // Handle API response
@@ -164,30 +215,15 @@ if ($httpCode === 201) {
     
     // Send welcome email with free shipping code
     try {
-        $emailData = [
-            'action' => 'newsletter_welcome_freeship',
-            'email' => $email,
-            'firstName' => $firstName,
-            'freeShippingCode' => $freeShippingCode
-        ];
+        // Load and use email service directly
+        require_once __DIR__ . '/brevo_email_service.php';
+        $emailService = new BrevoEmailService();
+        $emailResult = $emailService->sendFreeShipCouponEmail($email, $firstName);
         
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => 'http://localhost/api/brevo_email_service.php',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($emailData),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_TIMEOUT => 10
-        ]);
-        $emailResponse = curl_exec($ch);
-        $emailHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($emailHttpCode === 200) {
+        if ($emailResult['success']) {
             error_log("NEWSLETTER: ✅ Welcome email with free shipping code sent to $email");
         } else {
-            error_log("NEWSLETTER: ⚠️ Failed to send welcome email: " . $emailResponse);
+            error_log("NEWSLETTER: ⚠️ Failed to send welcome email: " . ($emailResult['error'] ?? 'Unknown error'));
         }
     } catch (Exception $emailError) {
         error_log("NEWSLETTER: Email sending error: " . $emailError->getMessage());
@@ -205,30 +241,15 @@ if ($httpCode === 201) {
     
     // Send welcome email with free shipping code
     try {
-        $emailData = [
-            'action' => 'newsletter_welcome_freeship',
-            'email' => $email,
-            'firstName' => $firstName,
-            'freeShippingCode' => $freeShippingCode
-        ];
+        // Load and use email service directly
+        require_once __DIR__ . '/brevo_email_service.php';
+        $emailService = new BrevoEmailService();
+        $emailResult = $emailService->sendFreeShipCouponEmail($email, $firstName);
         
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => 'http://localhost/api/brevo_email_service.php',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($emailData),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_TIMEOUT => 10
-        ]);
-        $emailResponse = curl_exec($ch);
-        $emailHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($emailHttpCode === 200) {
+        if ($emailResult['success']) {
             error_log("NEWSLETTER: ✅ Welcome email with free shipping code sent to $email");
         } else {
-            error_log("NEWSLETTER: ⚠️ Failed to send welcome email: " . $emailResponse);
+            error_log("NEWSLETTER: ⚠️ Failed to send welcome email: " . ($emailResult['error'] ?? 'Unknown error'));
         }
     } catch (Exception $emailError) {
         error_log("NEWSLETTER: Email sending error: " . $emailError->getMessage());

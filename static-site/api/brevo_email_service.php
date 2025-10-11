@@ -46,10 +46,9 @@ if (!class_exists('PHPMailer\\PHPMailer\\PHPMailer') && file_exists($vendoredSrc
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Load configuration if not already loaded
-if (!defined('BREVO_API_KEY')) {
-    require_once __DIR__ . '/config.php';
-}
+// Load configuration
+$cfg = include __DIR__ . '/config.php';
+define('BREVO_API_KEY', $cfg['BREVO_API_KEY'] ?? '');
 
 // Brevo Configuration (use config if available, otherwise define)
 if (!defined('BREVO_API_URL')) {
@@ -408,6 +407,19 @@ class BrevoEmailService {
     }
     
     /**
+     * Send free shipping coupon email
+     */
+    public function sendFreeShipCouponEmail($email, $firstName) {
+        $html = $this->getFreeShipCouponEmailTemplate($firstName);
+        return $this->sendTransactionalEmail(
+            $email,
+            "🚀 ATTRAL GaN Charger is Here - Free Shipping Inside!",
+            $html,
+            ['toName' => $firstName]
+        );
+    }
+    
+    /**
      * Make API request to Brevo
      */
     private function makeRequest($endpoint, $data, $method = 'POST') {
@@ -471,35 +483,33 @@ class BrevoEmailService {
 
     private function sendViaPHPMailer($to, $subject, $htmlContent, $params) {
         try {
-            $cfg = $GLOBALS['cfg'] ?? [];
+            // Load config properly (same as send_email_real.php)
+            $cfg = include __DIR__ . '/config.php';
             $mail = new PHPMailer(true);
             $mail->isSMTP();
             
-            // Use Brevo SMTP settings from config
+            // Use Brevo SMTP settings from config (same as send_email_real.php)
             $host = $cfg['SMTP_HOST'] ?? 'smtp-relay.brevo.com';
             $port = intval($cfg['SMTP_PORT'] ?? 587);
-            $secure = strtolower($cfg['SMTP_SECURE'] ?? 'tls');
             $username = $cfg['SMTP_USERNAME'] ?? '8c9aee002@smtp-brevo.com';
             $password = $cfg['SMTP_PASSWORD'] ?? '';
             
+            // Server settings - Brevo SMTP (same as send_email_real.php)
             $mail->Host = $host;
-            $mail->Port = $port;
-            
-            if ($secure === 'tls') {
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            } elseif ($secure === 'ssl') {
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            } else {
-                $mail->SMTPSecure = false;
-            }
-            
             $mail->SMTPAuth = true;
             $mail->Username = $username;
             $mail->Password = $password;
+            // Only use TLS if OpenSSL is available
+            if (extension_loaded('openssl')) {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            } else {
+                $mail->SMTPSecure = false;
+                error_log("⚠️ OpenSSL not available - using unencrypted SMTP");
+            }
+            $mail->Port = $port;
 
-            $fromEmail = $params['fromEmail'] ?? (FROM_EMAIL);
-            $fromName = $params['fromName'] ?? (FROM_NAME);
-            $mail->setFrom($fromEmail, $fromName);
+            // Recipients (same as send_email_real.php)
+            $mail->setFrom($cfg['MAIL_FROM'] ?? 'info@attral.in', $cfg['MAIL_FROM_NAME'] ?? 'ATTRAL Electronics');
             $mail->addAddress($to, $params['toName'] ?? '');
             if (!empty($params['replyTo'])) {
                 $mail->addReplyTo($params['replyTo'], $params['replyToName'] ?? '');
@@ -521,6 +531,7 @@ class BrevoEmailService {
                 }
             }
 
+            // Content (same as send_email_real.php)
             $mail->isHTML(true);
             $mail->CharSet = 'UTF-8';
             $mail->Encoding = 'base64';
@@ -529,9 +540,11 @@ class BrevoEmailService {
             $mail->AltBody = strip_tags($htmlContent);
 
             $mail->send();
+            error_log("✅ PHPMailer: Email sent successfully to $to via Brevo SMTP");
             return ['success' => true, 'data' => ['transport' => 'phpmailer_smtp', 'smtp_host' => $host]];
         } catch (Exception $e) {
-            error_log('PHPMailer SMTP ERROR: ' . $e->getMessage());
+            error_log('❌ PHPMailer SMTP ERROR: ' . $e->getMessage());
+            error_log('SMTP Config - Host: ' . $host . ', Port: ' . $port . ', Username: ' . $username);
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
@@ -1121,11 +1134,72 @@ class BrevoEmailService {
         </div>
         ' . $this->getEmailFooter();
     }
+    
+    private function getFreeShipCouponEmailTemplate($firstName) {
+        return $this->getEmailHeader('ATTRAL GaN Charger Launch') . '
+        <div class="header">
+            <h1>🚀 ATTRAL 8-Port GaN Fast Charger is Here!</h1>
+        </div>
+        <div class="content">
+            <p style="font-size: 20px; color: #1f2937; font-weight: 600;">Hi ' . htmlspecialchars($firstName) . ',</p>
+            
+            <p style="font-size: 18px; color: #1f2937; line-height: 1.6; margin: 20px 0;">
+                Charge everything with one sleek, powerful device.
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #ff6b35, #f7931e); color: white; padding: 25px; border-radius: 12px; text-align: center; margin: 25px 0;">
+                <h2 style="margin: 0 0 10px 0; font-size: 24px;">🎉 Sale is Live – Free Shipping Just for You!</h2>
+            </div>
+            
+            <p style="color: #4b5563; line-height: 1.8; font-size: 16px;">
+                Say goodbye to messy cables and multiple chargers. The ATTRAL GaN Charger is the only charger you\'ll need — fast, compact, and powerful enough to charge up to 8 devices at once.
+            </p>
+            
+            <h3 style="color: #1f2937; margin-top: 30px;">Why Choose ATTRAL?</h3>
+            <ul style="color: #4b5563; line-height: 2; font-size: 16px; list-style: none; padding-left: 0;">
+                <li style="margin-bottom: 10px;">✅ <strong>4 USB-C + 4 USB-A Ports</strong></li>
+                <li style="margin-bottom: 10px;">✅ <strong>Fast GaN Technology</strong></li>
+                <li style="margin-bottom: 10px;">✅ <strong>Travel-Ready & Lightweight</strong></li>
+                <li style="margin-bottom: 10px;">✅ <strong>Secure Checkout & Trusted Payment Gateways</strong></li>
+            </ul>
+            
+            <div class="highlight" style="margin: 30px 0;">
+                <h3 style="margin-top: 0; color: #f59e0b; font-size: 22px;">🎁 Your Free Shipping Coupon</h3>
+                <p style="font-size: 28px; font-weight: 700; color: #1f2937; letter-spacing: 2px; margin: 15px 0; font-family: monospace; background: #fff; padding: 15px; border-radius: 8px; border: 2px dashed #f59e0b;">
+                    ATTRALFREESHIP100
+                </p>
+                <p style="margin-bottom: 0; font-size: 14px; color: #6b7280;">Use this code at checkout for free shipping!</p>
+            </div>
+            
+            <div style="text-align: center; margin: 35px 0;">
+                <a href="https://attral.in/shop.html" class="button" style="font-size: 18px; padding: 16px 40px;">👉 Shop Now</a>
+            </div>
+            
+            <div style="background-color: #f9fafb; padding: 25px; border-radius: 12px; margin: 30px 0; border-left: 4px solid #667eea;">
+                <h3 style="color: #1f2937; margin-top: 0;">💬 Need Help?</h3>
+                <p style="color: #4b5563; line-height: 1.8; margin: 10px 0;">
+                    We\'re happy to assist! Reach out to us anytime:
+                </p>
+                <p style="color: #4b5563; margin: 5px 0;">
+                    📧 <a href="mailto:info@attral.in" style="color: #667eea; text-decoration: none; font-weight: 600;">info@attral.in</a>
+                </p>
+                <p style="color: #4b5563; margin: 5px 0;">
+                    📱 <strong>WhatsApp:</strong> <a href="https://wa.me/918903479870" style="color: #667eea; text-decoration: none; font-weight: 600;">+91 8903479870</a>
+                </p>
+            </div>
+            
+            <p style="color: #4b5563; text-align: center; font-size: 18px; font-weight: 600; margin-top: 40px;">
+                ATTRAL — Powering your world, beautifully. ⚡
+            </p>
+        </div>
+        ' . $this->getEmailFooter();
+    }
 }
 
 // ==================== API ENDPOINTS ====================
 
-if (php_sapi_name() !== 'cli' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+// Only execute POST handler if this file is accessed directly (not included)
+if (php_sapi_name() !== 'cli' && $_SERVER['REQUEST_METHOD'] === 'POST' && basename($_SERVER['PHP_SELF']) === 'brevo_email_service.php') {
     $input = json_decode(file_get_contents('php://input'), true);
     
     if (!$input || !isset($input['action'])) {
@@ -1177,6 +1251,10 @@ if (php_sapi_name() !== 'cli' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 
             case 'affiliate_commission':
                 $result = $service->sendAffiliateCommissionNotification($input['email'], $input['name'], $input['commission'], $input['orderId']);
+                break;
+                
+            case 'freeship_coupon':
+                $result = $service->sendFreeShipCouponEmail($input['email'], $input['firstName']);
                 break;
                 
             case 'add_to_list':
