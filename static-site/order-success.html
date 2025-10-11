@@ -626,7 +626,7 @@
         }
         
         if (orderFound) {
-          // Cart already cleared on page load - no need to clear again
+          // Cart automatically cleared on page load
           return;
         }
 
@@ -657,7 +657,7 @@
             } catch(_e) { /* ignore */ }
           });
           
-          // Cart already cleared on page load - no need to clear again
+          // Cart automatically cleared on page load
         } else {
           showError('Order details not found');
         }
@@ -1071,8 +1071,24 @@
         window.Attral.initHeaderCartCount();
       }
       
-      // ✅ Cart clearing logic removed as requested by user
-      // Cart will persist until user manually clears it or places a new order
+      // ✅ CLEAR CART: Automatically clear cart after successful order confirmation
+      // This runs immediately on page load to ensure cart is cleared for successful orders
+      try {
+        console.log('🧹 Clearing cart after successful order...');
+        localStorage.removeItem('attral_cart');
+        localStorage.removeItem('cartCheckout');
+        sessionStorage.removeItem('cartCheckout');
+        sessionStorage.removeItem('buyNowProduct');
+        
+        // Update header cart count
+        if (window.Attral) {
+          window.Attral.initHeaderCartCount();
+        }
+        
+        console.log('✅ Cart cleared successfully');
+      } catch (error) {
+        console.warn('⚠️ Failed to clear cart (non-critical):', error);
+      }
       
       // Load order details immediately
       loadOrderDetails();

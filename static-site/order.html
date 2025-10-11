@@ -738,8 +738,11 @@
       // Function to check if URL is allowed during payment
       const isAllowedRedirect = function(url) {
         const urlStr = String(url || '');
+        // ALWAYS allow redirects to order-success page
         const isSuccessPage = /order-success\.html/i.test(urlStr);
-        return isSuccessPage;
+        // Also allow if payment flag is false (payment completed/failed)
+        const paymentNotInProgress = !window.__ATTRAL_PAYMENT_IN_PROGRESS;
+        return isSuccessPage || paymentNotInProgress;
       };
       
       // Guard window.location.replace
@@ -2182,14 +2185,20 @@
           },
           modal: {
             ondismiss: function() {
-              // Reset payment flag when modal is dismissed
-              window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
-              console.log('🔓 Payment modal dismissed - redirects unlocked');
-              
-              // Reset button state when modal is dismissed
-              checkoutBtn.disabled = false;
-              checkoutText.style.display = 'inline';
-              checkoutSpinner.style.display = 'none';
+              // Only handle dismiss if payment was NOT successful
+              // If payment succeeded, the success handler will handle everything
+              if (!paymentSuccessHandled) {
+                console.log('🔓 Payment modal dismissed without completion');
+                window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
+                
+                // Reset button state when modal is dismissed
+                checkoutBtn.disabled = false;
+                checkoutText.style.display = 'inline';
+                checkoutSpinner.style.display = 'none';
+              } else {
+                console.log('✅ Payment modal dismissed after successful payment - redirect in progress');
+                // Don't reset button - user is being redirected to success page
+              }
             }
           }
         };
@@ -2404,32 +2413,35 @@
         window.__ATTRAL_PAYMENT_IN_PROGRESS = false;
         console.log('🔓 Payment flag reset to allow redirect');
         
-        // ✅ STEP 5: REDIRECT IMMEDIATELY using ORIGINAL browser method (bypasses all protections)
-        console.log('🚀 Using original browser replace method to redirect...');
-        if (window.__ATTRAL_ORIGINAL_METHODS && window.__ATTRAL_ORIGINAL_METHODS.replace) {
-          // Use the original method saved before any overrides
-          window.__ATTRAL_ORIGINAL_METHODS.replace(successUrl);
-          console.log('✅ Original replace method called');
-        } else {
-          // Fallback: use current method (should work now that flag is false)
-          window.location.replace(successUrl);
-          console.log('✅ Standard replace method called');
-        }
+        // ✅ STEP 5: Show redirect indicator immediately
+        try {
+          const redirectOverlay = document.createElement('div');
+          redirectOverlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(16,185,129,0.95);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-size:24px;font-weight:700;';
+          redirectOverlay.innerHTML = '<div style="text-align:center;"><div style="font-size:48px;margin-bottom:20px;">✓</div><div>Payment Successful!</div><div style="font-size:18px;font-weight:400;margin-top:10px;">Redirecting to confirmation page...</div></div>';
+          document.body.appendChild(redirectOverlay);
+        } catch (e) { console.log('Could not show redirect overlay:', e); }
         
-        // ✅ STEP 6: Multiple backup redirects (in case first doesn't work)
+        // ✅ STEP 6: SINGLE, FORCEFUL REDIRECT using top-level window
+        // Wait 100ms to ensure Razorpay modal closes cleanly before redirecting
         setTimeout(function() {
-          console.log('🔄 Backup redirect #1 (10ms delay)');
-          window.location.href = successUrl;
-        }, 10);
-        
-        setTimeout(function() {
-          console.log('🔄 Backup redirect #2 (50ms delay)');
-          if (window.__ATTRAL_ORIGINAL_METHODS && window.__ATTRAL_ORIGINAL_METHODS.assign) {
-            window.__ATTRAL_ORIGINAL_METHODS.assign(successUrl);
-          } else {
-            window.location.assign(successUrl);
+          console.log('🚀 Initiating redirect to success page:', successUrl);
+          
+          // Use top-level window to bypass any iframe restrictions
+          // Use original method if available, otherwise use standard replace
+          try {
+            if (window.__ATTRAL_ORIGINAL_METHODS && window.__ATTRAL_ORIGINAL_METHODS.replace) {
+              console.log('✅ Using original replace method');
+              window.__ATTRAL_ORIGINAL_METHODS.replace(successUrl);
+            } else {
+              console.log('✅ Using standard replace method');
+              top.window.location.replace(successUrl);
+            }
+          } catch (e) {
+            // Ultimate fallback if both fail
+            console.warn('⚠️ Redirect methods failed, using href fallback:', e);
+            top.window.location.href = successUrl;
           }
-        }, 50);
+        }, 100);
         
         // ✅ STEP 7: Background operations (after redirect initiated)
         // These will execute if redirect takes time, but won't block navigation

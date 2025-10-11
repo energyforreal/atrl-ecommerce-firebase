@@ -83,12 +83,6 @@
           return false;
         }
         
-        // Check for obviously invalid prices (like ₹10 for electronics)
-        if (item.price < 100) {
-          console.warn('🗑️ Removing cart item with suspiciously low price (likely test data):', item.title, item.price);
-          return false;
-        }
-        
         // Item is valid
         return true;
       });
@@ -772,19 +766,6 @@
   document.addEventListener('DOMContentLoaded', function() {
     initializeNewsletterForm();
   });
-
-  // 🚀 AUTO-RUN: Validate and clean cart on EVERY page load
-  // This ensures cart always starts clean, removing invalid/stale items
-  (async function autoValidateCart() {
-    try {
-      console.log('🔄 Auto-validating cart on page load...');
-      await validateAndCleanCart();
-      updateHeaderCount(); // Update count after validation
-      console.log('✅ Cart auto-validation complete');
-    } catch (error) {
-      console.error('❌ Auto-validation failed (non-critical):', error);
-    }
-  })();
 
 })();
 
