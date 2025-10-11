@@ -1,7 +1,7 @@
 <?php
 /**
- * Affiliate Functions API - PHP Replacement for Firebase Cloud Functions
- * Provides all affiliate management functionality for Hostinger deployment
+ * Affiliate Functions API - REST API Version for Hostinger Shared Hosting
+ * Uses Firestore REST API instead of Firebase SDK
  */
 
 // Headers for CORS
@@ -15,31 +15,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// Include Firestore service with error handling
-if (!file_exists(__DIR__ . '/firestore_admin_service.php')) {
+// Include Firestore REST client
+if (!file_exists(__DIR__ . '/firestore_rest_client.php')) {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'Firestore admin service not found. Please ensure firestore_admin_service.php exists in the api directory.'
+        'error' => 'Firestore REST client not found.'
     ]);
     exit;
 }
-require_once __DIR__ . '/firestore_admin_service.php';
+require_once __DIR__ . '/firestore_rest_client.php';
 
 // Route handling
 $requestUri = $_SERVER['REQUEST_URI'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Extract function name from URL path
-// Expected format: /api/affiliate_functions.php/functionName or ?action=functionName
 $action = $_GET['action'] ?? '';
 if (empty($action) && preg_match('/affiliate_functions\.php\/(\w+)/', $requestUri, $matches)) {
     $action = $matches[1];
 }
 
-// Initialize Firestore connection
+// Initialize Firestore REST client
 try {
-    $firestore = initFirestoreAdmin();
+    $firestore = new FirestoreRestClient(
+        'e-commerce-1d40f',
+        __DIR__ . '/firebase-service-account.json',
+        true // Enable token caching
+    );
 } catch (Exception $e) {
     error_log("Affiliate Functions: Firestore init failed - " . $e->getMessage());
     http_response_code(500);
@@ -47,15 +50,26 @@ try {
     exit;
 }
 
+// Debug logging
+error_log("AFFILIATE API: Action requested: $action");
+error_log("AFFILIATE API: Request method: " . $_SERVER['REQUEST_METHOD']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    error_log("AFFILIATE API: POST data: " . json_encode($input));
+}
+
 // Route to appropriate function
 switch ($action) {
     case 'createAffiliateProfile':
+        error_log("AFFILIATE API: Creating affiliate profile");
         createAffiliateProfile($firestore);
         break;
     case 'getAffiliateOrders':
+        error_log("AFFILIATE API: Getting affiliate orders");
         getAffiliateOrders($firestore);
         break;
     case 'getAffiliateStats':
+        error_log("AFFILIATE API: Getting affiliate stats");
         getAffiliateStats($firestore);
         break;
     case 'getPaymentDetails':
@@ -69,6 +83,9 @@ switch ($action) {
         break;
     case 'updatePayoutSettings':
         updatePayoutSettings($firestore);
+        break;
+    case 'getAffiliateByCode':
+        getAffiliateByCode($firestore);
         break;
     default:
         http_response_code(404);
@@ -108,22 +125,22 @@ function createAffiliateProfile($firestore) {
             'email' => $email,
             'name' => $name,
             'phone' => $phone,
-            'affiliateCode' => $affiliateCode,
+            'code' => $affiliateCode,
             'status' => 'pending',
-            'commissionRate' => 0.10, // 10% default
+            'commissionRate' => 0.10,
             'totalEarnings' => 0,
             'totalOrders' => 0,
-            'createdAt' => new \DateTime(),
-            'updatedAt' => new \DateTime()
+            'createdAt' => ['_seconds' => time(), '_nanoseconds' => 0],
+            'updatedAt' => ['_seconds' => time(), '_nanoseconds' => 0]
         ];
         
-        // Add to Firestore
-        $docRef = $firestore->collection('affiliates')->add($affiliateData);
+        // Add to Firestore using UID as document ID
+        $firestore->setDocument("affiliates/$uid", $affiliateData);
         
         echo json_encode([
             'success' => true,
-            'affiliateId' => $docRef->id(),
-            'affiliateCode' => $affiliateCode
+            'affiliateId' => $uid,
+            'code' => $affiliateCode
         ]);
         
     } catch (Exception $e) {
@@ -144,7 +161,7 @@ function getAffiliateOrders($firestore) {
     }
     
     try {
-        // Support both GET and POST for flexibility
+        // Get parameters
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $code = $_GET['code'] ?? '';
             $status = $_GET['status'] ?? '';
@@ -157,66 +174,85 @@ function getAffiliateOrders($firestore) {
         }
         
         if (empty($code)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Affiliate code is required']);
+            error_log("AFFILIATE ORDERS: ❌ No affiliate code provided");
+            echo json_encode([
+                'success' => true,
+                'orders' => [],
+                'total' => 0,
+                'totalAmount' => 0,
+                'nextPageToken' => null
+            ]);
             return;
         }
         
-        // 🔍 DEBUG: Log query parameters
-        error_log("AFFILIATE ORDERS: Querying orders for code=$code, status=$status, pageSize=$pageSize");
+        error_log("AFFILIATE ORDERS: Querying orders for code=$code (case-insensitive matching enabled)");
         
-        // Query ALL confirmed orders (cannot filter by coupons array directly in Firestore)
-        // Must manually filter through coupons array in each order
-        $query = $firestore->collection('orders')
-            ->where('status', '=', 'confirmed')
-            ->orderBy('createdAt', 'DESC')
-            ->limit($pageSize);
+        // Query confirmed orders
+        $documents = $firestore->queryDocuments('orders', [
+            ['field' => 'status', 'op' => 'EQUAL', 'value' => 'confirmed']
+        ], $pageSize, 'createdAt', 'DESCENDING');
         
-        $documents = $query->documents();
         $orders = [];
         $totalAmount = 0;
         $processedCount = 0;
         $matchedOrderIds = [];
         
         foreach ($documents as $doc) {
-            if ($doc->exists()) {
-                $processedCount++;
-                $orderData = $doc->data();
-                $coupons = $orderData['coupons'] ?? [];
+            $processedCount++;
+            $orderData = $doc['data'];
+            $coupons = $orderData['coupons'] ?? [];
+            
+            // Debug: Log all coupons in this order
+            if (!empty($coupons)) {
+                error_log("AFFILIATE ORDERS: Order " . ($orderData['orderId'] ?? $doc['id']) . " has " . count($coupons) . " coupons: " . json_encode($coupons));
+            }
+            
+            // Check if order uses affiliate coupon (case-insensitive)
+            $hasAffiliateCoupon = false;
+            $searchCode = strtolower($code);
+            
+            foreach ($coupons as $coupon) {
+                // Check both affiliateCode and code fields for matching (case-insensitive)
+                $couponAffiliateCode = isset($coupon['affiliateCode']) ? strtolower($coupon['affiliateCode']) : '';
+                $couponCode = isset($coupon['code']) ? strtolower($coupon['code']) : '';
                 
-                // 🔍 DEBUG: Log first few orders for debugging
-                if ($processedCount <= 5) {
-                    error_log("AFFILIATE ORDERS: Order " . ($orderData['orderId'] ?? $doc->id()) . " has " . count($coupons) . " coupons: " . json_encode(array_column($coupons, 'code')));
-                }
+                error_log("AFFILIATE ORDERS: Comparing '$searchCode' with affiliateCode='$couponAffiliateCode', code='$couponCode'");
                 
-                // Manually check if this order used the affiliate's coupon
-                $hasAffiliateCoupon = false;
-                foreach ($coupons as $coupon) {
-                    if (isset($coupon['code']) && $coupon['code'] === $code) {
-                        $hasAffiliateCoupon = true;
-                        $matchedOrderIds[] = $orderData['orderId'] ?? $doc->id();
-                        break;
-                    }
+                if ($couponAffiliateCode === $searchCode || $couponCode === $searchCode) {
+                    $hasAffiliateCoupon = true;
+                    $matchedOrderIds[] = $orderData['orderId'] ?? $doc['id'];
+                    error_log("AFFILIATE ORDERS: ✅ MATCH FOUND in order " . ($orderData['orderId'] ?? $doc['id']) . " (case-insensitive match): " . json_encode($coupon));
+                    break;
                 }
+            }
+            
+            if ($hasAffiliateCoupon) {
+                // Extract customer info from the correct structure
+                $customer = $orderData['customer'] ?? [];
+                $orderData['id'] = $doc['id'];
+                $orderData['customerName'] = trim(($customer['firstName'] ?? '') . ' ' . ($customer['lastName'] ?? ''));
+                $orderData['customerEmail'] = $customer['email'] ?? '';
+                $orderData['customerPhone'] = $customer['phone'] ?? '';
                 
-                if ($hasAffiliateCoupon) {
-                    $orderData['id'] = $doc->id();
-                    $orders[] = $orderData;
-                    $totalAmount += ($orderData['amount'] ?? 0);
-                }
+                // Debug log the extracted customer data
+                error_log("AFFILIATE ORDERS: Customer data for order " . ($orderData['orderId'] ?? $doc['id']) . ": " . json_encode([
+                    'customerName' => $orderData['customerName'],
+                    'customerEmail' => $orderData['customerEmail'],
+                    'customerPhone' => $orderData['customerPhone']
+                ]));
+                
+                $orders[] = $orderData;
+                $totalAmount += ($orderData['amount'] ?? 0);
             }
         }
         
-        // 🔍 DEBUG: Log final results
-        error_log("AFFILIATE ORDERS: Query complete - Processed $processedCount total orders, found " . count($orders) . " matching orders");
-        error_log("AFFILIATE ORDERS: Matched order IDs: " . implode(', ', $matchedOrderIds));
-        error_log("AFFILIATE ORDERS: Total amount: ₹$totalAmount");
+        error_log("AFFILIATE ORDERS: Found " . count($orders) . " matching orders from $processedCount total");
         
         echo json_encode([
             'success' => true,
             'orders' => $orders,
-            'total' => count($orders),          // Frontend expects 'total'
-            'totalAmount' => $totalAmount,      // Frontend expects 'totalAmount'
+            'total' => count($orders),
+            'totalAmount' => $totalAmount,
             'nextPageToken' => null
         ]);
         
@@ -238,7 +274,7 @@ function getAffiliateStats($firestore) {
     }
     
     try {
-        // Support both GET and POST
+        // Get code parameter
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $code = $_GET['code'] ?? '';
         } else {
@@ -252,84 +288,81 @@ function getAffiliateStats($firestore) {
             return;
         }
         
-        // 🔍 DEBUG: Log stats query start
         error_log("AFFILIATE STATS: Querying stats for code=$code");
         
-        // Get affiliate profile (using 'code' field, not 'affiliateCode')
-        $affiliatesQuery = $firestore->collection('affiliates')
-            ->where('code', '=', $code)
-            ->limit(1)
-            ->documents();
+        // Query coupons collection directly for usage data
+        // Search by affiliateCode field (not code field)
+        $coupons = $firestore->queryDocuments('coupons', [
+            ['field' => 'affiliateCode', 'op' => 'EQUAL', 'value' => $code]
+        ], 1);
         
-        $affiliate = null;
-        foreach ($affiliatesQuery as $doc) {
-            if ($doc->exists()) {
-                $affiliate = $doc->data();
-                error_log("AFFILIATE STATS: ✅ Found affiliate profile for code=$code");
-                break;
-            }
-        }
+        $couponUsageCount = 0;
+        $couponPayoutUsage = 0;
         
-        if (!$affiliate) {
-            error_log("AFFILIATE STATS: ❌ Affiliate not found for code=$code");
-            http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'Affiliate not found']);
+        if (!empty($coupons)) {
+            $couponData = $coupons[0]['data'];
+            $couponUsageCount = $couponData['usageCount'] ?? 0;
+            $couponPayoutUsage = $couponUsageCount * 300; // Calculate from usageCount
+            error_log("AFFILIATE STATS: Coupon usage - count=$couponUsageCount, calculated payout=₹$couponPayoutUsage");
+        } else {
+            error_log("AFFILIATE STATS: ❌ Coupon not found for code=$code");
+            // Return empty stats if coupon not found
+            echo json_encode([
+                'success' => true,
+                'totalEarnings' => 0,
+                'totalReferrals' => 0,
+                'monthlyEarnings' => 0,
+                'conversionRate' => 0,
+                'couponUsageCount' => 0,
+                'couponPayoutUsage' => 0,
+                'affiliateCode' => $code,
+                'status' => 'not_found'
+            ]);
             return;
         }
         
-        // Get order stats - Query all confirmed orders and filter by coupon code
-        error_log("AFFILIATE STATS: Querying all confirmed orders to filter by coupons array...");
+        error_log("AFFILIATE STATS: ✅ Found coupon data");
         
-        $ordersQuery = $firestore->collection('orders')
-            ->where('status', '=', 'confirmed')
-            ->documents();
+        // Calculate stats from coupon usage data
+        $totalReferrals = $couponUsageCount;
+        $totalEarnings = $couponUsageCount * 300; // ₹300 per usage
         
-        $totalReferrals = 0;
-        $totalEarnings = 0;
+        // Query orders collection to calculate monthly earnings
+        $orders = $firestore->queryDocuments('orders', [
+            ['field' => 'status', 'op' => 'EQUAL', 'value' => 'confirmed']
+        ], 1000);
+        
         $monthlyEarnings = 0;
         $thisMonth = date('Y-m');
-        $processedOrders = 0;
-        $matchedOrders = [];
         
-        foreach ($ordersQuery as $doc) {
-            if ($doc->exists()) {
-                $processedOrders++;
-                $order = $doc->data();
-                $coupons = $order['coupons'] ?? [];
+        foreach ($orders as $doc) {
+            $orderData = $doc['data'];
+            $coupons = $orderData['coupons'] ?? [];
+            
+            // Check if order uses affiliate coupon and was created this month (case-insensitive)
+            $searchCode = strtolower($code);
+            foreach ($coupons as $coupon) {
+                // Check both affiliateCode and code fields for matching (case-insensitive)
+                $couponAffiliateCode = isset($coupon['affiliateCode']) ? strtolower($coupon['affiliateCode']) : '';
+                $couponCode = isset($coupon['code']) ? strtolower($coupon['code']) : '';
                 
-                // Check if this order used the affiliate's coupon
-                $hasAffiliateCoupon = false;
-                foreach ($coupons as $coupon) {
-                    if (isset($coupon['code']) && $coupon['code'] === $code) {
-                        $hasAffiliateCoupon = true;
-                        $matchedOrders[] = $order['orderId'] ?? $doc->id();
-                        break;
-                    }
-                }
-                
-                if ($hasAffiliateCoupon) {
-                    $totalReferrals++;
-                    $totalEarnings += 300; // Fixed ₹300 commission per order
-                    
-                    // Calculate monthly earnings
-                    $createdAt = $order['createdAt'] ?? null;
-                    if ($createdAt && method_exists($createdAt, 'get')) {
-                        $orderMonth = $createdAt->get()->format('Y-m');
+                if ($couponAffiliateCode === $searchCode || $couponCode === $searchCode) {
+                    // Check if this month
+                    $createdAt = $orderData['createdAt'] ?? null;
+                    if ($createdAt && isset($createdAt['_seconds'])) {
+                        $orderMonth = date('Y-m', $createdAt['_seconds']);
                         if ($orderMonth === $thisMonth) {
                             $monthlyEarnings += 300;
                         }
                     }
+                    break;
                 }
             }
         }
         
-        // 🔍 DEBUG: Log results
-        error_log("AFFILIATE STATS: Query complete - Processed $processedOrders total orders, matched $totalReferrals orders");
-        error_log("AFFILIATE STATS: Matched order IDs: " . implode(', ', $matchedOrders));
-        error_log("AFFILIATE STATS: Results - Earnings=₹$totalEarnings, Referrals=$totalReferrals, Monthly=₹$monthlyEarnings");
-        
-        // Calculate conversion rate (simplified - would need clicks tracking for actual rate)
         $conversionRate = $totalReferrals > 0 ? min(100, ($totalReferrals * 10)) : 0;
+        
+        error_log("AFFILIATE STATS: Results - Earnings=₹$totalEarnings, Referrals=$totalReferrals");
         
         echo json_encode([
             'success' => true,
@@ -337,8 +370,10 @@ function getAffiliateStats($firestore) {
             'totalReferrals' => $totalReferrals,
             'monthlyEarnings' => $monthlyEarnings,
             'conversionRate' => $conversionRate,
+            'couponUsageCount' => $couponUsageCount,
+            'couponPayoutUsage' => $couponPayoutUsage,
             'affiliateCode' => $code,
-            'status' => $affiliate['status'] ?? 'active'
+            'status' => 'active'
         ]);
         
     } catch (Exception $e) {
@@ -354,36 +389,31 @@ function getAffiliateStats($firestore) {
 function getPaymentDetails($firestore) {
     try {
         $input = json_decode(file_get_contents('php://input'), true);
-        $orderId = $input['orderId'] ?? $_GET['orderId'] ?? '';
+        $uid = $input['uid'] ?? $_GET['uid'] ?? '';
         
-        if (empty($orderId)) {
+        if (empty($uid)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'orderId is required']);
+            echo json_encode(['success' => false, 'error' => 'uid is required']);
             return;
         }
         
-        $orderDoc = $firestore->collection('orders')->document($orderId)->snapshot();
+        $doc = $firestore->getDocument("affiliates/$uid");
         
-        if (!$orderDoc->exists()) {
+        if (!$doc) {
             http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'Order not found']);
+            echo json_encode(['success' => false, 'error' => 'Affiliate not found']);
             return;
         }
         
-        $order = $orderDoc->data();
+        $paymentDetails = $doc['data']['paymentDetails'] ?? [];
         
         echo json_encode([
             'success' => true,
-            'payment' => [
-                'orderId' => $orderId,
-                'razorpayOrderId' => $order['razorpayOrderId'] ?? '',
-                'razorpayPaymentId' => $order['razorpayPaymentId'] ?? '',
-                'amount' => $order['amount'] ?? $order['pricing']['total'] ?? 0,
-                'currency' => $order['currency'] ?? 'INR',
-                'status' => $order['status'] ?? 'pending',
-                'paymentMethod' => $order['payment']['method'] ?? 'unknown',
-                'createdAt' => $order['createdAt'] ?? null
-            ]
+            'bankAccountName' => $paymentDetails['bankAccountName'] ?? '',
+            'bankAccountNumber' => $paymentDetails['bankAccountNumber'] ?? '',
+            'ifsc' => $paymentDetails['ifsc'] ?? '',
+            'upiId' => $paymentDetails['upiId'] ?? '',
+            'upiMobile' => $paymentDetails['upiMobile'] ?? ''
         ]);
         
     } catch (Exception $e) {
@@ -405,28 +435,26 @@ function updatePaymentDetails($firestore) {
     
     try {
         $input = json_decode(file_get_contents('php://input'), true);
-        $orderId = $input['orderId'] ?? '';
-        $paymentId = $input['paymentId'] ?? '';
-        $status = $input['status'] ?? '';
+        $uid = $input['uid'] ?? '';
         
-        if (empty($orderId)) {
+        if (empty($uid)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'orderId is required']);
+            echo json_encode(['success' => false, 'error' => 'uid is required']);
             return;
         }
         
-        $updateData = [
-            'updatedAt' => new \DateTime()
+        $paymentDetails = [
+            'bankAccountName' => $input['bankAccountName'] ?? '',
+            'bankAccountNumber' => $input['bankAccountNumber'] ?? '',
+            'ifsc' => $input['ifsc'] ?? '',
+            'upiId' => $input['upiId'] ?? '',
+            'upiMobile' => $input['upiMobile'] ?? ''
         ];
         
-        if (!empty($paymentId)) {
-            $updateData['razorpayPaymentId'] = $paymentId;
-        }
-        if (!empty($status)) {
-            $updateData['paymentStatus'] = $status;
-        }
-        
-        $firestore->collection('orders')->document($orderId)->update($updateData);
+        $firestore->updateDocument("affiliates/$uid", [
+            'paymentDetails' => $paymentDetails,
+            'updatedAt' => ['_seconds' => time(), '_nanoseconds' => 0]
+        ]);
         
         echo json_encode([
             'success' => true,
@@ -453,15 +481,13 @@ function getPayoutSettings($firestore) {
             return;
         }
         
-        $affiliateDoc = $firestore->collection('affiliates')->document($affiliateId)->snapshot();
+        $doc = $firestore->getDocument("affiliates/$affiliateId");
         
-        if (!$affiliateDoc->exists()) {
+        if (!$doc) {
             http_response_code(404);
             echo json_encode(['success' => false, 'error' => 'Affiliate not found']);
             return;
         }
-        
-        $affiliate = $affiliateDoc->data();
         
         $defaultSettings = [
             'method' => 'bank_transfer',
@@ -471,7 +497,7 @@ function getPayoutSettings($firestore) {
         
         echo json_encode([
             'success' => true,
-            'payoutSettings' => $affiliate['payoutSettings'] ?? $defaultSettings
+            'payoutSettings' => $doc['data']['payoutSettings'] ?? $defaultSettings
         ]);
         
     } catch (Exception $e) {
@@ -502,9 +528,9 @@ function updatePayoutSettings($firestore) {
             return;
         }
         
-        $firestore->collection('affiliates')->document($affiliateId)->update([
+        $firestore->updateDocument("affiliates/$affiliateId", [
             'payoutSettings' => $payoutSettings,
-            'updatedAt' => new \DateTime()
+            'updatedAt' => ['_seconds' => time(), '_nanoseconds' => 0]
         ]);
         
         echo json_encode([
@@ -520,36 +546,58 @@ function updatePayoutSettings($firestore) {
 }
 
 /**
+ * Get Affiliate by Code
+ */
+function getAffiliateByCode($firestore) {
+    try {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $code = $input['code'] ?? $_GET['code'] ?? '';
+        
+        if (empty($code)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Code is required']);
+            return;
+        }
+        
+        error_log("AFFILIATE LOOKUP: Looking for affiliate with code=$code");
+        
+        $affiliates = $firestore->queryDocuments('affiliates', [
+            ['field' => 'code', 'op' => 'EQUAL', 'value' => $code]
+        ], 1);
+        
+        if (empty($affiliates)) {
+            error_log("AFFILIATE LOOKUP: ❌ Affiliate not found for code=$code");
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Affiliate not found']);
+            return;
+        }
+        
+        $affiliate = $affiliates[0]['data'];
+        $affiliate['id'] = $affiliates[0]['id'];
+        
+        error_log("AFFILIATE LOOKUP: ✅ Found affiliate profile for code=$code");
+        
+        echo json_encode([
+            'success' => true,
+            'affiliate' => $affiliate
+        ]);
+        
+    } catch (Exception $e) {
+        error_log("Get Affiliate by Code Error: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+}
+
+/**
  * Helper: Generate Affiliate Code
  */
 function generateAffiliateCode() {
-    $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    $code = 'AFF-';
-    for ($i = 0; $i < 8; $i++) {
+    $chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    $code = 'attral-';
+    for ($i = 0; $i < 10; $i++) {
         $code .= $chars[rand(0, strlen($chars) - 1)];
     }
     return $code;
 }
-
-/**
- * Helper: Initialize Firestore Admin
- */
-function initFirestoreAdmin() {
-    $serviceAccountPath = __DIR__ . '/firebase-service-account.json';
-    
-    if (!file_exists($serviceAccountPath)) {
-        throw new Exception('Firebase service account file not found');
-    }
-    
-    if (!class_exists('\Kreait\Firebase\Factory')) {
-        throw new Exception('Firebase SDK not installed. Run: composer require kreait/firebase-php');
-    }
-    
-    $factory = new \Kreait\Firebase\Factory();
-    $factory = $factory->withServiceAccount($serviceAccountPath);
-    
-    // Correct: createFirestore() returns the Firestore database directly
-    return $factory->createFirestore()->database();
-}
 ?>
-

@@ -187,10 +187,11 @@
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📈</div>
+          <div class="stat-icon">🎫</div>
           <div class="stat-content">
-            <div class="stat-value" id="monthly-earnings">₹0</div>
-            <div class="stat-label">This Month</div>
+            <div class="stat-value" id="coupon-usage-count">0</div>
+            <div class="stat-label">Coupon Uses</div>
+            <div class="stat-sublabel" id="coupon-payout-usage" style="font-size: 12px; color: var(--muted); margin-top: 4px;">₹0 earned</div>
           </div>
         </div>
       </div>
@@ -831,8 +832,9 @@
       
       ref.get().then(s=>{
         if(!s.exists){ 
-          // Create affiliate profile if it doesn't exist
-          createAffiliateProfile(user, db, ref);
+          // Try to find affiliate by code first
+          console.log('🔧 No affiliate profile found by UID, checking by code...');
+          findAffiliateByCode(user);
           return; 
         }
         
@@ -853,14 +855,34 @@
       });
     }
 
+    function findAffiliateByCode(user) {
+      // For now, just create a new affiliate profile
+      // The existing code 'attral-71hlzssgan' suggests this user already has an affiliate relationship
+      // but the profile doesn't exist in the database. Create a new one.
+      console.log('🔧 No affiliate profile found, creating new profile for user...');
+      createAffiliateProfile(user, window.AttralFirebase.db, window.AttralFirebase.db.collection('affiliates').doc(user.uid));
+    }
+
     function createAffiliateProfile(user, db, ref) {
       const fb = window.AttralFirebase;
-      if (!fb || !fb.functions) {
+      if (!fb || !fb.callFunction) {
         console.error('Firebase Functions not available');
         showErrorState('Service unavailable. Please refresh the page.');
         return;
       }
-      fb.callFunction('createAffiliateProfile', {})
+      console.log('🔧 Creating affiliate profile for user:', {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || 'Affiliate User',
+        phone: user.phoneNumber || ''
+      });
+      
+      fb.callFunction('createAffiliateProfile', {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || 'Affiliate User',
+        phone: user.phoneNumber || ''
+      })
         .then((aff) => {
           // Ensure affiliateLink exists for current host
           const affiliateData = {
@@ -986,32 +1008,43 @@
       // Call PHP API via callFunction (migrated from Cloud Functions)
       if (fb && fb.callFunction) {
         console.log('🔄 [AFFILIATE STATS] Calling getAffiliateStats API...');
+        console.log('🔧 Calling getAffiliateStats with code:', code);
         fb.callFunction('getAffiliateStats', { code: code })
           .then((stats) => {
             console.log('✅ [AFFILIATE STATS] API response:', stats);
+            console.log('✅ [AFFILIATE STATS] Response type:', typeof stats);
+            console.log('✅ [AFFILIATE STATS] Response keys:', Object.keys(stats || {}));
             const totalEarnings = Number(stats.totalEarnings || 0);
             const totalReferrals = Number(stats.totalReferrals || 0);
             const monthlyEarnings = Number(stats.monthlyEarnings || 0);
             const conversionRate = Number(stats.conversionRate || 0);
             
+            const couponUsageCount = Number(stats.couponUsageCount || 0);
+            const couponPayoutUsage = Number(stats.couponPayoutUsage || 0);
+
             console.log('📈 [AFFILIATE STATS] Parsed values:', {
               totalEarnings,
               totalReferrals,
               monthlyEarnings,
-              conversionRate
+              conversionRate,
+              couponUsageCount,
+              couponPayoutUsage
             });
             
             animateValue(qs('total-earnings'), 0, totalEarnings, 800, '₹');
             animateValue(qs('total-referrals'), 0, totalReferrals, 800, '');
             animateValue(qs('conversion-rate'), 0, conversionRate, 800, '%');
-            animateValue(qs('monthly-earnings'), 0, monthlyEarnings, 800, '₹');
+            animateValue(qs('coupon-usage-count'), 0, couponUsageCount, 800, '');
+            if (qs('coupon-payout-usage')) {
+              qs('coupon-payout-usage').textContent = `₹${couponPayoutUsage.toLocaleString()} earned`;
+            }
             
             // Show commission per order info
             const earningsCard = qs('total-earnings')?.parentElement?.parentElement;
             if (earningsCard && !earningsCard.querySelector('.commission-info')) {
               const commissionInfo = document.createElement('div');
               commissionInfo.className = 'commission-info';
-              commissionInfo.style.cssText = 'text-align: center; color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem;';
+              commissionInfo.style.cssText = 'text-align: center; color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem; white-space: nowrap; overflow: visible;';
               commissionInfo.textContent = '₹300 per order';
               earningsCard.appendChild(commissionInfo);
             }
@@ -1051,11 +1084,15 @@
       if (qs('total-earnings')) qs('total-earnings').textContent = '₹0';
       if (qs('total-referrals')) qs('total-referrals').textContent = '0';
       if (qs('conversion-rate')) qs('conversion-rate').textContent = '0%';
-      if (qs('monthly-earnings')) qs('monthly-earnings').textContent = '₹0';
+      if (qs('coupon-usage-count')) qs('coupon-usage-count').textContent = '0';
+      if (qs('coupon-payout-usage')) qs('coupon-payout-usage').textContent = '₹0 earned';
     }
 
     function animateValue(element, start, end, duration, prefix = '', suffix = '') {
       if (!element) return;
+      
+      // Add updating class for visual feedback
+      element.classList.add('updating');
       
       const startTimestamp = performance.now();
       const step = (timestamp) => {
@@ -1065,6 +1102,11 @@
         
         if (progress < 1) {
           window.requestAnimationFrame(step);
+        } else {
+          // Remove updating class when animation completes
+          setTimeout(() => {
+            element.classList.remove('updating');
+          }, 200);
         }
       };
       window.requestAnimationFrame(step);
@@ -1073,6 +1115,7 @@
     let allOrders = [];
     let filteredOrders = [];
     let currentPage = 1;
+    let currentAffiliateCode = '';
     const ordersPerPage = 10;
 
     let renderRetryCount = 0;
@@ -1080,6 +1123,7 @@
 
     function renderReferredOrders(code){
       console.log('📋 [AFFILIATE ORDERS] renderReferredOrders called with code:', code);
+      currentAffiliateCode = code; // Store globally for use in renderOrdersPage
       
       const fb = window.AttralFirebase; 
       
@@ -1137,9 +1181,12 @@
           pageSize
         });
         
+        console.log('🔧 Calling getAffiliateOrders with params:', { code, status: statusFilter, date: dateFilter, search: searchTerm, pageSize, pageToken });
         fb.callFunction('getAffiliateOrders', { code, status: statusFilter, date: dateFilter, search: searchTerm, pageSize, pageToken })
           .then((res) => {
             console.log('✅ [AFFILIATE ORDERS] API response received:', res);
+            console.log('✅ [AFFILIATE ORDERS] Response type:', typeof res);
+            console.log('✅ [AFFILIATE ORDERS] Response keys:', Object.keys(res || {}));
             const { orders, total, totalAmount, nextPageToken } = res || { orders: [], total: 0, totalAmount: 0, nextPageToken: null };
             console.log('📊 [AFFILIATE ORDERS] Parsed data:', {
               ordersCount: orders?.length || 0,
@@ -1210,7 +1257,21 @@
       filteredOrders = allOrders.filter(order => {
         // Date filter
         if (dateFilter !== 'all') {
-          const orderDate = order.createdAt && order.createdAt.toDate ? order.createdAt.toDate() : new Date();
+          let orderDate;
+          if (order.createdAt) {
+            if (order.createdAt.toDate && typeof order.createdAt.toDate === 'function') {
+              orderDate = order.createdAt.toDate();
+            } else if (order.createdAt._seconds) {
+              orderDate = new Date(order.createdAt._seconds * 1000);
+            } else if (typeof order.createdAt === 'string') {
+              orderDate = new Date(order.createdAt);
+            } else {
+              orderDate = new Date();
+            }
+          } else {
+            orderDate = new Date();
+          }
+          
           const now = new Date();
           const daysDiff = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
           
@@ -1279,23 +1340,89 @@
         const title = document.createElement('h3');
         title.textContent = `Order ${order.orderId || order.id}`;
         
+        // Add product information if available
+        const productInfo = document.createElement('p');
+        productInfo.className = 'product-info';
+        
+        if (order.product && order.product.items && order.product.items.length > 0) {
+          const productTitle = order.product.title || `${order.product.items.length} item(s)`;
+          productInfo.innerHTML = `<strong>Product:</strong> ${productTitle}`;
+        } else {
+          productInfo.innerHTML = `<strong>Product:</strong> ${order.product?.title || 'N/A'}`;
+        }
+        
+        const customerInfo = document.createElement('p');
+        customerInfo.className = 'customer-info';
+        
+        // Debug customer data
+        console.log('🔍 [ORDER] Customer data for order:', order.orderId || order.id, {
+          customer: order.customer,
+          customerName: order.customer?.firstName + ' ' + order.customer?.lastName,
+          customerEmail: order.customer?.email,
+          customerPhone: order.customer?.phone
+        });
+        
+        // Extract customer info from the correct structure
+        const customer = order.customer || {};
+        const customerName = (customer.firstName || '') + (customer.lastName ? ' ' + customer.lastName : '');
+        
+        customerInfo.innerHTML = `
+          <strong>Customer:</strong> ${customerName || 'N/A'}<br>
+          <strong>Email:</strong> ${customer.email || 'N/A'}<br>
+          <strong>Phone:</strong> ${customer.phone || 'N/A'}
+        `;
+        
         const date = document.createElement('p');
-        date.textContent = order.createdAt && order.createdAt.toDate ? 
-          order.createdAt.toDate().toLocaleString() : 
-          new Date().toLocaleString();
+        date.className = 'order-date';
+        
+        // Handle different date formats from REST API
+        let orderDate;
+        if (order.createdAt) {
+          if (order.createdAt.toDate && typeof order.createdAt.toDate === 'function') {
+            // Firebase Timestamp format
+            orderDate = order.createdAt.toDate();
+          } else if (order.createdAt._seconds) {
+            // REST API timestamp format
+            orderDate = new Date(order.createdAt._seconds * 1000);
+          } else if (typeof order.createdAt === 'string') {
+            // String date format
+            orderDate = new Date(order.createdAt);
+          } else {
+            orderDate = new Date();
+          }
+        } else {
+          orderDate = new Date();
+        }
+        
+        date.textContent = orderDate.toLocaleString();
         
         const status = document.createElement('span');
         status.className = `status-badge status-${order.status || 'completed'}`;
         status.textContent = order.status || 'completed';
         
         orderInfo.appendChild(title);
+        orderInfo.appendChild(productInfo);
+        orderInfo.appendChild(customerInfo);
         orderInfo.appendChild(date);
         orderInfo.appendChild(status);
         
         const orderAmountEl = document.createElement('div');
         orderAmountEl.className = 'order-amount';
+        
+        // Add coupon usage info if available
+        // Check for affiliate coupon by matching affiliateCode field (case-insensitive)
+        const searchCode = currentAffiliateCode.toLowerCase();
+        const couponInfo = order.coupons ? order.coupons.find(c => {
+          const couponAffiliateCode = c.affiliateCode ? c.affiliateCode.toLowerCase() : '';
+          const couponCode = c.code ? c.code.toLowerCase() : '';
+          return couponAffiliateCode === searchCode || couponCode === searchCode;
+        }) : null;
+        const couponUsageText = couponInfo ? 
+          `<small style="color: var(--brand); font-weight: 600;">Coupon: ${couponInfo.code}</small><br>` : '';
+        
         orderAmountEl.innerHTML = `
           <div>₹${orderAmount.toLocaleString()}</div>
+          ${couponUsageText}
           <small style="color: var(--muted); font-weight: 500;">Commission: ₹${commission}</small>
         `;
         
@@ -1598,6 +1725,43 @@
         color: var(--muted);
         margin: 0;
       }
+
+      .product-info {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text);
+        margin: 8px 0;
+        padding: 6px 8px;
+        background: rgba(99, 102, 241, 0.05);
+        border-radius: 6px;
+        border-left: 3px solid var(--brand);
+      }
+
+      .product-info strong {
+        color: var(--brand);
+        font-weight: 600;
+      }
+
+      .customer-info {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text);
+        margin: 8px 0;
+        padding: 8px;
+        background: rgba(0,0,0,0.02);
+        border-radius: 6px;
+      }
+
+      .customer-info strong {
+        color: var(--text-light);
+        font-weight: 600;
+      }
+
+      .order-date {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 4px 0;
+      }
       
       .status-badge {
         display: inline-block;
@@ -1768,42 +1932,95 @@
       
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-top: 32px;
       }
       
       .stat-card {
-        background: var(--card);
-        padding: 24px;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        transition: all 0.3s ease;
+        background: #ffffff;
+        padding: 32px 28px;
+        border-radius: 20px;
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        min-height: 120px;
+      }
+      
+      .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #f97316, #ef4444);
+        border-radius: 20px 20px 0 0;
       }
       
       .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
-        border-color: var(--brand);
+        transform: translateY(-6px);
+        box-shadow: 0 20px 48px rgba(0,0,0,0.15);
+        border-color: rgba(249, 115, 22, 0.2);
       }
       
       .stat-icon {
-        font-size: 32px;
-        margin-bottom: 12px;
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #f97316, #ef4444);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: white;
+        box-shadow: 0 8px 20px rgba(249, 115, 22, 0.3);
+        flex-shrink: 0;
+      }
+      
+      .stat-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
       
       .stat-value {
-        font-size: 28px;
+        font-size: 36px;
         font-weight: 800;
-        color: var(--brand);
-        margin-bottom: 8px;
+        color: #1f2937;
+        margin: 0;
+        line-height: 1;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        transition: all 0.3s ease;
+      }
+      
+      .stat-value.updating {
+        transform: scale(1.05);
+        color: #f97316;
       }
       
       .stat-label {
-        font-size: 14px;
-        color: var(--muted);
+        font-size: 13px;
+        color: #6b7280;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.8px;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      .stat-sublabel {
+        font-size: 11px;
+        color: #9ca3af;
+        margin-top: 2px;
+        font-weight: 500;
+        line-height: 1.2;
       }
       
       /* Enhanced Action Cards */
@@ -1986,11 +2203,29 @@
         
         .stats-grid {
           grid-template-columns: repeat(2, 1fr);
-          gap: 16px;
+          gap: 20px;
         }
         
         .stat-card {
-          padding: 20px;
+          padding: 24px 20px;
+          flex-direction: column;
+          text-align: center;
+          gap: 16px;
+          min-height: 140px;
+        }
+        
+        .stat-icon {
+          width: 56px;
+          height: 56px;
+          font-size: 24px;
+        }
+        
+        .stat-value {
+          font-size: 28px;
+        }
+        
+        .stat-label {
+          font-size: 12px;
         }
         
         .actions-grid {
@@ -2006,6 +2241,31 @@
       @media (max-width: 480px) {
         .stats-grid {
           grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        
+        .stat-card {
+          padding: 20px 16px;
+          min-height: 120px;
+        }
+        
+        .stat-icon {
+          width: 48px;
+          height: 48px;
+          font-size: 20px;
+        }
+        
+        .stat-value {
+          font-size: 24px;
+        }
+        
+        .stat-label {
+          font-size: 11px;
+          letter-spacing: 0.6px;
+        }
+        
+        .stat-sublabel {
+          font-size: 10px;
         }
         
         .welcome-content h1 {
@@ -2014,6 +2274,10 @@
         
         .filter-select, .search-input {
           font-size: 16px; /* Prevent zoom on iOS */
+        }
+
+        .customer-info {
+          font-size: 12px;
         }
       }
     `;
@@ -2105,13 +2369,19 @@
 
         // Load existing settings via PHP API
         if (window.AttralFirebase && window.AttralFirebase.callFunction) {
-          window.AttralFirebase.callFunction('getPaymentDetails', {}).then(d=>{
+          // Get current user UID for payment details
+          const currentUser = window.AttralFirebase.auth?.currentUser;
+          if (currentUser) {
+            window.AttralFirebase.callFunction('getPaymentDetails', { uid: currentUser.uid }).then(d=>{
             modal.querySelector('#bank-name').value = d.bankAccountName || '';
             modal.querySelector('#bank-number').value = d.bankAccountNumber || '';
             modal.querySelector('#bank-ifsc').value = d.ifsc || '';
             modal.querySelector('#upi-id').value = d.upiId || '';
             modal.querySelector('#upi-mobile').value = d.upiMobile || '';
           }).catch(()=>{});
+          } else {
+            console.warn('No authenticated user found for payment details');
+          }
         }
 
         // Save
@@ -2141,7 +2411,21 @@
             return;
           }
           
-          const payload = { bankAccountName, bankAccountNumber, ifsc, upiId, upiMobile };
+          // Get current user UID for payment details
+          const currentUser = window.AttralFirebase?.auth?.currentUser;
+          if (!currentUser) {
+            alert('Please sign in to save payment details.');
+            return;
+          }
+          
+          const payload = { 
+            uid: currentUser.uid,
+            bankAccountName, 
+            bankAccountNumber, 
+            ifsc, 
+            upiId, 
+            upiMobile 
+          };
           
           if (window.AttralFirebase && window.AttralFirebase.callFunction) {
             saveBtn.disabled = true;
