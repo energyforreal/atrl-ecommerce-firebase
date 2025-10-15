@@ -674,23 +674,49 @@
     function ensureAffiliateProfile(user) {
       console.log('Ensuring affiliate profile via Cloud Function for user:', user.uid);
       const fb = window.AttralFirebase;
-      if (!fb || !fb.functions || !fb.db) {
-        console.warn('Firebase Functions/Firestore not available');
-        return Promise.reject('Firebase not available');
+      if (!fb || !fb.db) {
+        console.warn('Firebase Firestore not available');
+        return Promise.reject(new Error('Firebase database not available'));
       }
+      
       const docRef = fb.db.collection('affiliates').doc(user.uid);
-      return docRef.get().then((snap)=>{
-        if (snap.exists) { return snap.data(); }
-        return fb.callFunction('createAffiliateProfile', {}).then((aff)=>{
+      return docRef.get().then((snap) => {
+        if (snap.exists) { 
+          console.log('Affiliate profile already exists');
+          return snap.data(); 
+        }
+        
+        console.log('Creating new affiliate profile...');
+        return fb.callFunction('createAffiliateProfile', {
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || 'Affiliate User',
+          phone: user.phoneNumber || ''
+        }).then((aff) => {
           const base = (window.ATTRAL_PUBLIC && window.ATTRAL_PUBLIC.AFFILIATE_BASE_URL) || window.location.origin;
           const pathBase = base.replace(/\/$/, '');
           const affiliateLink = aff.affiliateLink || `${pathBase}/index.html?ref=${encodeURIComponent(aff.code)}`;
-          return docRef.set({ affiliateLink }, { merge: true }).catch(()=>{}).then(()=>{
+          
+          // Update the affiliate document with the link
+          return docRef.set({ affiliateLink }, { merge: true }).catch((err) => {
+            console.warn('Failed to update affiliate link:', err);
+            // Don't fail the whole process for this
+          }).then(() => {
             // 🎉 Send welcome email after affiliate profile creation
             sendWelcomeEmailToNewAffiliate(user.uid, aff);
             return { ...aff, affiliateLink };
           });
         });
+      }).catch((error) => {
+        console.error('Error in ensureAffiliateProfile:', error);
+        // Create a more descriptive error that distinguishes between different failure types
+        if (error.message && error.message.includes('Firebase')) {
+          throw new Error(`Database connection failed: ${error.message}`);
+        } else if (error.message && error.message.includes('API')) {
+          throw new Error(`Profile creation service failed: ${error.message}`);
+        } else {
+          throw new Error(`Profile setup failed: ${error.message || 'Unknown error'}`);
+        }
       });
     }
 
@@ -771,17 +797,32 @@
           goDashboard();
         })
         .catch(function(error) {
-          console.error('Email sign-in failed:', error);
+          console.error('Email sign-in or profile setup failed:', error);
           let errorMessage = 'Sign in failed. ';
-          if (error.code === 'auth/user-not-found') {
-            errorMessage += 'No account found with this email.';
-          } else if (error.code === 'auth/wrong-password') {
-            errorMessage += 'Incorrect password.';
-          } else if (error.code === 'auth/invalid-email') {
-            errorMessage += 'Invalid email address.';
+          
+          // Check if it's actually an auth error or profile creation error
+          if (error.code && error.code.startsWith('auth/')) {
+            // This is a real authentication error
+            if (error.code === 'auth/user-not-found') {
+              errorMessage += 'No account found with this email.';
+            } else if (error.code === 'auth/wrong-password') {
+              errorMessage += 'Incorrect password.';
+            } else if (error.code === 'auth/invalid-email') {
+              errorMessage += 'Invalid email address.';
+            } else {
+              errorMessage += error.message;
+            }
           } else {
-            errorMessage += error.message;
+            // This is a profile creation error, not an auth error
+            errorMessage = 'Account setup failed. You are signed in, but there was an issue setting up your affiliate profile. You will be redirected to the dashboard where you can complete the setup.';
+            
+            // For profile creation errors, don't block the user - they can still proceed
+            console.warn('Profile creation failed, but user is authenticated. Proceeding to dashboard...');
+            setTimeout(() => {
+              goDashboard();
+            }, 3000); // Give user time to read the message
           }
+          
           alert(errorMessage);
           button.innerHTML = originalText;
           button.disabled = false;
@@ -831,15 +872,30 @@
           goDashboard();
         })
         .catch(function(error) {
-          console.error('Google sign-in failed:', error);
-          let errorMessage = 'Google sign-in failed. ';
-          if (error.code === 'auth/popup-closed-by-user') {
-            errorMessage = 'Sign-in cancelled.';
-          } else if (error.code === 'auth/popup-blocked') {
-            errorMessage = 'Popup blocked. Please allow popups for this site.';
+          console.error('Google sign-in or profile setup failed:', error);
+          let errorMessage = 'Profile setup failed. ';
+          
+          // Check if it's actually a Google auth error or profile creation error
+          if (error.code && error.code.startsWith('auth/')) {
+            // This is a real Google auth error
+            if (error.code === 'auth/popup-closed-by-user') {
+              errorMessage = 'Sign-in cancelled.';
+            } else if (error.code === 'auth/popup-blocked') {
+              errorMessage = 'Popup blocked. Please allow popups for this site.';
+            } else {
+              errorMessage = 'Google sign-in failed: ' + error.message;
+            }
           } else {
-            errorMessage += error.message;
+            // This is a profile creation error, not a Google auth error
+            errorMessage = 'Account setup failed. You are signed in, but there was an issue setting up your affiliate profile. You will be redirected to the dashboard where you can complete the setup.';
+            
+            // For profile creation errors, don't block the user - they can still proceed
+            console.warn('Profile creation failed, but user is authenticated. Proceeding to dashboard...');
+            setTimeout(() => {
+              goDashboard();
+            }, 3000); // Give user time to read the message
           }
+          
           alert(errorMessage);
           button.innerHTML = originalText;
           button.disabled = false;
