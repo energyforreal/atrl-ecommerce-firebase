@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "972578972293",
+    "project_id": "e-commerce-1d40f",
+    "storage_bucket": "e-commerce-1d40f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:972578972293:android:33235b1790439be8c17fec",
+        "android_client_info": {
+          "package_name": "com.attral.admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "972578972293-qnbh29n5nh7pnk1vfrl0upupjo4u3e4o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAw3LrzkOVi8rBxWHB2IPTK_Xr4aiC9SqI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "972578972293-qnbh29n5nh7pnk1vfrl0upupjo4u3e4o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:972578972293:android:b770c1ba931503f6c17fec",
+        "android_client_info": {
+          "package_name": "com.attral.customer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "972578972293-qnbh29n5nh7pnk1vfrl0upupjo4u3e4o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAw3LrzkOVi8rBxWHB2IPTK_Xr4aiC9SqI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "972578972293-qnbh29n5nh7pnk1vfrl0upupjo4u3e4o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

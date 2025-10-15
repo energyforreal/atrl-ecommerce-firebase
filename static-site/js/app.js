@@ -236,6 +236,12 @@
       updateHeaderCount();
       notify('Added to cart 🛒');
       console.log('✅ Product added to cart successfully');
+      
+      // Track add to cart event in GA4
+      if (window.trackAddToCart) {
+        window.trackAddToCart(product, 1);
+      }
+      
       return product; // Return the product for success confirmation
     }).catch(error => {
       console.error('❌ Failed to add to cart:', error);
@@ -279,6 +285,11 @@
     if(!root) return;
     const items = readCart();
     root.innerHTML = '';
+    
+    // Track cart view in GA4 if cart has items
+    if (items.length > 0 && window.trackViewCart) {
+      window.trackViewCart(items);
+    }
     
     if(items.length===0){ 
       root.innerHTML = `
@@ -535,6 +546,15 @@
     }
   }
 
+  // Helper function to track begin checkout
+  function trackBeginCheckoutFromCart() {
+    const items = readCart();
+    if (items.length > 0 && window.trackBeginCheckout) {
+      window.trackBeginCheckout(items);
+      console.log('📊 GA4: Begin checkout tracked');
+    }
+  }
+
   window.Attral = {
     initHeaderCartCount: updateHeaderCount,
     renderFeaturedProducts,
@@ -544,6 +564,7 @@
     addToCart,
     clearCartSafely, // 🆕 Safe cart clearing utility
     validateAndCleanCart, // 🆕 Automatic cart validation
+    trackBeginCheckoutFromCart, // 🆕 GA4 begin checkout tracking
     calculateCartTotalPaise: function(){
       const items = readCart();
       const total = items.reduce((a,i)=> a + (i.price * i.quantity), 0);

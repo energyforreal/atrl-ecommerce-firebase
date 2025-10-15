@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Debug Tool</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .status { padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .status.success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .status.warning { background: #fff3cd; border: 1px solid #ffeaa7; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Affiliate Dashboard Debug Tool</h1>
+    
+    <div class="test-section">
+        <h2>1. API Connectivity Test</h2>
+        <button onclick="testAPI()">Test API Endpoints</button>
+        <div id="api-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Firebase Integration Test</h2>
+        <button onclick="testFirebase()">Test Firebase Connection</button>
+        <div id="firebase-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Dashboard Functions Test</h2>
+        <button onclick="testDashboardFunctions()">Test Dashboard Functions</button>
+        <div id="dashboard-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Live API Test</h2>
+        <input type="text" id="test-code" placeholder="Enter affiliate code" value="attral-71hlzssgan" style="padding: 8px; margin: 5px; width: 200px;">
+        <button onclick="testLiveAPI()">Test Live API</button>
+        <div id="live-results"></div>
+    </div>
+
+    <script>
+        // Load Firebase scripts first
+        const scripts = [
+            'https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js',
+            'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js',
+            'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js'
+        ];
+        
+        let loadedScripts = 0;
+        scripts.forEach(src => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => {
+                loadedScripts++;
+                if (loadedScripts === scripts.length) {
+                    initializeFirebase();
+                }
+            };
+            document.head.appendChild(script);
+        });
+        
+        function initializeFirebase() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCMzmyqQ-WJuYrK0dNsTqljlDsCkmOIXOk",
+                authDomain: "e-commerce-1d40f.firebaseapp.com",
+                projectId: "e-commerce-1d40f",
+                storageBucket: "e-commerce-1d40f.firebasestorage.app",
+                messagingSenderId: "972578972293",
+                appId: "1:972578972293:web:3aa31f43650c08cdc17fec"
+            };
+            
+            firebase.initializeApp(firebaseConfig);
+            window.AttralFirebase = {
+                app: firebase.app(),
+                auth: firebase.auth(),
+                db: firebase.firestore(),
+                callFunction: callFunction
+            };
+            
+            addResult('firebase-results', 'Firebase initialized successfully', 'success');
+        }
+        
+        function callFunction(name, data) {
+            const apiUrl = `api/affiliate_functions.php?action=${name}`;
+            
+            return fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data || {})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(result => {
+                if (result.success === false) {
+                    throw new Error(result.error || 'API request failed');
+                }
+                return result;
+            });
+        }
+        
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            container.appendChild(div);
+        }
+        
+        function testAPI() {
+            const container = document.getElementById('api-results');
+            container.innerHTML = '';
+            
+            addResult('api-results', 'Testing API endpoints...', 'info');
+            
+            // Test getAffiliateStats
+            callFunction('getAffiliateStats', { code: 'attral-71hlzssgan' })
+                .then(result => {
+                    addResult('api-results', `✅ getAffiliateStats: ${JSON.stringify(result)}`, 'success');
+                })
+                .catch(error => {
+                    addResult('api-results', `❌ getAffiliateStats: ${error.message}`, 'error');
+                });
+            
+            // Test getAffiliateOrders
+            callFunction('getAffiliateOrders', { code: 'attral-71hlzssgan', pageSize: 5 })
+                .then(result => {
+                    addResult('api-results', `✅ getAffiliateOrders: Found ${result.orders?.length || 0} orders`, 'success');
+                })
+                .catch(error => {
+                    addResult('api-results', `❌ getAffiliateOrders: ${error.message}`, 'error');
+                });
+        }
+        
+        function testFirebase() {
+            const container = document.getElementById('firebase-results');
+            container.innerHTML = '';
+            
+            if (!window.AttralFirebase) {
+                addResult('firebase-results', '❌ Firebase not initialized', 'error');
+                return;
+            }
+            
+            addResult('firebase-results', '✅ Firebase object available', 'success');
+            addResult('firebase-results', `✅ Auth: ${window.AttralFirebase.auth ? 'Available' : 'Missing'}`, 'success');
+            addResult('firebase-results', `✅ Firestore: ${window.AttralFirebase.db ? 'Available' : 'Missing'}`, 'success');
+            addResult('firebase-results', `✅ callFunction: ${window.AttralFirebase.callFunction ? 'Available' : 'Missing'}`, 'success');
+            
+            // Test Firestore connection
+            if (window.AttralFirebase.db) {
+                window.AttralFirebase.db.collection('products').limit(1).get()
+                    .then(snapshot => {
+                        addResult('firebase-results', `✅ Firestore connection working (${snapshot.size} products found)`, 'success');
+                    })
+                    .catch(error => {
+                        addResult('firebase-results', `❌ Firestore connection failed: ${error.message}`, 'error');
+                    });
+            }
+        }
+        
+        function testDashboardFunctions() {
+            const container = document.getElementById('dashboard-results');
+            container.innerHTML = '';
+            
+            // Check if dashboard functions exist
+            const functions = [
+                'updateStats',
+                'renderReferredOrders', 
+                'createAffiliateProfile',
+                'animateValue'
+            ];
+            
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    addResult('dashboard-results', `✅ Function ${funcName} available`, 'success');
+                } else {
+                    addResult('dashboard-results', `❌ Function ${funcName} missing`, 'error');
+                }
+            });
+            
+            // Test animation function
+            if (typeof animateValue === 'function') {
+                const testEl = document.createElement('div');
+                testEl.id = 'test-animation';
+                document.body.appendChild(testEl);
+                
+                animateValue(testEl, 0, 100, 1000, '₹');
+                
+                setTimeout(() => {
+                    addResult('dashboard-results', `✅ Animation test: ${testEl.textContent}`, 'success');
+                    document.body.removeChild(testEl);
+                }, 1100);
+            }
+        }
+        
+        function testLiveAPI() {
+            const code = document.getElementById('test-code').value;
+            const container = document.getElementById('live-results');
+            container.innerHTML = '';
+            
+            if (!code) {
+                addResult('live-results', '❌ Please enter an affiliate code', 'error');
+                return;
+            }
+            
+            addResult('live-results', `Testing with code: ${code}`, 'info');
+            
+            // Test stats
+            callFunction('getAffiliateStats', { code: code })
+                .then(result => {
+                    addResult('live-results', `✅ Stats: Earnings=₹${result.totalEarnings}, Referrals=${result.totalReferrals}`, 'success');
+                    addResult('live-results', `✅ Coupon Usage: ${result.couponUsageCount} uses, ₹${result.couponPayoutUsage} earned`, 'success');
+                })
+                .catch(error => {
+                    addResult('live-results', `❌ Stats failed: ${error.message}`, 'error');
+                });
+            
+            // Test orders
+            callFunction('getAffiliateOrders', { code: code, pageSize: 10 })
+                .then(result => {
+                    addResult('live-results', `✅ Orders: ${result.orders?.length || 0} orders found`, 'success');
+                    if (result.orders && result.orders.length > 0) {
+                        const firstOrder = result.orders[0];
+                        addResult('live-results', `✅ Sample order: ${firstOrder.orderId || firstOrder.id} - ₹${firstOrder.amount || 0}`, 'success');
+                        if (firstOrder.customerName) {
+                            addResult('live-results', `✅ Customer: ${firstOrder.customerName} (${firstOrder.customerEmail})`, 'success');
+                        }
+                    }
+                })
+                .catch(error => {
+                    addResult('live-results', `❌ Orders failed: ${error.message}`, 'error');
+                });
+        }
+        
+        // Auto-run basic tests on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testFirebase();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

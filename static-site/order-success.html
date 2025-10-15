@@ -10,6 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css" />
   
+  <!-- Google Analytics 4 -->
+  <script src="js/analytics.js"></script>
+  
   <style>
     .success-container {
       max-width: 800px;
@@ -668,6 +671,77 @@
       }
     }
 
+    // Track purchase in Google Analytics 4
+    function trackGA4Purchase(order) {
+      if (!window.trackPurchase) {
+        console.log('📊 GA4: trackPurchase function not available');
+        return;
+      }
+      
+      try {
+        // Extract transaction ID
+        const transactionId = order.razorpay_order_id || order.razorpayOrderId || order.id || order.orderId || order.order_number;
+        
+        // Extract total amount (handle different formats)
+        let totalAmount = 0;
+        if (order.pricing && order.pricing.total != null) {
+          totalAmount = Number(order.pricing.total);
+        } else if (order.pricing_data && order.pricing_data.total) {
+          totalAmount = Number(order.pricing_data.total);
+        } else if (order.payment && order.payment.amount) {
+          const amt = Number(order.payment.amount);
+          // Razorpay amounts may be in paise
+          totalAmount = (Number.isFinite(amt) && amt >= 100 && Number.isInteger(amt)) ? (amt/100) : amt;
+        } else if (order.amount) {
+          totalAmount = Number(order.amount);
+        } else if (order.total) {
+          totalAmount = Number(order.total);
+        }
+        
+        // Extract items (handle different formats)
+        let items = [];
+        if (Array.isArray(order.items) && order.items.length > 0) {
+          items = order.items;
+        } else if (Array.isArray(order.cart_items) && order.cart_items.length > 0) {
+          items = order.cart_items;
+        } else if (Array.isArray(order.products) && order.products.length > 0) {
+          items = order.products;
+        } else {
+          // Try to get items from sessionStorage as fallback
+          try {
+            const session = JSON.parse(sessionStorage.getItem('lastOrderData') || '{}');
+            if (Array.isArray(session.items)) {
+              items = session.items;
+            }
+          } catch (e) {
+            console.warn('Could not get items from session storage:', e);
+          }
+        }
+        
+        // Extract coupon code if available
+        let couponCode = null;
+        if (Array.isArray(order.coupons) && order.coupons.length > 0) {
+          couponCode = order.coupons.map(c => c.code || c).join(',');
+        } else if (order.coupon) {
+          couponCode = order.coupon;
+        }
+        
+        // Prepare order data for GA4
+        const orderData = {
+          transactionId: transactionId,
+          total: totalAmount,
+          items: items,
+          coupon: couponCode
+        };
+        
+        // Track the purchase
+        window.trackPurchase(orderData);
+        console.log('📊 GA4: Purchase event tracked', orderData);
+      } catch (error) {
+        console.error('📊 GA4: Error tracking purchase', error);
+      }
+    }
+
     function displayOrderDetails(order) {
       // Update order details - prioritize Razorpay Order ID for display
       const orderIdDisplay = order.razorpay_order_id || order.razorpayOrderId || order.id || order.orderId || order.order_number || 'N/A';
@@ -732,6 +806,9 @@
       } catch(_e) { /* ignore */ }
 
       // Usage increment is handled server-side
+      
+      // Track purchase in GA4
+      trackGA4Purchase(order);
     }
 
     // Upsert coupons onto the order document in Firestore via API

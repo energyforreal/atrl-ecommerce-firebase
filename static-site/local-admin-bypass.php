@@ -1,6 +1,6 @@
 <?php
 // Enhanced local development admin bypass
-// Generated on: 11-10-2025  9:08:01.09
+// Generated on: 15-10-2025 22:20:41.42
 session_start();
 $_SESSION['attral_admin_access'] = true;
 $_SESSION['attral_admin_user'] = 'local-admin';

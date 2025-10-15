@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/product.css" />
   
+  <!-- Google Analytics 4 -->
+  <script src="js/analytics.js"></script>
+  
   <style>
     .order-container {
       max-width: 1200px;
@@ -2529,6 +2532,8 @@
       
       if (window.Attral) {
         window.Attral.initHeaderCartCount();
+        // Track begin checkout event in GA4
+        window.Attral.trackBeginCheckoutFromCart();
       }
       
       // Load order data and auto-populate user information

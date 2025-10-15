@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/product.css" />
   
+  <!-- Google Analytics 4 -->
+  <script src="js/analytics.js"></script>
+  
   <!-- Product Detail Page Styles -->
   <style>
     /* Product Detail Hero */
@@ -786,6 +789,12 @@
       // Show product content
       document.getElementById('loading-state').style.display = 'none';
       document.getElementById('product-content').style.display = 'grid';
+      
+      // Track product view in GA4
+      if (window.trackViewItem) {
+        window.trackViewItem(currentProduct);
+        console.log('📊 GA4: Product view tracked');
+      }
     }
     
     // Render product thumbnails
