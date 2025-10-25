@@ -205,16 +205,62 @@ function applyCouponForOrderRest($client, $code, $orderId, $meta = [], $isAffili
         // === STEP 3: Atomically increment counters ===
         error_log("COUPON SERVICE REST: Incrementing counters for $normalizedCode");
         
-        // Increment usageCount by 1
-        $client->incrementField('coupons', $couponDocId, 'usageCount', 1);
+        // Get current values for manual increment (fallback for OpenSSL issues)
+        $currentUsageCount = $couponData['usageCount'] ?? 0;
+        $currentPayoutUsage = $couponData['payoutUsage'] ?? 0;
         
-        // Increment payoutUsage (by amount for affiliate, by 1 for regular)
-        if ($isAffiliate && $payoutAmount > 0) {
-            $client->incrementField('coupons', $couponDocId, 'payoutUsage', $payoutAmount);
-            error_log("COUPON SERVICE REST: Incremented payoutUsage by ₹$payoutAmount (affiliate)");
-        } else {
-            $client->incrementField('coupons', $couponDocId, 'payoutUsage', 1);
-            error_log("COUPON SERVICE REST: Incremented payoutUsage by 1 (regular)");
+        // Calculate new values
+        $newUsageCount = $currentUsageCount + 1;
+        $newPayoutUsage = $currentPayoutUsage + ($isAffiliate && $payoutAmount > 0 ? $payoutAmount : 1);
+        
+        error_log("COUPON SERVICE REST: Current values - usageCount: $currentUsageCount, payoutUsage: $currentPayoutUsage");
+        error_log("COUPON SERVICE REST: New values - usageCount: $newUsageCount, payoutUsage: $newPayoutUsage");
+        
+        // Try atomic increment first, fallback to manual update
+        try {
+            $client->incrementField('coupons', $couponDocId, 'usageCount', 1);
+            error_log("COUPON SERVICE REST: ✅ Atomic increment for usageCount successful");
+        } catch (Exception $e) {
+            error_log("COUPON SERVICE REST: ⚠️ Atomic increment failed after retries, using manual update: " . $e->getMessage());
+            error_log("COUPON SERVICE REST: ⚠️ WARNING: Manual update is NOT atomic - may cause race conditions");
+            
+            // Manual update as fallback (not atomic, but better than nothing)
+            try {
+                $client->updateDocument('coupons', $couponDocId, [
+                    ['path' => 'usageCount', 'value' => $newUsageCount],
+                    ['path' => 'incrementFailureCount', 'value' => ($couponData['incrementFailureCount'] ?? 0) + 1],
+                    ['path' => 'lastManualUpdate', 'value' => firestoreTimestamp()]
+                ]);
+                error_log("COUPON SERVICE REST: ✅ Manual update successful for usageCount");
+            } catch (Exception $updateError) {
+                error_log("COUPON SERVICE REST: ❌ Manual update also failed: " . $updateError->getMessage());
+            }
+        }
+        
+        // Try atomic increment for payoutUsage
+        try {
+            if ($isAffiliate && $payoutAmount > 0) {
+                $client->incrementField('coupons', $couponDocId, 'payoutUsage', $payoutAmount);
+                error_log("COUPON SERVICE REST: ✅ Atomic increment for payoutUsage by ₹$payoutAmount (affiliate)");
+            } else {
+                $client->incrementField('coupons', $couponDocId, 'payoutUsage', 1);
+                error_log("COUPON SERVICE REST: ✅ Atomic increment for payoutUsage by 1 (regular)");
+            }
+        } catch (Exception $e) {
+            error_log("COUPON SERVICE REST: ⚠️ Atomic increment for payoutUsage failed after retries: " . $e->getMessage());
+            error_log("COUPON SERVICE REST: ⚠️ WARNING: Manual update is NOT atomic - may cause race conditions");
+            
+            // Manual update as fallback
+            try {
+                $client->updateDocument('coupons', $couponDocId, [
+                    ['path' => 'payoutUsage', 'value' => $newPayoutUsage],
+                    ['path' => 'incrementFailureCount', 'value' => ($couponData['incrementFailureCount'] ?? 0) + 1],
+                    ['path' => 'lastManualUpdate', 'value' => firestoreTimestamp()]
+                ]);
+                error_log("COUPON SERVICE REST: ✅ Manual update successful for payoutUsage");
+            } catch (Exception $updateError) {
+                error_log("COUPON SERVICE REST: ❌ Manual update also failed: " . $updateError->getMessage());
+            }
         }
         
         // Update additional fields

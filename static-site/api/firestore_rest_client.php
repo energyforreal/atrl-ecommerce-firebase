@@ -511,35 +511,57 @@ class FirestoreRestClient {
      * @throws Exception if increment fails
      */
     public function incrementField($collection, $documentId, $fieldPath, $incrementValue = 1) {
-        $url = "{$this->baseUrl}:commit";
+        $maxRetries = 3;
+        $retry = 0;
         
-        $docPath = "projects/{$this->projectId}/databases/(default)/documents/{$collection}/{$documentId}";
-        
-        $body = [
-            'writes' => [
-                [
-                    'transform' => [
-                        'document' => $docPath,
-                        'fieldTransforms' => [
-                            [
-                                'fieldPath' => $fieldPath,
-                                'increment' => is_int($incrementValue) ? 
-                                    ['integerValue' => (string)$incrementValue] : 
-                                    ['doubleValue' => $incrementValue]
+        while ($retry < $maxRetries) {
+            try {
+                $url = "{$this->baseUrl}:commit";
+                
+                $docPath = "projects/{$this->projectId}/databases/(default)/documents/{$collection}/{$documentId}";
+                
+                $body = [
+                    'writes' => [
+                        [
+                            'transform' => [
+                                'document' => $docPath,
+                                'fieldTransforms' => [
+                                    [
+                                        'fieldPath' => $fieldPath,
+                                        'increment' => is_int($incrementValue) ? 
+                                            ['integerValue' => (string)$incrementValue] : 
+                                            ['doubleValue' => $incrementValue]
+                                    ]
+                                ]
                             ]
                         ]
                     ]
-                ]
-            ]
-        ];
-        
-        error_log("FIRESTORE REST: Atomically incrementing {$fieldPath} by {$incrementValue} in {$collection}/{$documentId}");
-        
-        $result = $this->makeRequest('POST', $url, $body);
-        
-        error_log("FIRESTORE REST: ✅ Field incremented successfully");
-        
-        return $result;
+                ];
+                
+                if ($retry === 0) {
+                    error_log("FIRESTORE REST: Atomically incrementing {$fieldPath} by {$incrementValue} in {$collection}/{$documentId}");
+                } else {
+                    error_log("FIRESTORE REST: Retrying increment (attempt " . ($retry + 1) . "/$maxRetries)");
+                }
+                
+                $result = $this->makeRequest('POST', $url, $body);
+                
+                error_log("FIRESTORE REST: ✅ Field incremented successfully (attempt " . ($retry + 1) . ")");
+                
+                return $result;
+                
+            } catch (Exception $e) {
+                $retry++;
+                
+                if ($retry >= $maxRetries) {
+                    error_log("FIRESTORE REST: ❌ Failed to increment after $maxRetries attempts - " . $e->getMessage());
+                    throw $e;
+                }
+                
+                error_log("FIRESTORE REST: ⚠️ Increment failed, retrying... ($retry/$maxRetries) - " . $e->getMessage());
+                usleep(100000 * $retry); // Exponential backoff: 100ms, 200ms, 300ms
+            }
+        }
     }
     
     /**

@@ -271,30 +271,80 @@ class FirestoreOrderManager {
             if (!empty($input['coupons']) && is_array($input['coupons'])) {
                 error_log("FIRESTORE ORDER: Processing " . count($input['coupons']) . " coupons for order $orderId");
                 
+                // Validate payment_id exists for idempotency
+                if (empty($input['payment_id'])) {
+                    error_log("FIRESTORE ORDER: WARNING - No payment_id provided, using order ID for idempotency");
+                    $input['payment_id'] = $orderId; // Fallback to order ID
+                }
+                
                 $orderMeta = [
                     'amount' => $resolvedAmount,
                     'customerEmail' => $input['customer']['email'] ?? null,
                 ];
                 
-                $batchResult = batchApplyCouponsForOrderRest(
-                    $this->firestore,
-                    $input['coupons'],
-                    $orderId,
-                    $orderMeta,
-                    $input['payment_id']
-                );
+                // === IDEMPOTENCY CHECK ===
+                $paymentId = $input['payment_id'];
+                $globalGuardKey = sha1($paymentId); // Simple hash of payment ID
+                $globalGuardPath = 'coupon_increments';
                 
-                // Format results for logging
-                foreach ($batchResult['results'] as $result) {
-                    if ($result['success']) {
-                        $status = ($result['idempotent'] ?? false) ? '↩️' : '✅';
-                        $couponResults[] = "$status {$result['coupon']['code']} - {$result['message']}";
+                error_log("FIRESTORE ORDER: Checking global idempotency guard for payment: $paymentId (key: $globalGuardKey)");
+                
+                try {
+                    $globalGuardDoc = $this->firestore->getDocument($globalGuardPath, $globalGuardKey);
+                    
+                    if ($globalGuardDoc) {
+                        error_log("FIRESTORE ORDER: Payment $paymentId already processed (idempotent) - skipping coupon processing");
+                        $couponResults = [[
+                            'success' => true,
+                            'idempotent' => true,
+                            'message' => 'Payment already processed (idempotent)',
+                            'code' => 'GLOBAL_GUARD'
+                        ]];
                     } else {
-                        $couponResults[] = "❌ {$result['code']} - {$result['error']}";
+                        // Payment not processed yet, proceed with coupon processing
+                        $batchResult = batchApplyCouponsForOrderRest(
+                            $this->firestore,
+                            $input['coupons'],
+                            $orderId,
+                            $orderMeta,
+                            $paymentId
+                        );
+                        
+                        // After successful processing, create global guard document
+                        if ($batchResult['success']) {
+                            try {
+                                $guardData = [
+                                    'paymentId' => $paymentId,
+                                    'orderId' => $orderId,
+                                    'processedAt' => firestoreTimestamp(),
+                                    'coupons' => $input['coupons'],
+                                    'createdAt' => firestoreTimestamp()
+                                ];
+                                
+                                $this->firestore->writeDocument($globalGuardPath, $guardData, $globalGuardKey);
+                                error_log("FIRESTORE ORDER: Created global guard document for payment $paymentId");
+                            } catch (Exception $guardError) {
+                                error_log("FIRESTORE ORDER: Failed to create global guard - " . $guardError->getMessage());
+                                // Don't fail the order if guard creation fails
+                            }
+                        }
+                        
+                        // Format results for logging
+                        foreach ($batchResult['results'] as $result) {
+                            if ($result['success']) {
+                                $status = ($result['idempotent'] ?? false) ? '↩️' : '✅';
+                                $couponResults[] = "$status {$result['coupon']['code']} - {$result['message']}";
+                            } else {
+                                $couponResults[] = "❌ {$result['code']} - {$result['error']}";
+                            }
+                        }
+                        
+                        error_log("FIRESTORE ORDER: Batch coupon processing - " . $batchResult['message']);
                     }
+                } catch (Exception $idempotencyError) {
+                    error_log("FIRESTORE ORDER: Error checking idempotency - " . $idempotencyError->getMessage());
+                    // Continue without idempotency check if it fails
                 }
-                
-                error_log("FIRESTORE ORDER: Batch coupon processing - " . $batchResult['message']);
             } else {
                 error_log("FIRESTORE ORDER: No coupons to process for order $orderId");
             }
@@ -442,37 +492,15 @@ class FirestoreOrderManager {
                 $this->addStatusHistory($orderDocId, $status, $message);
             }
             
-            // If coupons supplied, increment usage
+            // COUPON PROCESSING REMOVED FROM updateOrderStatus
+            // Coupons are processed once during createOrder() to prevent duplicate increments
+            // Webhooks should not re-process coupons that were already handled
             $couponResults = [];
+            
+            // Log that coupons were skipped during update
             if ($coupons && is_array($coupons)) {
-                try {
-                    $orderMeta = [
-                        'amount' => $order['amount'] ?? 0,
-                        'customerEmail' => $order['customer']['email'] ?? null,
-                    ];
-                    
-                    $paymentId = $order['razorpayPaymentId'] ?? ($order['payment']['transaction_id'] ?? null);
-                    
-                    $batchResult = batchApplyCouponsForOrderRest(
-                        $this->firestore,
-                        $coupons,
-                        $orderDocId,
-                        $orderMeta,
-                        $paymentId
-                    );
-                    
-                    // Format results
-                    foreach ($batchResult['results'] as $result) {
-                        if ($result['success']) {
-                            $status = ($result['idempotent'] ?? false) ? '↩️' : '✅';
-                            $couponResults[] = "$status {$result['coupon']['code']} (update)";
-                        } else {
-                            $couponResults[] = "❌ {$result['code']} - {$result['error']}";
-                        }
-                    }
-                } catch (Exception $t) {
-                    error_log('FIRESTORE UPDATE: coupon increment failed - ' . $t->getMessage());
-                }
+                error_log("FIRESTORE UPDATE: Skipping coupon processing for order $orderId (already processed during creation)");
+                $couponResults[] = "⚠️ Coupons already processed (skipping duplicate)";
             }
             
             error_log("FIRESTORE ORDER: Status updated - Order: $orderId, Status: $status");

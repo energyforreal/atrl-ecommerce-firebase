@@ -1180,59 +1180,75 @@
       }
     }
 
-    // Load affiliates from Firebase
+    // Load affiliates from Firebase using REST API
     async function loadAffiliatesFromFirebase() {
       try {
-        console.log('🤝 Loading affiliates from Firebase...');
+        console.log('🤝 Loading affiliates via REST API...');
         
-        // Wait for Firebase to be ready
+        // Show loading status
+        document.getElementById('affiliate-status').textContent = 'Loading affiliates...';
+        document.getElementById('affiliate-status').style.color = '#6b7280';
+        
+        // Wait for Firebase to be ready (for callFunction method)
         await waitForFirebase();
         
-        if (!window.AttralFirebase || !window.AttralFirebase.db) {
-          console.log('❌ Firebase not available for affiliates');
-          document.getElementById('affiliate-status').textContent = 'Firebase not available';
+        if (!window.AttralFirebase || !window.AttralFirebase.callFunction) {
+          console.log('❌ Firebase callFunction not available');
+          document.getElementById('affiliate-status').textContent = 'Error: Firebase not initialized';
+          document.getElementById('affiliate-status').style.color = '#dc2626';
           return;
         }
 
-        // Fetch all affiliates from Firestore
-        const affiliatesSnapshot = await window.AttralFirebase.db
-          .collection('affiliates')
-          .orderBy('createdAt', 'desc')
-          .get();
+        console.log('🔄 Calling getAllAffiliates API...');
+        
+        // Call REST API to get all affiliates
+        const response = await window.AttralFirebase.callFunction('getAllAffiliates', {});
+        
+        console.log('📊 API Response:', response);
 
-        console.log('📊 Loaded affiliates from Firebase:', affiliatesSnapshot.size);
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to load affiliates');
+        }
 
         // Clear existing array
         affiliates = [];
 
-        // Build affiliates array from Firestore data
-        affiliatesSnapshot.forEach(doc => {
-          const affiliateData = doc.data();
-          if (affiliateData.code) { // Only include affiliates with codes
-            const affiliate = {
-              id: doc.id,
-              uid: affiliateData.uid || doc.id,
-              name: affiliateData.displayName || affiliateData.name || affiliateData.email || 'Unknown',
-              email: affiliateData.email || 'No email provided',
-              code: affiliateData.code,
-              status: affiliateData.status || 'active',
-              createdAt: affiliateData.createdAt ? affiliateData.createdAt.toDate() : new Date()
-            };
-            
-            affiliates.push(affiliate);
-          }
-        });
+        // Build affiliates array from API response
+        if (response.affiliates && Array.isArray(response.affiliates)) {
+          response.affiliates.forEach(affiliate => {
+            if (affiliate.code) { // Only include affiliates with codes
+              affiliates.push({
+                id: affiliate.id,
+                uid: affiliate.uid,
+                name: affiliate.name,
+                email: affiliate.email,
+                code: affiliate.code,
+                status: affiliate.status || 'active',
+                createdAt: affiliate.createdAt ? 
+                  (affiliate.createdAt._seconds ? 
+                    new Date(affiliate.createdAt._seconds * 1000) : 
+                    new Date(affiliate.createdAt)) : 
+                  new Date()
+              });
+            }
+          });
+        }
 
         console.log('✅ Affiliates loaded successfully:', affiliates.length);
         document.getElementById('affiliate-status').textContent = `Found ${affiliates.length} affiliate codes`;
-        document.getElementById('create-affiliate-coupons-btn').disabled = false;
+        document.getElementById('affiliate-status').style.color = '#059669';
+        document.getElementById('create-affiliate-coupons-btn').disabled = affiliates.length === 0;
 
         // Load affiliate coupons
         loadAffiliateCoupons();
 
       } catch (error) {
-        console.error('❌ Error loading affiliates from Firebase:', error);
-        document.getElementById('affiliate-status').textContent = 'Error loading affiliates';
+        console.error('❌ Error loading affiliates:', error);
+        console.error('Error details:', error.message, error.stack);
+        document.getElementById('affiliate-status').textContent = `Error: ${error.message}`;
+        document.getElementById('affiliate-status').style.color = '#dc2626';
+        affiliates = [];
+        loadAffiliateCoupons(); // Show empty state
       }
     }
 

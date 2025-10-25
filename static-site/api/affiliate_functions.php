@@ -95,6 +95,9 @@ switch ($action) {
     case 'testPaymentDetails':
         testPaymentDetails($firestore);
         break;
+    case 'getAllAffiliates':
+        getAllAffiliates($firestore);
+        break;
     default:
         http_response_code(404);
         ob_clean();
@@ -315,6 +318,9 @@ function getAffiliateOrders($firestore) {
 
 /**
  * Get Affiliate Stats
+ * 
+ * Updated to read pre-computed stats from affiliates collection
+ * instead of querying orders and coupons collections
  */
 function getAffiliateStats($firestore) {
     if ($_SERVER['REQUEST_METHOD'] !== 'GET' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -340,10 +346,9 @@ function getAffiliateStats($firestore) {
             return;
         }
         
-        error_log("AFFILIATE STATS: Querying stats for code=$code");
+        error_log("AFFILIATE STATS: Querying pre-computed stats for code=$code");
         
-        // First, check if the affiliate profile exists in the affiliates collection
-        error_log("AFFILIATE STATS: Checking if affiliate profile exists...");
+        // Query affiliates collection to get pre-computed stats
         $affiliates = $firestore->queryDocuments('affiliates', [
             ['field' => 'code', 'op' => 'EQUAL', 'value' => $code]
         ], 1);
@@ -366,82 +371,36 @@ function getAffiliateStats($firestore) {
             return;
         }
         
-        error_log("AFFILIATE STATS: ✅ Affiliate profile found for code=$code");
+        $affiliate = $affiliates[0]['data'];
+        error_log("AFFILIATE STATS: ✅ Found affiliate profile for code=$code");
         
-        // Query coupons collection directly for usage data
-        // Search by affiliateCode field (not code field)
-        $coupons = $firestore->queryDocuments('coupons', [
-            ['field' => 'affiliateCode', 'op' => 'EQUAL', 'value' => $code]
-        ], 1);
+        // Read pre-computed stats from affiliate document
+        $totalEarnings = $affiliate['totalCommission'] ?? 0;
+        $totalReferrals = $affiliate['totalOrders'] ?? 0;
+        $couponUsageCount = $affiliate['couponUsageCount'] ?? 0;
+        $couponPayoutUsage = $affiliate['totalCommission'] ?? 0;
         
-        $couponUsageCount = 0;
-        $couponPayoutUsage = 0;
-        
-        if (!empty($coupons)) {
-            $couponData = $coupons[0]['data'];
-            $couponUsageCount = $couponData['usageCount'] ?? 0;
-            $couponPayoutUsage = $couponUsageCount * 300; // Calculate from usageCount
-            error_log("AFFILIATE STATS: Coupon usage - count=$couponUsageCount, calculated payout=₹$couponPayoutUsage");
-        } else {
-            error_log("AFFILIATE STATS: ❌ Coupon not found for code=$code, but affiliate profile exists");
-            // Return empty stats if coupon not found but affiliate exists
-            ob_clean();
-            echo json_encode([
-                'success' => true,
-                'totalEarnings' => 0,
-                'totalReferrals' => 0,
-                'monthlyEarnings' => 0,
-                'conversionRate' => 0,
-                'couponUsageCount' => 0,
-                'couponPayoutUsage' => 0,
-                'affiliateCode' => $code,
-                'status' => 'active'
-            ]);
-            return;
-        }
-        
-        error_log("AFFILIATE STATS: ✅ Found coupon data");
-        
-        // Calculate stats from coupon usage data
-        $totalReferrals = $couponUsageCount;
-        $totalEarnings = $couponUsageCount * 300; // ₹300 per usage
-        
-        // Query orders collection to calculate monthly earnings
-        $orders = $firestore->queryDocuments('orders', [
-            ['field' => 'status', 'op' => 'EQUAL', 'value' => 'confirmed']
-        ], 1000);
-        
+        // Calculate monthly earnings (simplified - could be enhanced with monthly breakdown)
         $monthlyEarnings = 0;
         $thisMonth = date('Y-m');
         
-        foreach ($orders as $doc) {
-            $orderData = $doc['data'];
-            $coupons = $orderData['coupons'] ?? [];
-            
-            // Check if order uses affiliate coupon and was created this month (case-insensitive)
-            $searchCode = strtolower($code);
-            foreach ($coupons as $coupon) {
-                // Check both affiliateCode and code fields for matching (case-insensitive)
-                $couponAffiliateCode = isset($coupon['affiliateCode']) ? strtolower($coupon['affiliateCode']) : '';
-                $couponCode = isset($coupon['code']) ? strtolower($coupon['code']) : '';
-                
-                if ($couponAffiliateCode === $searchCode || $couponCode === $searchCode) {
-                    // Check if this month
-                    $createdAt = $orderData['createdAt'] ?? null;
-                    if ($createdAt && isset($createdAt['_seconds'])) {
-                        $orderMonth = date('Y-m', $createdAt['_seconds']);
-                        if ($orderMonth === $thisMonth) {
-                            $monthlyEarnings += 300;
-                        }
-                    }
-                    break;
+        // Check if last order was this month (simple approximation)
+        if (isset($affiliate['lastOrderDate'])) {
+            $lastOrderDate = $affiliate['lastOrderDate'];
+            if (isset($lastOrderDate['_seconds'])) {
+                $lastOrderMonth = date('Y-m', $lastOrderDate['_seconds']);
+                if ($lastOrderMonth === $thisMonth) {
+                    // If there was an order this month, use a portion of total commission
+                    // This is a simplified calculation - could be enhanced with proper monthly tracking
+                    $monthlyEarnings = min($totalEarnings, 300); // At least one order worth
                 }
             }
         }
         
+        // Calculate conversion rate
         $conversionRate = $totalReferrals > 0 ? min(100, ($totalReferrals * 10)) : 0;
         
-        error_log("AFFILIATE STATS: Results - Earnings=₹$totalEarnings, Referrals=$totalReferrals");
+        error_log("AFFILIATE STATS: Pre-computed stats - Earnings=₹$totalEarnings, Referrals=$totalReferrals, CouponUsage=$couponUsageCount");
         
         ob_clean();
         echo json_encode([
@@ -453,7 +412,8 @@ function getAffiliateStats($firestore) {
             'couponUsageCount' => $couponUsageCount,
             'couponPayoutUsage' => $couponPayoutUsage,
             'affiliateCode' => $code,
-            'status' => 'active'
+            'status' => 'active',
+            'lastUpdated' => $affiliate['updatedAt'] ?? null
         ]);
         
     } catch (Exception $e) {
@@ -998,6 +958,58 @@ function testPaymentDetails($firestore) {
             'error' => $e->getMessage(),
             'stack' => $e->getTraceAsString()
         ]);
+    }
+}
+
+/**
+ * Get All Affiliates (Admin function)
+ */
+function getAllAffiliates($firestore) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        ob_clean();
+        echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+        return;
+    }
+    
+    try {
+        error_log("AFFILIATE API: Getting all affiliates for admin");
+        
+        // Query all affiliates ordered by creation date
+        $affiliates = $firestore->queryDocuments('affiliates', [], 1000, 'createdAt', 'DESCENDING');
+        
+        $affiliatesList = [];
+        foreach ($affiliates as $doc) {
+            $data = $doc['data'];
+            
+            // Only include affiliates with codes
+            if (!empty($data['code'])) {
+                $affiliatesList[] = [
+                    'id' => $doc['id'],
+                    'uid' => $data['uid'] ?? $doc['id'],
+                    'name' => $data['name'] ?? $data['email'] ?? 'Unknown',
+                    'email' => $data['email'] ?? 'No email provided',
+                    'code' => $data['code'],
+                    'status' => $data['status'] ?? 'active',
+                    'createdAt' => $data['createdAt'] ?? null
+                ];
+            }
+        }
+        
+        error_log("AFFILIATE API: Found " . count($affiliatesList) . " affiliates");
+        
+        ob_clean();
+        echo json_encode([
+            'success' => true,
+            'affiliates' => $affiliatesList,
+            'total' => count($affiliatesList)
+        ]);
+        
+    } catch (Exception $e) {
+        error_log("Get All Affiliates Error: " . $e->getMessage());
+        http_response_code(500);
+        ob_clean();
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
 }
 ?>

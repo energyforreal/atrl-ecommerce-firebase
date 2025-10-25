@@ -93,6 +93,7 @@ System is fully operational and ready for production deployment. Focus now on te
 9. **Google Analytics Integrated** - GA4 tracking across all pages with e-commerce events
 10. **Affiliate Fake Signin Popup Issue** - Resolved false authentication popup on affiliate page
 11. **New Affiliate Profile Creation** - Fixed payout settings and profile creation issues
+12. **Coupon Tracking & Affiliate Stats** - Fixed using Firebase onOrderTrigger function
 
 ---
 
