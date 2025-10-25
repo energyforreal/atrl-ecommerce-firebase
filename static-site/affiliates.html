@@ -687,15 +687,38 @@
         }
         
         console.log('Creating new affiliate profile...');
+        console.log('Calling API with data:', {
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || 'Affiliate User',
+          phone: user.phoneNumber || ''
+        });
+        
         return fb.callFunction('createAffiliateProfile', {
           uid: user.uid,
           email: user.email,
           name: user.displayName || 'Affiliate User',
           phone: user.phoneNumber || ''
         }).then((aff) => {
+          console.log('API response received:', aff);
+          console.log('API response type:', typeof aff);
+          console.log('API response keys:', Object.keys(aff || {}));
+          
+          if (!aff || !aff.success) {
+            console.error('API returned error response:', aff);
+            throw new Error(`API returned error: ${aff?.error || 'Unknown API error'}`);
+          }
+          
+          if (!aff.code) {
+            console.error('API response missing affiliate code:', aff);
+            throw new Error('API response missing affiliate code');
+          }
+          
           const base = (window.ATTRAL_PUBLIC && window.ATTRAL_PUBLIC.AFFILIATE_BASE_URL) || window.location.origin;
           const pathBase = base.replace(/\/$/, '');
           const affiliateLink = aff.affiliateLink || `${pathBase}/index.html?ref=${encodeURIComponent(aff.code)}`;
+          
+          console.log('Generated affiliate link:', affiliateLink);
           
           // Update the affiliate document with the link
           return docRef.set({ affiliateLink }, { merge: true }).catch((err) => {
@@ -709,14 +732,36 @@
         });
       }).catch((error) => {
         console.error('Error in ensureAffiliateProfile:', error);
+        console.error('Full error object:', error);
+        console.error('Error stack:', error.stack);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        
         // Create a more descriptive error that distinguishes between different failure types
-        if (error.message && error.message.includes('Firebase')) {
-          throw new Error(`Database connection failed: ${error.message}`);
-        } else if (error.message && error.message.includes('API')) {
-          throw new Error(`Profile creation service failed: ${error.message}`);
+        let errorMessage = 'Profile setup failed';
+        
+        if (error.message) {
+          if (error.message.includes('JSON.parse')) {
+            errorMessage = 'Profile creation service returned invalid data. Please try again.';
+          } else if (error.message.includes('Database connection failed')) {
+            errorMessage = 'Database connection failed. Please check your internet connection and try again.';
+          } else if (error.message.includes('Profile creation service failed')) {
+            errorMessage = 'Profile creation service failed. Please try again in a moment.';
+          } else if (error.message.includes('API returned error')) {
+            errorMessage = `Profile creation failed: ${error.message}`;
+          } else if (error.message.includes('missing affiliate code')) {
+            errorMessage = 'Profile creation incomplete. Please try again.';
+          } else {
+            errorMessage = `Profile setup failed: ${error.message}`;
+          }
         } else {
-          throw new Error(`Profile setup failed: ${error.message || 'Unknown error'}`);
+          errorMessage = 'Profile setup failed due to an unknown error. Please try again.';
         }
+        
+        // Log the error for debugging
+        console.error('Processed error message:', errorMessage);
+        
+        throw new Error(errorMessage);
       });
     }
 
@@ -799,6 +844,7 @@
         .catch(function(error) {
           console.error('Email sign-in or profile setup failed:', error);
           let errorMessage = 'Sign in failed. ';
+          let shouldRedirect = false;
           
           // Check if it's actually an auth error or profile creation error
           if (error.code && error.code.startsWith('auth/')) {
@@ -815,17 +861,23 @@
           } else {
             // This is a profile creation error, not an auth error
             errorMessage = 'Account setup failed. You are signed in, but there was an issue setting up your affiliate profile. You will be redirected to the dashboard where you can complete the setup.';
+            shouldRedirect = true;
             
             // For profile creation errors, don't block the user - they can still proceed
             console.warn('Profile creation failed, but user is authenticated. Proceeding to dashboard...');
+          }
+          
+          // Show error message
+          alert(errorMessage);
+          button.innerHTML = originalText;
+          button.disabled = false;
+          
+          // Redirect if it's a profile creation error
+          if (shouldRedirect) {
             setTimeout(() => {
               goDashboard();
             }, 3000); // Give user time to read the message
           }
-          
-          alert(errorMessage);
-          button.innerHTML = originalText;
-          button.disabled = false;
         });
     }
 
@@ -874,6 +926,7 @@
         .catch(function(error) {
           console.error('Google sign-in or profile setup failed:', error);
           let errorMessage = 'Profile setup failed. ';
+          let shouldRedirect = false;
           
           // Check if it's actually a Google auth error or profile creation error
           if (error.code && error.code.startsWith('auth/')) {
@@ -888,17 +941,23 @@
           } else {
             // This is a profile creation error, not a Google auth error
             errorMessage = 'Account setup failed. You are signed in, but there was an issue setting up your affiliate profile. You will be redirected to the dashboard where you can complete the setup.';
+            shouldRedirect = true;
             
             // For profile creation errors, don't block the user - they can still proceed
             console.warn('Profile creation failed, but user is authenticated. Proceeding to dashboard...');
+          }
+          
+          // Show error message
+          alert(errorMessage);
+          button.innerHTML = originalText;
+          button.disabled = false;
+          
+          // Redirect if it's a profile creation error
+          if (shouldRedirect) {
             setTimeout(() => {
               goDashboard();
             }, 3000); // Give user time to read the message
           }
-          
-          alert(errorMessage);
-          button.innerHTML = originalText;
-          button.disabled = false;
         });
     }
 

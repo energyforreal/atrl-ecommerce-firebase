@@ -2420,6 +2420,9 @@
           
           const payload = { 
             uid: currentUser.uid,
+            email: currentUser.email || '',
+            name: currentUser.displayName || '',
+            phone: currentUser.phoneNumber || '',
             bankAccountName, 
             bankAccountNumber, 
             ifsc, 
@@ -2455,7 +2458,19 @@
               })
               .catch((error) => {
                 console.error('Error saving payment details:', error);
-                alert('Error saving payment details: ' + (error.message || 'Please try again.'));
+                
+                let errorMessage = 'Please try again.';
+                if (error.message.includes('500')) {
+                  errorMessage = 'Server error. Please check your connection and try again.';
+                } else if (error.message.includes('uid is required')) {
+                  errorMessage = 'Please sign in again and try.';
+                } else if (error.message.includes('Invalid IFSC')) {
+                  errorMessage = 'Please check your IFSC code format.';
+                } else if (error.message.includes('network') || error.message.includes('fetch')) {
+                  errorMessage = 'Network error. Please check your connection.';
+                }
+                
+                alert('Error saving payment details: ' + errorMessage);
                 saveBtn.disabled = false;
                 saveBtn.textContent = 'SAVE';
               });
