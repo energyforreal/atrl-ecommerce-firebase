@@ -25,7 +25,7 @@
     return; 
   }
   
-  console.log('Firebase config loaded:', firebaseConfig);
+  console.log('Firebase config loaded successfully');
 
   // Load Firebase from CDN (Functions SDK removed - now using PHP APIs)
   const scripts = [
@@ -63,7 +63,7 @@
 
   function initializeFirebase() {
     try {
-      console.log('Initializing Firebase with config:', firebaseConfig);
+      console.log('Initializing Firebase...');
       
       if (typeof firebase === 'undefined') {
         console.error('Firebase SDK not loaded');
@@ -113,7 +113,7 @@
       // Auth state change handler with admin bypass
       auth.onAuthStateChanged(function(user) { 
         if (user) {
-          console.log('User signed in:', user.uid, user.email || 'Anonymous');
+          console.log('User signed in successfully');
           // Track user login
           if (analytics) {
             analytics.logEvent('login', { method: user.isAnonymous ? 'anonymous' : 'email' });
@@ -283,7 +283,7 @@
     } catch (e) {
       // ignore
     }
-    console.log('Firebase health:', window.AttralFirebase.health);
+    console.log('Firebase health check completed');
   }
 })();
 

@@ -962,7 +962,7 @@
           return getLocalUserData();
         }
 
-        console.log('✅ User authenticated:', user.uid, user.email);
+        console.log('✅ User authenticated successfully');
 
         // Fetch default address from Firebase (try uid, then userId)
         console.log('🔍 Fetching default address...');
@@ -985,7 +985,7 @@
 
         if (!addressesSnapshot.empty) {
           const defaultAddress = addressesSnapshot.docs[0].data();
-          console.log('✅ Found default address:', defaultAddress);
+          console.log('✅ Found default address');
           
           // Extract user information from default address
           const userData = {
@@ -1000,7 +1000,7 @@
             country: defaultAddress.country || 'India'
           };
 
-          console.log('✅ Returning user data from default address:', userData);
+          console.log('✅ Returning user data from default address');
           return userData;
         }
 
@@ -1043,7 +1043,7 @@
 
         if (!anyAddressSnapshot.empty) {
           const address = anyAddressSnapshot.docs[0].data();
-          console.log('✅ Found user address:', address);
+          console.log('✅ Found user address');
           
           const userData = {
             firstName: address.fullName ? address.fullName.split(' ')[0] : '',
@@ -1057,7 +1057,7 @@
             country: address.country || 'India'
           };
 
-          console.log('✅ Returning user data from any address:', userData);
+          console.log('✅ Returning user data from any address');
           return userData;
         }
 
@@ -1163,12 +1163,7 @@
           return;
         }
         
-        console.log('✅ User authenticated:', {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          isAnonymous: user.isAnonymous
-        });
+        console.log('✅ User authenticated successfully');
         
         // Test addresses collection
         console.log('🔍 Testing addresses collection...');
@@ -1177,16 +1172,6 @@
           .get();
         
         console.log('📊 All addresses for user:', allAddresses.size);
-        allAddresses.forEach((doc, index) => {
-          const data = doc.data();
-          console.log(`Address ${index + 1}:`, {
-            id: doc.id,
-            fullName: data.fullName,
-            phone: data.phone,
-            isDefault: data.isDefault,
-            createdAt: data.createdAt
-          });
-        });
         
         // Test default address query
         console.log('🔍 Testing default address query...');
@@ -1208,12 +1193,12 @@
     // Debug payment system
     function debugPayment() {
       console.log('🔧 PAYMENT DEBUG INFO:');
-      console.log('Razorpay Key:', window.ATTRAL_PUBLIC?.RAZORPAY_KEY_ID);
-      console.log('Current Product:', currentProduct);
+      console.log('Razorpay Key configured:', !!window.ATTRAL_PUBLIC?.RAZORPAY_KEY_ID);
+      console.log('Current Product loaded:', !!currentProduct);
       
       try {
         const orderData = collectOrderData();
-        console.log('Order Data:', orderData);
+        console.log('Order Data collected successfully');
         console.log('Total Amount:', orderData.pricing?.total);
         console.log('Amount in Paise:', orderData.pricing?.total * 100);
       } catch (error) {
@@ -1250,21 +1235,20 @@
     function debugCoupons() {
       console.log('🔧 COUPON DEBUG INFO:');
       console.log('Coupons loaded:', couponsLoaded);
-      console.log('Coupon database:', couponDatabase);
-      console.log('Available coupon codes:', Object.keys(couponDatabase));
+      console.log('Coupon database size:', Object.keys(couponDatabase).length);
       console.log('Firebase available:', !!(window.AttralFirebase && window.AttralFirebase.db));
       
       // Check for specific affiliate coupon
       const testCode = 'partea-nk6p5d4leb';
       console.log(`Testing coupon code: ${testCode}`);
-      console.log('Direct lookup:', couponDatabase[testCode]);
-      console.log('Case-insensitive lookup:', couponDatabase[testCode.toLowerCase()]);
+      console.log('Direct lookup available:', !!couponDatabase[testCode]);
+      console.log('Case-insensitive lookup available:', !!couponDatabase[testCode.toLowerCase()]);
       
       // Try to reload coupons
       console.log('Attempting to reload coupons...');
       loadCouponsFromFirebase().then(() => {
-        console.log('Coupons reloaded. New database:', couponDatabase);
-        console.log('Available codes after reload:', Object.keys(couponDatabase));
+        console.log('Coupons reloaded successfully');
+        console.log('Available codes after reload:', Object.keys(couponDatabase).length);
       }).catch(error => {
         console.error('Error reloading coupons:', error);
       });
@@ -1382,8 +1366,7 @@
         });
 
         couponsLoaded = true;
-        console.log('✅ Coupons loaded successfully:', Object.keys(couponDatabase));
-        console.log('📋 Loaded coupon details:', couponDatabase);
+        console.log('✅ Coupons loaded successfully');
 
       } catch (error) {
         console.error('❌ Error loading coupons from Firebase:', error);
@@ -1478,8 +1461,8 @@
             
             // If still not found, show available coupons for debugging
             if (!coupon) {
-              console.log('📋 All available coupons:', couponDatabase);
-              showCouponMessage(`Invalid coupon code. Available codes: ${Object.keys(couponDatabase).join(', ')}`, 'error');
+              console.log('📋 Available coupons count:', Object.keys(couponDatabase).length);
+              showCouponMessage('Invalid coupon code. Please check the code and try again.', 'error');
               return;
             }
           }
@@ -2104,9 +2087,8 @@
         // Check if Razorpay is properly configured
         const razorpayKey = window.ATTRAL_PUBLIC?.RAZORPAY_KEY_ID;
         console.log('🔧 Razorpay Key Check:', {
-          key: razorpayKey,
           isConfigured: razorpayKey && razorpayKey !== 'rzp_test_xxxxxxxxxxxx',
-          configObject: window.ATTRAL_PUBLIC
+          configLoaded: !!window.ATTRAL_PUBLIC
         });
         
         if (!razorpayKey || razorpayKey === 'rzp_test_xxxxxxxxxxxx') {
@@ -2152,7 +2134,7 @@
         
         console.log('🔧 Order Creation Response:', {
           status: response.status,
-          order: order,
+          orderCreated: !!order,
           responseOk: response.ok
         });
 
@@ -2379,11 +2361,7 @@
       console.log('✅ Payment success handler executing (flag set)');
 
       try {
-        console.log('🎉 Payment successful! Processing order...', {
-          orderId: order.id,
-          paymentId: response.razorpay_payment_id,
-          amount: orderData.pricing.total
-        });
+        console.log('🎉 Payment successful! Processing order...');
 
         // ✅ STEP 1: Store order data SYNCHRONOUSLY (before any async operations)
         const orderDataForSuccess = {
