@@ -790,4 +790,116 @@
 
 })();
 
+// Mobile Navigation Menu Toggle
+(function() {
+  'use strict';
+  
+  function initMobileMenu() {
+    const hamburgerBtn = document.getElementById('hamburger-menu-btn');
+    const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+    const mobileNavMenu = document.getElementById('mobile-nav-menu');
+    const mobileNavClose = document.getElementById('mobile-nav-close');
+    
+    if (!hamburgerBtn || !mobileNavOverlay || !mobileNavMenu) {
+      return; // Mobile menu elements not present on this page
+    }
+    
+    function openMenu() {
+      hamburgerBtn.classList.add('active');
+      mobileNavOverlay.classList.add('active');
+      mobileNavMenu.classList.add('active');
+      document.body.classList.add('menu-open');
+    }
+    
+    function closeMenu() {
+      hamburgerBtn.classList.remove('active');
+      mobileNavOverlay.classList.remove('active');
+      mobileNavMenu.classList.remove('active');
+      document.body.classList.remove('menu-open');
+    }
+    
+    // Open menu when hamburger is clicked
+    hamburgerBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openMenu();
+    });
+    
+    // Close menu when close button is clicked
+    if (mobileNavClose) {
+      mobileNavClose.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeMenu();
+      });
+    }
+    
+    // Close menu when overlay is clicked
+    mobileNavOverlay.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeMenu();
+    });
+    
+    // Close menu when Escape key is pressed
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && mobileNavMenu.classList.contains('active')) {
+        closeMenu();
+      }
+    });
+    
+    // Close menu when window is resized to desktop size
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function() {
+        if (window.innerWidth >= 768 && mobileNavMenu.classList.contains('active')) {
+          closeMenu();
+        }
+      }, 100);
+    });
+    
+    // Close menu when a navigation link is clicked
+    const mobileNavLinks = mobileNavMenu.querySelectorAll('.nav a');
+    mobileNavLinks.forEach(function(link) {
+      link.addEventListener('click', function() {
+        closeMenu();
+      });
+    });
+    
+    // Ensure all nav links in mobile menu are visible and properly aligned
+    const allMobileNavLinks = mobileNavMenu.querySelectorAll('.nav a');
+    allMobileNavLinks.forEach(function(link) {
+      link.style.display = 'block';
+      link.style.visibility = 'visible';
+      link.style.opacity = '1';
+      link.style.textAlign = 'left';
+      link.style.width = '100%';
+    });
+    
+    // Sync cart count between header and mobile menu
+    function syncCartCount() {
+      const headerCartCount = document.getElementById('cart-count');
+      const mobileCartCount = document.getElementById('mobile-cart-count');
+      
+      if (headerCartCount && mobileCartCount) {
+        mobileCartCount.textContent = headerCartCount.textContent;
+      }
+    }
+    
+    // Sync cart count on page load and when cart updates
+    syncCartCount();
+    
+    // Listen for cart count updates (if using custom events)
+    document.addEventListener('cartUpdated', syncCartCount);
+    
+    // Also sync periodically in case cart is updated elsewhere
+    setInterval(syncCartCount, 1000);
+  }
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileMenu);
+  } else {
+    initMobileMenu();
+  }
+})();
+
 

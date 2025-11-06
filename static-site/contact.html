@@ -191,7 +191,12 @@
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" /></a>
+      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:40px; width:auto;" /></a>
+      <button class="hamburger-menu" aria-label="Toggle menu" id="hamburger-menu-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
       <nav class="nav">
         <a href="index.html">Home</a>
         <a href="shop.html">Shop</a>
@@ -211,6 +216,30 @@
       </nav>
     </div>
   </header>
+
+  <!-- Mobile Navigation Overlay -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+
+  <!-- Mobile Navigation Menu -->
+  <div class="mobile-nav-menu" id="mobile-nav-menu">
+    <div class="mobile-nav-menu-header">
+      <button class="mobile-nav-close" aria-label="Close menu" id="mobile-nav-close">×</button>
+    </div>
+    <div class="mobile-nav-menu-content">
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="account.html">My Account</a>
+        <a href="affiliates.html">Affiliate Central</a>
+        <a href="contact.html" class="active">Contact Us</a>
+        <a href="about.html">About Us</a>
+        <a href="blog.html">Blog</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="cart.html" class="cart-link">Cart <span id="mobile-cart-count" class="badge">0</span></a>
+      </nav>
+    </div>
+  </div>
 
   <main class="container">
     <!-- Hero Section -->

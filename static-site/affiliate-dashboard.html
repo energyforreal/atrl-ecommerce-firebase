@@ -112,7 +112,12 @@
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:32px; width:auto;" /></a>
+      <a class="logo" href="index.html"><img src="logo.png" alt="ATTRAL" style="height:40px; width:auto;" /></a>
+      <button class="hamburger-menu" aria-label="Toggle menu" id="hamburger-menu-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
       <nav class="nav">
         <a href="index.html">Home</a>
         <a href="shop.html">Shop</a>
@@ -132,6 +137,30 @@
       </nav>
     </div>
   </header>
+
+  <!-- Mobile Navigation Overlay -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+
+  <!-- Mobile Navigation Menu -->
+  <div class="mobile-nav-menu" id="mobile-nav-menu">
+    <div class="mobile-nav-menu-header">
+      <button class="mobile-nav-close" aria-label="Close menu" id="mobile-nav-close">×</button>
+    </div>
+    <div class="mobile-nav-menu-content">
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="user-dashboard.html">My Account</a>
+        <a href="affiliates.html">Affiliate Central</a>
+        <a href="contact.html">Contact Us</a>
+        <a href="about.html">About Us</a>
+        <a href="blog.html" target="_blank" rel="noopener">Blog</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="cart.html" class="cart-link">Cart <span id="mobile-cart-count" class="badge">0</span></a>
+      </nav>
+    </div>
+  </div>
 
   <main class="container">
     <!-- Dashboard Header -->
@@ -998,7 +1027,16 @@
 
     function updateStats(code) {
       const fb = window.AttralFirebase;
+      console.log('📊 [AFFILIATE STATS] ===== Starting stats update =====');
       console.log('📊 [AFFILIATE STATS] Loading stats for code:', code);
+      console.log('📊 [AFFILIATE STATS] Firebase available:', !!fb);
+      console.log('📊 [AFFILIATE STATS] callFunction available:', !!(fb && fb.callFunction));
+      
+      if (!code) {
+        console.error('❌ [AFFILIATE STATS] No affiliate code provided');
+        setStatsFallback();
+        return;
+      }
       
       if (!fb) {
         console.error('❌ [AFFILIATE STATS] Firebase not available for stats');
@@ -1008,12 +1046,24 @@
       // Call PHP API via callFunction (migrated from Cloud Functions)
       if (fb && fb.callFunction) {
         console.log('🔄 [AFFILIATE STATS] Calling getAffiliateStats API...');
-        console.log('🔧 Calling getAffiliateStats with code:', code);
+        console.log('🔧 [AFFILIATE STATS] Request parameters:', { code: code });
         fb.callFunction('getAffiliateStats', { code: code })
           .then((stats) => {
             console.log('✅ [AFFILIATE STATS] API response:', stats);
             console.log('✅ [AFFILIATE STATS] Response type:', typeof stats);
             console.log('✅ [AFFILIATE STATS] Response keys:', Object.keys(stats || {}));
+            
+            // Validate response structure
+            if (!stats || typeof stats !== 'object') {
+              throw new Error('Invalid response format from API');
+            }
+            
+            // Check if response indicates failure
+            if (stats.success === false) {
+              throw new Error(stats.error || 'API request failed');
+            }
+            
+            // Extract and validate stats data
             const totalEarnings = Number(stats.totalEarnings || 0);
             const totalReferrals = Number(stats.totalReferrals || 0);
             const monthlyEarnings = Number(stats.monthlyEarnings || 0);
@@ -1021,6 +1071,11 @@
             
             const couponUsageCount = Number(stats.couponUsageCount || 0);
             const couponPayoutUsage = Number(stats.couponPayoutUsage || 0);
+            
+            // Validate that we got numeric values
+            if (isNaN(totalEarnings) || isNaN(totalReferrals) || isNaN(conversionRate)) {
+              console.warn('⚠️ [AFFILIATE STATS] Some stats values are not valid numbers, using defaults');
+            }
 
             console.log('📈 [AFFILIATE STATS] Parsed values:', {
               totalEarnings,
@@ -1031,13 +1086,31 @@
               couponPayoutUsage
             });
             
-            animateValue(qs('total-earnings'), 0, totalEarnings, 800, '₹');
-            animateValue(qs('total-referrals'), 0, totalReferrals, 800, '');
-            animateValue(qs('conversion-rate'), 0, conversionRate, 800, '%');
-            animateValue(qs('coupon-usage-count'), 0, couponUsageCount, 800, '');
-            if (qs('coupon-payout-usage')) {
-              qs('coupon-payout-usage').textContent = `₹${couponPayoutUsage.toLocaleString()} earned`;
+            // Update UI elements
+            console.log('📊 [AFFILIATE STATS] Updating UI elements...');
+            const earningsEl = qs('total-earnings');
+            const referralsEl = qs('total-referrals');
+            const conversionEl = qs('conversion-rate');
+            const couponCountEl = qs('coupon-usage-count');
+            const couponPayoutEl = qs('coupon-payout-usage');
+            
+            console.log('📊 [AFFILIATE STATS] UI elements found:', {
+              earnings: !!earningsEl,
+              referrals: !!referralsEl,
+              conversion: !!conversionEl,
+              couponCount: !!couponCountEl,
+              couponPayout: !!couponPayoutEl
+            });
+            
+            if (earningsEl) animateValue(earningsEl, 0, totalEarnings, 800, '₹');
+            if (referralsEl) animateValue(referralsEl, 0, totalReferrals, 800, '');
+            if (conversionEl) animateValue(conversionEl, 0, conversionRate, 800, '%');
+            if (couponCountEl) animateValue(couponCountEl, 0, couponUsageCount, 800, '');
+            if (couponPayoutEl) {
+              couponPayoutEl.textContent = `₹${couponPayoutUsage.toLocaleString()} earned`;
             }
+            
+            console.log('✅ [AFFILIATE STATS] Stats update completed successfully');
             
             // Show commission per order info
             const earningsCard = qs('total-earnings')?.parentElement?.parentElement;
@@ -1070,6 +1143,11 @@
               code: error.code,
               stack: error.stack
             });
+            
+            // Show user-friendly error message
+            const errorMessage = getErrorMessage(error, 'stats');
+            showStatsError(errorMessage);
+            
             // Fallback to zeroes instead of Error text
             setStatsFallback();
           });
@@ -1086,6 +1164,100 @@
       if (qs('conversion-rate')) qs('conversion-rate').textContent = '0%';
       if (qs('coupon-usage-count')) qs('coupon-usage-count').textContent = '0';
       if (qs('coupon-payout-usage')) qs('coupon-payout-usage').textContent = '₹0 earned';
+    }
+
+    function getErrorMessage(error, type) {
+      const errorMsg = error.message || 'Unknown error';
+      
+      // Database connection errors
+      if (errorMsg.includes('Database connection failed') || errorMsg.includes('Database configuration error')) {
+        return 'Database connection issue. The server is unable to connect to the database. Please contact support.';
+      }
+      
+      if (errorMsg.includes('Service account file not found') || errorMsg.includes('Service account file not readable')) {
+        return 'Server configuration error. Please contact support to resolve this issue.';
+      }
+      
+      if (errorMsg.includes('Database authentication failed')) {
+        return 'Database authentication error. Please contact support.';
+      }
+      
+      // Network errors
+      if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('Failed to fetch')) {
+        return 'Network connection issue. Please check your internet connection and try again.';
+      }
+      
+      // API errors
+      if (errorMsg.includes('API error: 500') || errorMsg.includes('500')) {
+        // Check if there are more details in the error
+        if (error.details) {
+          return `Server error: ${error.details}. Please contact support if this persists.`;
+        }
+        return 'Server error. Please try again in a few moments.';
+      }
+      
+      if (errorMsg.includes('API error: 404') || errorMsg.includes('404')) {
+        return 'Service not found. Please contact support if this persists.';
+      }
+      
+      if (errorMsg.includes('API error: 403') || errorMsg.includes('403') || errorMsg.includes('permission')) {
+        return 'Access denied. Please make sure you are logged in with the correct account.';
+      }
+      
+      if (errorMsg.includes('API error: 400') || errorMsg.includes('400')) {
+        return 'Invalid request. Please refresh the page and try again.';
+      }
+      
+      // Affiliate code errors
+      if (errorMsg.includes('Affiliate code is required') || errorMsg.includes('code')) {
+        return 'Affiliate code is missing. Please refresh the page.';
+      }
+      
+      // Generic fallback - include error message if available
+      const baseMessage = type === 'stats' 
+        ? 'Unable to load statistics. Please refresh the page or try again later.'
+        : 'Unable to load data. Please refresh the page or try again later.';
+      
+      // If we have error details, append them
+      if (error.details && error.details !== errorMsg) {
+        return `${baseMessage} (Error: ${error.details})`;
+      }
+      
+      return baseMessage;
+    }
+
+    function showStatsError(message) {
+      // Show error notification above stats section
+      const statsSection = document.querySelector('.stats-overview');
+      if (statsSection) {
+        // Remove existing error notification if any
+        const existingError = statsSection.querySelector('.stats-error-notification');
+        if (existingError) {
+          existingError.remove();
+        }
+        
+        // Create error notification
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'stats-error-notification';
+        errorDiv.style.cssText = 'background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; color: #991b1b; display: flex; align-items: center; gap: 8px;';
+        errorDiv.innerHTML = `
+          <span style="font-size: 18px;">⚠️</span>
+          <div style="flex: 1;">
+            <strong>Error loading statistics:</strong>
+            <div style="font-size: 14px; margin-top: 4px;">${message}</div>
+          </div>
+          <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #991b1b;">×</button>
+        `;
+        
+        statsSection.insertBefore(errorDiv, statsSection.firstChild);
+        
+        // Auto-remove after 10 seconds
+        setTimeout(() => {
+          if (errorDiv.parentElement) {
+            errorDiv.remove();
+          }
+        }, 10000);
+      }
     }
 
     function animateValue(element, start, end, duration, prefix = '', suffix = '') {
@@ -1122,10 +1294,22 @@
     const maxRenderRetries = 5;
 
     function renderReferredOrders(code){
+      console.log('📋 [AFFILIATE ORDERS] ===== Starting orders render =====');
       console.log('📋 [AFFILIATE ORDERS] renderReferredOrders called with code:', code);
       currentAffiliateCode = code; // Store globally for use in renderOrdersPage
       
+      // Expose function globally for onclick handlers
+      window.renderReferredOrders = renderReferredOrders;
+      
+      if (!code) {
+        console.error('❌ [AFFILIATE ORDERS] No affiliate code provided');
+        showErrorInOrders('Affiliate code is missing. Please refresh the page.');
+        return;
+      }
+      
       const fb = window.AttralFirebase; 
+      console.log('📋 [AFFILIATE ORDERS] Firebase available:', !!fb);
+      console.log('📋 [AFFILIATE ORDERS] callFunction available:', !!(fb && fb.callFunction));
       
       if (!fb) {
         console.error('❌ [AFFILIATE ORDERS] Firebase not available for orders');
@@ -1135,10 +1319,10 @@
       const root = document.getElementById('referred-orders');
       
       console.log('🔍 [AFFILIATE ORDERS] Looking for referred-orders container...');
-      console.log('✅ [AFFILIATE ORDERS] Element found:', root);
+      console.log('✅ [AFFILIATE ORDERS] Element found:', !!root);
       
       if (!root) {
-        console.error('referred-orders container not found');
+        console.error('❌ [AFFILIATE ORDERS] referred-orders container not found');
         showErrorInOrders('Orders container not found. Please refresh the page.');
         return;
       }
@@ -1172,37 +1356,74 @@
       const pageSize = 50;
       const pageToken = (window.__ordersPageToken) || null;
 
+      console.log('📋 [AFFILIATE ORDERS] Filter parameters:', {
+        statusFilter,
+        dateFilter,
+        searchTerm,
+        pageSize,
+        hasPageToken: !!pageToken
+      });
+
       if (fb && fb.callFunction) {
-        console.log('🔄 [AFFILIATE ORDERS] Calling getAffiliateOrders API with:', {
-          code,
-          status: statusFilter,
-          date: dateFilter,
-          search: searchTerm,
-          pageSize
+        console.log('🔄 [AFFILIATE ORDERS] Calling getAffiliateOrders API...');
+        console.log('🔧 [AFFILIATE ORDERS] Request parameters:', { 
+          code, 
+          status: statusFilter, 
+          date: dateFilter, 
+          search: searchTerm, 
+          pageSize, 
+          pageToken 
         });
-        
-        console.log('🔧 Calling getAffiliateOrders with params:', { code, status: statusFilter, date: dateFilter, search: searchTerm, pageSize, pageToken });
         fb.callFunction('getAffiliateOrders', { code, status: statusFilter, date: dateFilter, search: searchTerm, pageSize, pageToken })
           .then((res) => {
             console.log('✅ [AFFILIATE ORDERS] API response received:', res);
             console.log('✅ [AFFILIATE ORDERS] Response type:', typeof res);
             console.log('✅ [AFFILIATE ORDERS] Response keys:', Object.keys(res || {}));
-            const { orders, total, totalAmount, nextPageToken } = res || { orders: [], total: 0, totalAmount: 0, nextPageToken: null };
+            
+            // Validate response structure
+            if (!res || typeof res !== 'object') {
+              throw new Error('Invalid response format from API');
+            }
+            
+            // Check if response indicates failure
+            if (res.success === false) {
+              throw new Error(res.error || 'API request failed');
+            }
+            
+            // Extract and validate orders data
+            const orders = Array.isArray(res.orders) ? res.orders : [];
+            const total = Number(res.total || orders.length || 0);
+            const totalAmount = Number(res.totalAmount || 0);
+            const nextPageToken = res.nextPageToken || null;
+            
             console.log('📊 [AFFILIATE ORDERS] Parsed data:', {
-              ordersCount: orders?.length || 0,
+              ordersCount: orders.length,
               total,
               totalAmount,
               hasNextPage: !!nextPageToken
             });
             
+            // Validate orders array
+            if (!Array.isArray(orders)) {
+              console.warn('⚠️ [AFFILIATE ORDERS] Orders is not an array, using empty array');
+            }
+            
+            console.log('📋 [AFFILIATE ORDERS] Processing orders data...');
+            console.log('📋 [AFFILIATE ORDERS] Orders array length:', orders.length);
+            console.log('📋 [AFFILIATE ORDERS] First order sample:', orders.length > 0 ? orders[0] : 'No orders');
+            
             window.__ordersNextPageToken = nextPageToken;
             allOrders = orders;
             filteredOrders = [...allOrders];
+            
+            console.log('📋 [AFFILIATE ORDERS] Setting up filters and rendering...');
             setupFilters();
             currentPage = 1; // reset paging for client rendering
             renderOrdersPage();
             updateOrdersInfo(total, totalAmount);
             updatePagination(total);
+            
+            console.log('✅ [AFFILIATE ORDERS] Orders render completed successfully');
           })
           .catch((error) => {
             console.error('❌ [AFFILIATE ORDERS] API call failed:', error);
@@ -1211,12 +1432,22 @@
               code: error.code,
               stack: error.stack
             });
+            
+            // Get user-friendly error message
+            const errorMessage = getErrorMessage(error, 'orders');
+            const errorTitle = error.code === 'permission-denied' || error.message.includes('permission') 
+              ? 'Access denied' 
+              : 'Unable to load orders';
+            
             root.innerHTML = `
               <div class="error-state">
                 <div class="error-icon">⚠️</div>
-                <h3>${error.code === 'permission-denied' ? 'Access denied' : 'Unable to load orders'}</h3>
-                <p>${error.code === 'permission-denied' ? 'Please make sure you are logged in with the correct account.' : 'Please try refreshing the page.'}</p>
-                <button onclick="location.reload()" class="btn btn-primary">Refresh</button>
+                <h3>${errorTitle}</h3>
+                <p>${errorMessage}</p>
+                <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center;">
+                  <button onclick="location.reload()" class="btn btn-primary">Refresh Page</button>
+                  <button onclick="renderReferredOrders('${code}')" class="btn btn-ghost">Try Again</button>
+                </div>
               </div>
             `;
           });
